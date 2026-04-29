@@ -66,7 +66,8 @@ async def scrape_woocommerce(domain: str, reference: str) -> list[WatchListing]:
                     continue
 
                 for prod in products:
-                    name = prod.get("name", "")
+                    from html import unescape
+                    name = unescape(prod.get("name", ""))
 
                     # Filtra per reference: ogni token deve essere nel titolo
                     # Per token alfabetici usa prefix matching (tollera errori di battitura)

@@ -65,7 +65,8 @@ async def scrape_shopify(domain: str, reference: str) -> list[WatchListing]:
                     break
 
                 for prod in products:
-                    title = prod.get("title", "")
+                    from html import unescape
+                    title = unescape(prod.get("title", ""))
                     title_lower = title.lower()
 
                     # Filtra per brand orologio

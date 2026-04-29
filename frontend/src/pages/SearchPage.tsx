@@ -283,6 +283,7 @@ export default function SearchPage() {
   const [scanStep, setScanStep] = useState(0)
   const [filterGeo, setFilterGeo] = useState<'all' | 'italy' | 'europe'>('all')
   const [filterSet, setFilterSet] = useState<'all' | 'fullset' | 'watchonly'>('all')
+  const [filterSeller, setFilterSeller] = useState('')
   const scanStepRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [identifying, setIdentifying] = useState(false)
   const [identifyResult, setIdentifyResult] = useState<{brand:string|null, model:string|null, reference:string|null, confidence:number, notes:string|null} | null>(null)
@@ -335,6 +336,7 @@ export default function SearchPage() {
     setScanStep(0)
     setFilterGeo('all')
     setFilterSet('all')
+    setFilterSeller('')
 
     let step = 0
     const advance = () => {
@@ -363,7 +365,9 @@ export default function SearchPage() {
   const progressPercent = (scanStep / SCAN_STEPS.length) * 100
 
   const filteredListings = result ? result.listings.filter(l =>
-    matchesGeoFilter(l, filterGeo) && matchesSetFilter(l, filterSet)
+    matchesGeoFilter(l, filterGeo) &&
+    matchesSetFilter(l, filterSet) &&
+    (!filterSeller || l.seller.toLowerCase().includes(filterSeller.toLowerCase()) || (l.description || '').toLowerCase().includes(filterSeller.toLowerCase()))
   ) : []
 
   // Client-side market intelligence
@@ -643,6 +647,17 @@ export default function SearchPage() {
                 </p>
               </div>
             )}
+          </div>
+
+          {/* Seller search */}
+          <div className="relative mb-4">
+            <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-600" />
+            <input
+              value={filterSeller}
+              onChange={e => setFilterSeller(e.target.value)}
+              placeholder="Filtra per venditore (es. edwatch, subito, chrono24…)"
+              className="w-full bg-zinc-900 border border-zinc-800 rounded-xl pl-9 pr-4 py-2.5 text-zinc-300 placeholder-zinc-600 focus:outline-none focus:border-zinc-600 text-xs"
+            />
           </div>
 
           {/* Filter bar */}
