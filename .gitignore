@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+venv/
+.env
+*.db
+*.sqlite3
+
+# Data files (screenshots, auth state)
+backend/data/
+data/
+
+# Node
+node_modules/
+dist/
+.vite/
+
+# OS
+.DS_Store
+
+# Logs
+*.log
