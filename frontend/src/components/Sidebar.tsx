@@ -1,9 +1,10 @@
 import { NavLink } from 'react-router-dom'
-import { Search, Home, Bot, Bell } from 'lucide-react'
+import { Search, Home, Bot, Bell, LayoutGrid } from 'lucide-react'
 import { clsx } from 'clsx'
 
 const nav = [
   { to: '/', icon: Home, label: 'Dashboard', sub: 'Home' },
+  { to: '/catalog', icon: LayoutGrid, label: 'Catalogo', sub: 'Orologi disponibili' },
   { to: '/search', icon: Search, label: 'Cerca', sub: 'Ricerca prezzi' },
   { to: '/agents', icon: Bot, label: 'Agenti', sub: 'Gestione bot' },
   { to: '/alerts', icon: Bell, label: 'Alert', sub: 'Notifiche' },

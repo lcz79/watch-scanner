@@ -58,3 +58,21 @@ export const identifyWatchFromImage = async (file: File): Promise<{
   })
   return response.data
 }
+
+export interface CatalogWatch {
+  id: string
+  brand: string
+  model: string
+  reference: string
+  canonical_name: string
+  year_range: string
+  movement?: string
+  case_size?: string
+  image_url: string
+  tags: string[]
+  avg_price_eur: number
+}
+
+export const getCatalog = (params?: { brand?: string; search?: string }) =>
+  api.get<{ watches: CatalogWatch[]; total: number; brands: string[] }>('/catalog', { params })
+    .then(r => r.data)

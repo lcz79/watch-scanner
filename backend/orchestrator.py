@@ -39,6 +39,16 @@ def _sort_and_deduplicate(listings: list[WatchListing]) -> list[WatchListing]:
     return sorted(unique, key=lambda x: x.price)
 
 
+async def _apply_vision_filter(listings: list[WatchListing]) -> list[WatchListing]:
+    """Applica vision filter solo se ci sono listing con immagini (opzionale, più lento)."""
+    try:
+        from utils.vision_filter import filter_listings_by_image
+        return await filter_listings_by_image(listings)
+    except Exception as e:
+        logger.warning(f"Vision filter error: {e}")
+        return listings
+
+
 async def run_scan(query: WatchQuery) -> ScanResult:
     """
     Esegue tutti gli agenti in parallelo e aggrega i risultati.

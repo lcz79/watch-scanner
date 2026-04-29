@@ -383,6 +383,41 @@ async def health():
     return {"status": "ok", "mock_mode": settings.mock_mode}
 
 
+@app.get("/catalog")
+async def get_catalog(brand: str | None = None, search: str | None = None):
+    """Catalogo orologi con immagini per ricerca visuale."""
+    import json
+    from pathlib import Path
+    catalog_path = Path(__file__).parent / "catalog" / "watches.json"
+    watches = json.loads(catalog_path.read_text())
+
+    if brand:
+        watches = [w for w in watches if w["brand"].lower() == brand.lower()]
+    if search:
+        s = search.lower()
+        watches = [w for w in watches if
+                   s in w["reference"].lower() or
+                   s in w["model"].lower() or
+                   s in w["brand"].lower() or
+                   s in w["canonical_name"].lower()]
+
+    brands = sorted(set(w["brand"] for w in json.loads(catalog_path.read_text())))
+    return {"watches": watches, "total": len(watches), "brands": brands}
+
+
+@app.get("/catalog/{watch_id}")
+async def get_catalog_item(watch_id: str):
+    """Dettaglio singolo orologio dal catalogo."""
+    import json
+    from pathlib import Path
+    catalog_path = Path(__file__).parent / "catalog" / "watches.json"
+    watches = json.loads(catalog_path.read_text())
+    watch = next((w for w in watches if w["id"] == watch_id), None)
+    if not watch:
+        raise HTTPException(status_code=404, detail="Orologio non trovato nel catalogo")
+    return watch
+
+
 @app.post("/identify")
 async def identify_watch_from_image(file: UploadFile = File(...)):
     """

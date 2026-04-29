@@ -4,6 +4,7 @@ import HomePage from './pages/HomePage'
 import SearchPage from './pages/SearchPage'
 import AgentsPage from './pages/AgentsPage'
 import AlertsPage from './pages/AlertsPage'
+import CatalogPage from './pages/CatalogPage'
 
 export default function App() {
   return (
@@ -15,6 +16,7 @@ export default function App() {
           <Route path="/search" element={<SearchPage />} />
           <Route path="/agents" element={<AgentsPage />} />
           <Route path="/alerts" element={<AlertsPage />} />
+          <Route path="/catalog" element={<CatalogPage />} />
         </Routes>
       </main>
     </div>
