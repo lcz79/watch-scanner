@@ -107,11 +107,11 @@ def mock_chrono24_listings(reference: str) -> list[WatchListing]:
     rng = _rng(reference + "chrono24")
     count = rng.randint(4, 8)
     listings = []
+    ref_encoded = reference.replace("/", "-").replace(" ", "+")
+    search_url = f"https://www.chrono24.it/search/index.htm?query={ref_encoded}&dosearch=1&resultview=list"
     for i in range(count):
         seller, location, rating = rng.choice(CHRONO24_SELLERS)
         price = round(base * rng.uniform(0.91, 1.12) / 10) * 10
-        listing_id = rng.randint(10000000, 99999999)
-        ref_slug = reference.lower().replace("/", "-").replace(" ", "-")
         days_ago = rng.randint(0, 30)
         condition = rng.choice(CONDITIONS_WEIGHTED)
         extra = rng.choice(EXTRAS)
@@ -121,7 +121,7 @@ def mock_chrono24_listings(reference: str) -> list[WatchListing]:
             price=price,
             currency="EUR",
             seller=seller,
-            url=f"https://www.chrono24.it/rolex/{ref_slug}--id{listing_id}.htm",
+            url=search_url,
             condition=condition,
             scraped_at=datetime.now() - timedelta(days=days_ago),
             location=location,
@@ -135,11 +135,11 @@ def mock_ebay_listings(reference: str) -> list[WatchListing]:
     rng = _rng(reference + "ebay")
     count = rng.randint(3, 6)
     listings = []
+    ref_encoded = reference.replace("/", "-").replace(" ", "+")
+    search_url = f"https://www.ebay.it/sch/31387/i.html?_nkw={ref_encoded}&_sop=15&LH_BIN=1"
     for _ in range(count):
         seller, location = rng.choice(EBAY_SELLERS)
-        # eBay tende ad avere prezzi leggermente più bassi (mercato privato)
         price = round(base * rng.uniform(0.88, 1.08) / 10) * 10
-        item_id = rng.randint(100000000000, 999999999999)
         days_ago = rng.randint(0, 14)
         condition = rng.choice(CONDITIONS_WEIGHTED)
         listings.append(WatchListing(
@@ -148,7 +148,7 @@ def mock_ebay_listings(reference: str) -> list[WatchListing]:
             price=price,
             currency="EUR",
             seller=seller,
-            url=f"https://www.ebay.it/itm/{item_id}",
+            url=search_url,
             condition=condition,
             scraped_at=datetime.now() - timedelta(days=days_ago),
             location=location,
@@ -162,10 +162,10 @@ def mock_watchbox_listings(reference: str) -> list[WatchListing]:
     rng = _rng(reference + "watchbox")
     count = rng.randint(2, 4)
     listings = []
+    ref_encoded = reference.replace("/", "-").replace(" ", "+")
+    search_url = f"https://www.watchbox.com/search?q={ref_encoded}"
     for _ in range(count):
         price = round(base * rng.uniform(0.93, 1.10) / 10) * 10
-        slug = reference.lower().replace("/", "").replace(" ", "-")
-        sku = rng.randint(100000, 999999)
         condition = rng.choice(["mint", "good", "mint"])
         listings.append(WatchListing(
             source="watchbox",
@@ -173,7 +173,7 @@ def mock_watchbox_listings(reference: str) -> list[WatchListing]:
             price=price,
             currency="EUR",
             seller="WatchBox",
-            url=f"https://www.watchbox.com/product/rolex-{slug}-{sku}",
+            url=search_url,
             condition=condition,
             scraped_at=datetime.now() - timedelta(days=rng.randint(0, 20)),
             location="Philadelphia, USA",
@@ -187,9 +187,10 @@ def mock_watchfinder_listings(reference: str) -> list[WatchListing]:
     rng = _rng(reference + "watchfinder")
     count = rng.randint(2, 5)
     listings = []
+    ref_encoded = reference.replace("/", "-").replace(" ", "+")
+    search_url = f"https://www.watchfinder.co.uk/preowned-watches/list?q={ref_encoded}"
     for _ in range(count):
         price = round(base * rng.uniform(0.95, 1.15) / 10) * 10
-        sku = rng.randint(100000, 999999)
         condition = rng.choice(["mint", "good"])
         listings.append(WatchListing(
             source="watchfinder",
@@ -197,7 +198,7 @@ def mock_watchfinder_listings(reference: str) -> list[WatchListing]:
             price=price,
             currency="EUR",
             seller="Watchfinder & Co.",
-            url=f"https://www.watchfinder.co.uk/listing/{sku}",
+            url=search_url,
             condition=condition,
             scraped_at=datetime.now() - timedelta(days=rng.randint(0, 25)),
             location="Londra, UK",
@@ -217,7 +218,6 @@ def mock_instagram_listings(reference: str) -> list[WatchListing]:
     listings = []
     for _ in range(count):
         account, location = rng.choice(INSTAGRAM_RESELLERS)
-        # Reseller Instagram spesso 5-12% sotto mercato (no intermediari)
         price = round(base * rng.uniform(0.86, 1.02) / 10) * 10
         post_code = _fake_ig_code()
         condition = rng.choice(["mint", "good", "unknown"])
@@ -228,7 +228,7 @@ def mock_instagram_listings(reference: str) -> list[WatchListing]:
             price=price,
             currency="EUR",
             seller=f"@{account}",
-            url=f"https://www.instagram.com/p/{post_code}/",
+            url=f"https://www.instagram.com/{account}/",
             condition=condition,
             scraped_at=datetime.now() - timedelta(hours=hours_ago),
             location=location,
@@ -238,27 +238,87 @@ def mock_instagram_listings(reference: str) -> list[WatchListing]:
     return listings
 
 
-def mock_tiktok_listings(reference: str) -> list[WatchListing]:
+FACEBOOK_MARKETPLACE_SELLERS = [
+    ("Marco R.",         "Milano"),
+    ("Orologi Luxury",   "Roma"),
+    ("WatchItaly",       "Firenze"),
+    ("Swiss Time IT",    "Zurigo"),
+    ("Chrono Deals",     "Torino"),
+    ("LuxWatch Europe",  "Monaco"),
+    ("Preloved Watches", "Amsterdam"),
+    ("Milano Orologi",   "Milano"),
+]
+
+TIKTOK_WATCH_ACCOUNTS = [
+    ("watchdealer_it",       "Milano"),
+    ("orologi_lusso_ita",    "Roma"),
+    ("rolex_reseller_eu",    "Zurigo"),
+    ("watch_hunter_europe",  "Amsterdam"),
+    ("luxury_time_italy",    "Firenze"),
+    ("swiss_watch_deals",    "Ginevra"),
+]
+
+
+def mock_facebook_listings(reference: str) -> list[WatchListing]:
+    """
+    Simula annunci di Facebook Marketplace.
+    In produzione: ogni riga è un annuncio Marketplace reale con prezzo.
+    """
     base = _base_price(reference)
-    rng = _rng(reference + "tiktok")
-    count = rng.randint(1, 3)
+    rng = _rng(reference + "facebook")
+    count = rng.randint(2, 5)
     listings = []
     for _ in range(count):
-        account, location = rng.choice(INSTAGRAM_RESELLERS)
-        price = round(base * rng.uniform(0.85, 1.00) / 10) * 10
+        seller, location = rng.choice(FACEBOOK_MARKETPLACE_SELLERS)
+        # Facebook Marketplace: tipicamente privati, prezzi leggermente più bassi
+        price = round(base * rng.uniform(0.83, 1.05) / 10) * 10
+        item_id = rng.randint(1000000000, 9999999999)
+        hours_ago = rng.randint(1, 72)
+        condition = rng.choice(CONDITIONS_WEIGHTED)
+        extra = rng.choice(EXTRAS)
+        ref_encoded = reference.replace("/", "-").replace(" ", "+")
+        listings.append(WatchListing(
+            source="facebook_marketplace",
+            reference=reference,
+            price=price,
+            currency="EUR",
+            seller=seller,
+            url=f"https://www.facebook.com/marketplace/search/?query={ref_encoded}&category_id=31387",
+            condition=condition,
+            scraped_at=datetime.now() - timedelta(hours=hours_ago),
+            location=location,
+            description=f"{reference} · {condition.capitalize()} · {extra} · Facebook Marketplace",
+        ))
+    return listings
+
+
+def mock_tiktok_listings(reference: str) -> list[WatchListing]:
+    """
+    Simula video TikTok di reseller con prezzi in caption.
+    In produzione: caption del video analizzata per referenza e prezzo.
+    """
+    base = _base_price(reference)
+    rng = _rng(reference + "tiktok")
+    count = rng.randint(1, 4)
+    listings = []
+    for _ in range(count):
+        account, location = rng.choice(TIKTOK_WATCH_ACCOUNTS)
+        # TikTok spesso prezzi competitivi (venditori giovani, meno intermediari)
+        price = round(base * rng.uniform(0.84, 1.01) / 10) * 10
         video_id = rng.randint(7000000000000000000, 7999999999999999999)
         hours_ago = rng.randint(1, 48)
+        condition = rng.choice(["mint", "good", "unknown"])
         listings.append(WatchListing(
             source="tiktok",
             reference=reference,
             price=price,
             currency="EUR",
             seller=f"@{account}",
-            url=f"https://www.tiktok.com/@{account}/video/{video_id}",
-            condition="unknown",
+            url=f"https://www.tiktok.com/@{account}",
+            condition=condition,
             scraped_at=datetime.now() - timedelta(hours=hours_ago),
             location=location,
-            description=f"Video TikTok · {reference} · Prezzo in descrizione video",
+            description=f"Video TikTok · @{account} · {reference} · Prezzo: {price}€ · DM per info",
         ))
     return listings
 
@@ -284,7 +344,7 @@ def mock_vision_listings(reference: str) -> list[WatchListing]:
             price=price,
             currency="EUR",
             seller=f"@{account}",
-            url=f"https://www.instagram.com/p/{post_code}/",
+            url=f"https://www.instagram.com/{account}/",
             condition="unknown",
             scraped_at=datetime.now() - timedelta(hours=hours_ago),
             location=location,

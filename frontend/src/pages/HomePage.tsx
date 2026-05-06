@@ -1,400 +1,448 @@
-import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Search, Globe, Camera, Bell, ChevronRight, TrendingUp, TrendingDown, Minus } from 'lucide-react'
-import { useQuery } from '@tanstack/react-query'
-import { getRecommendations } from '../lib/api'
-import type { Recommendation, InvestmentScore } from '../types'
+import { useLang } from '../lib/lang'
 
-const POPULAR_REFS = ['116610LN', '126710BLNR', '5711/1A', '116500LN', '15500ST', '126334']
+// ── Mock data ────────────────────────────────────────────────────────────────
 
-const STEPS = [
+const MARKET_HIGHLIGHTS = [
   {
-    number: '01',
-    icon: Search,
-    title: 'Inserisci la referenza',
-    desc: 'Scrivi il codice modello (es. 116610LN) o il nome del modello. Il sistema riconosce sia referenze che nomi commerciali.',
+    icon: 'trending_up',
+    title: { en: 'Vintage Rolex', it: 'Rolex Vintage' },
+    body: {
+      en: 'Paul Newman Daytonas and Submariner MK1 dials continue commanding 20–35% premiums over 2024 highs.',
+      it: 'I Paul Newman Daytona e i quadranti Submariner MK1 continuano a raggiungere premi del 20–35% rispetto ai massimi del 2024.',
+    },
+    tag: { en: 'Trending', it: 'In Rialzo' },
+    tagColor: 'bg-green-400/10 text-green-400 border-green-400/20',
   },
   {
-    number: '02',
-    icon: Globe,
-    title: 'Gli agenti scansionano',
-    desc: 'Chrono24, eBay, Instagram e altri marketplace vengono analizzati in parallelo con tecnologia anti-bot avanzata.',
+    icon: 'query_stats',
+    title: { en: 'AP Royal Oak Correction', it: 'Correzione AP Royal Oak' },
+    body: {
+      en: 'Steel 15500ST stabilising around €40–44k after the 2023 peak. Considered a prime accumulation window.',
+      it: 'Il 15500ST in acciaio si stabilizza attorno a €40–44k dopo il picco del 2023. Considerata una finestra di accumulo.',
+    },
+    tag: { en: 'Accumulate', it: 'Accumulo' },
+    tagColor: 'bg-yellow-400/10 text-yellow-400 border-yellow-400/20',
   },
   {
-    number: '03',
-    icon: Bell,
-    title: 'Ricevi il miglior prezzo',
-    desc: 'I risultati vengono aggregati e ordinati per prezzo crescente. Imposta un alert per essere notificato via email.',
-  },
-]
-
-const AGENTS = [
-  {
-    icon: Globe,
-    color: 'blue',
-    title: 'Marketplace Agent',
-    desc: 'Scansiona Chrono24 e eBay con tecnologia anti-bot avanzata, estraendo prezzi, condizioni e venditori verificati.',
-  },
-  {
-    icon: Camera,
-    color: 'purple',
-    title: 'Social Agent',
-    desc: 'Monitora i reseller su Instagram, analizza le stories con OCR per rilevare referenze e prezzi nascosti nelle immagini.',
-  },
-  {
-    icon: Bell,
-    color: 'gold',
-    title: 'Alert Agent',
-    desc: 'Controlla i prezzi ogni 30 minuti e invia una notifica email non appena il tuo orologio scende sotto la soglia impostata.',
+    icon: 'new_releases',
+    title: { en: 'Patek Nautilus Demand', it: 'Domanda Patek Nautilus' },
+    body: {
+      en: '5726A sky moon tourbillon breaks €500k private sales ceiling. Steel 5711/1A waitlist exceeds 8 years.',
+      it: 'Il 5726A sky moon tourbillon supera i €500k nelle vendite private. Lista d\'attesa 5711/1A supera 8 anni.',
+    },
+    tag: { en: 'High Demand', it: 'Alta Domanda' },
+    tagColor: 'bg-blue-400/10 text-blue-400 border-blue-400/20',
   },
 ]
 
-const STATS = [
-  { value: '50+', label: 'Annunci per ricerca' },
-  { value: '30 min', label: 'Frequenza alert' },
-  { value: '100%', label: 'Gratuito' },
+const AUCTION_CALENDAR = [
+  {
+    house: "Christie's",
+    event: { en: 'Watches Online: The Geneva Edit', it: 'Watches Online: The Geneva Edit' },
+    date: '14 Jun 2026',
+    location: 'Geneva',
+    lots: 120,
+    flag: '🇨🇭',
+  },
+  {
+    house: "Sotheby's",
+    event: { en: 'Important Watches', it: 'Orologi Importanti' },
+    date: '28 Jun 2026',
+    location: 'New York',
+    lots: 85,
+    flag: '🇺🇸',
+  },
+  {
+    house: 'Phillips',
+    event: { en: 'The Geneva Watch Auction: XVIII', it: 'The Geneva Watch Auction: XVIII' },
+    date: '12 Jul 2026',
+    location: 'Geneva',
+    lots: 200,
+    flag: '🇨🇭',
+  },
+  {
+    house: 'Antiquorum',
+    event: { en: 'Important Modern & Vintage Timepieces', it: 'Orologi Moderni e Vintage Importanti' },
+    date: '19 Jul 2026',
+    location: 'Hong Kong',
+    lots: 60,
+    flag: '🇭🇰',
+  },
 ]
 
-const agentIconColor: Record<string, string> = {
-  blue: 'bg-blue-500/10 border-blue-500/20 text-blue-400',
-  purple: 'bg-purple-500/10 border-purple-500/20 text-purple-400',
-  gold: 'bg-gold-400/10 border-gold-400/20 text-gold-400',
+const AUCTION_RESULTS = [
+  {
+    watch: 'Rolex "Paul Newman" Daytona 6241',
+    house: "Christie's Geneva",
+    date: 'May 2026',
+    hammer: '€1.240.000',
+    estimate: '€800.000–1.200.000',
+    over: true,
+  },
+  {
+    watch: 'Patek Philippe 5711/1A Nautilus (Final Series)',
+    house: "Sotheby's NY",
+    date: 'Apr 2026',
+    hammer: '€340.000',
+    estimate: '€200.000–280.000',
+    over: true,
+  },
+  {
+    watch: 'AP Royal Oak "Jumbo" 5402ST (1972)',
+    house: 'Phillips Geneva',
+    date: 'Apr 2026',
+    hammer: '€285.000',
+    estimate: '€220.000–300.000',
+    over: false,
+  },
+  {
+    watch: 'Rolex Submariner 6538 "James Bond"',
+    house: "Christie's",
+    date: 'Mar 2026',
+    hammer: '€195.000',
+    estimate: '€150.000–200.000',
+    over: false,
+  },
+  {
+    watch: 'Omega Speedmaster CK2998 Pre-Professional',
+    house: 'Antiquorum',
+    date: 'Mar 2026',
+    hammer: '€62.000',
+    estimate: '€45.000–70.000',
+    over: false,
+  },
+]
+
+const TOP_INVESTMENT = {
+  brand: 'Patek Philippe',
+  model: 'Nautilus 5711/1A',
+  ref: '5711/1A',
+  score: 91,
+  return12m: '+18.4%',
+  volume: '€12.3M/month',
+  liquidity: { en: 'Very High', it: 'Molto Alta' },
+  img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBp7dzlBZ8vMf5MXzjB9qO7znaZSe9eQ-tgvMyk-dnzitnte4kd7lOFWyez-dbfh9nmGjMZqrzMnOYpBKC9dLiAu6bKBFWVHwcMhywGDNpbbzblf6ucRt1rGaYa9NkuyiikrcwQAceKZY65PJy24XEBQAhWE6nf2wBsQN9lkSlXtl0-pw4OLhJml0wPp1bOub0mN-aXRz7VBOYieKFtWjzfRHHTyj2Spe7y3AIM_gLuMEvzRyZkbifH422LWp_uij3XO41Hg2admIg',
+  trend: [180, 172, 178, 185, 190, 183, 195, 202, 208, 215, 218, 225],
+  signal: { en: 'Strong Buy', it: 'Forte Acquisto' },
+  analysis: {
+    en: 'The 5711/1A remains the most liquid steel sport watch in the secondary market. Discontinuation in 2022 created structural scarcity — production ceased at ~1,600 units/year. Institutional demand from family offices and US collectors continues to absorb supply at elevated premiums.',
+    it: 'Il 5711/1A rimane l\'orologio sportivo in acciaio più liquido nel mercato secondario. L\'interruzione nel 2022 ha creato una scarsità strutturale — produzione cessata a ~1.600 pezzi/anno. La domanda istituzionale da family office e collezionisti USA continua ad assorbire l\'offerta a premi elevati.',
+  },
 }
 
-// ─── Recommendation section helpers ──────────────────────────────────────────
-
-const SIGNAL_BADGE: Record<InvestmentScore['signal'], { label: string; cls: string }> = {
-  buy:   { label: 'BUY',   cls: 'bg-green-500/15 border-green-500/30 text-green-400' },
-  hold:  { label: 'HOLD',  cls: 'bg-yellow-500/15 border-yellow-500/30 text-yellow-400' },
-  avoid: { label: 'AVOID', cls: 'bg-red-500/15 border-red-500/30 text-red-400' },
+// Recent searches stored in sessionStorage
+function getRecentSearches(): { ref: string; ts: number }[] {
+  try {
+    return JSON.parse(sessionStorage.getItem('recentSearches') || '[]')
+  } catch { return [] }
 }
 
-function TrendIcon({ trend }: { trend: InvestmentScore['trend'] }) {
-  if (trend === 'up')   return <TrendingUp   size={13} className="text-green-400" />
-  if (trend === 'down') return <TrendingDown  size={13} className="text-red-400" />
-  return                       <Minus         size={13} className="text-zinc-500" />
-}
-
-function RecommendationCard({ rec, onSearch }: { rec: Recommendation; onSearch: (ref: string) => void }) {
-  const signal = SIGNAL_BADGE[rec.investment.signal]
+// ── Trend sparkline ───────────────────────────────────────────────────────────
+function Sparkline({ values, color = '#f2c345' }: { values: number[]; color?: string }) {
+  const min = Math.min(...values)
+  const max = Math.max(...values)
+  const range = max - min || 1
+  const w = 280
+  const h = 60
+  const pts = values.map((v, i) => {
+    const x = (i / (values.length - 1)) * w
+    const y = h - ((v - min) / range) * (h - 8) - 4
+    return `${x},${y}`
+  }).join(' ')
   return (
-    <button
-      onClick={() => onSearch(rec.reference)}
-      className="group text-left bg-zinc-900 border border-zinc-800 rounded-2xl p-6 hover:border-zinc-700 hover:scale-[1.02] transition-all duration-200 w-full"
-    >
-      {/* Header */}
-      <div className="flex items-start justify-between mb-4">
-        <div>
-          <p className="font-display font-bold text-gold-400 text-xl tracking-tight">{rec.reference}</p>
-          <div className="flex items-center gap-1.5 mt-1">
-            <TrendIcon trend={rec.investment.trend} />
-            <span className="text-xs text-zinc-500 capitalize">
-              {rec.investment.trend === 'up' ? 'In salita' : rec.investment.trend === 'down' ? 'In discesa' : 'Stabile'}
-            </span>
-          </div>
-        </div>
-        <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-bold tracking-widest ${signal.cls}`}>
-          {signal.label}
-        </span>
-      </div>
-
-      {/* Fair price */}
-      <div className="mb-3">
-        <p className="text-xs text-zinc-500 mb-0.5">Fair Price</p>
-        <p className="font-semibold text-zinc-100 text-lg">
-          {rec.market_stats.fair_price.toLocaleString('it-IT')} €
-        </p>
-      </div>
-
-      {/* Best deal */}
-      {rec.top_deal && (
-        <div className="bg-zinc-800/60 rounded-xl px-3 py-2 flex items-center justify-between">
-          <span className="text-xs text-zinc-500">Miglior offerta</span>
-          <span className="text-xs font-bold text-green-400">
-            {rec.top_deal.price.toLocaleString('it-IT')} €
-          </span>
-        </div>
-      )}
-
-      {/* Score */}
-      <div className="mt-3 flex items-center justify-between text-xs text-zinc-600">
-        <span>Score</span>
-        <span className="font-semibold text-gold-400">{rec.global_score.toFixed(0)}/100</span>
-      </div>
-
-      <div className="mt-3 text-xs text-zinc-600 group-hover:text-gold-400 transition-colors flex items-center gap-1">
-        Cerca ora <ChevronRight size={12} />
-      </div>
-    </button>
+    <svg viewBox={`0 0 ${w} ${h}`} className="w-full h-full" preserveAspectRatio="none">
+      <defs>
+        <linearGradient id="spGrad" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0%" stopColor={color} stopOpacity="0.25" />
+          <stop offset="100%" stopColor={color} stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      <polyline points={pts} fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <polygon points={`0,${h} ${pts} ${w},${h}`} fill="url(#spGrad)" />
+    </svg>
   )
 }
 
-function SkeletonCard() {
-  return (
-    <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 animate-pulse">
-      <div className="flex items-start justify-between mb-4">
-        <div>
-          <div className="h-5 w-24 bg-zinc-800 rounded mb-2" />
-          <div className="h-3 w-16 bg-zinc-800 rounded" />
-        </div>
-        <div className="h-5 w-14 bg-zinc-800 rounded-full" />
-      </div>
-      <div className="h-3 w-16 bg-zinc-800 rounded mb-1" />
-      <div className="h-5 w-28 bg-zinc-800 rounded mb-3" />
-      <div className="h-8 bg-zinc-800 rounded-xl" />
-    </div>
-  )
-}
-
-function RecommendationsSection({ onSearch }: { onSearch: (ref: string) => void }) {
-  const { data, isLoading } = useQuery({
-    queryKey: ['recommendations'],
-    queryFn: getRecommendations,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    retry: false,
-  })
-
-  // Don't render if loaded but empty
-  if (!isLoading && (!data || data.length === 0)) return null
-
-  return (
-    <section className="max-w-4xl mx-auto px-6 py-12">
-      <div className="mb-6">
-        <h2 className="font-display font-bold text-2xl text-zinc-100 mb-1">
-          Opportunità del momento
-        </h2>
-        <p className="text-zinc-500 text-sm">Referenze con il miglior rapporto qualità/prezzo ora sul mercato.</p>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {isLoading ? (
-          <>
-            <SkeletonCard />
-            <SkeletonCard />
-            <SkeletonCard />
-          </>
-        ) : (
-          (data ?? []).slice(0, 3).map((rec: Recommendation) => (
-            <RecommendationCard key={rec.reference} rec={rec} onSearch={onSearch} />
-          ))
-        )}
-      </div>
-    </section>
-  )
-}
-
-// ─── HomePage ─────────────────────────────────────────────────────────────────
-
+// ── Component ─────────────────────────────────────────────────────────────────
 export default function HomePage() {
   const navigate = useNavigate()
-  const [query, setQuery] = useState('')
-  const inputRef = useRef<HTMLInputElement>(null)
+  const { t, lang } = useLang()
+  const recentSearches = getRecentSearches()
 
-  const handleSearch = () => {
-    const val = query.trim()
-    if (val) navigate(`/search?ref=${encodeURIComponent(val)}`)
-    else navigate('/search')
-  }
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') handleSearch()
-  }
+  const months = lang === 'it'
+    ? ['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic']
+    : ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
 
   return (
-    <div className="min-h-screen bg-zinc-950">
+    <main className="p-8 max-w-[1600px] mx-auto space-y-[32px]">
 
-      {/* HERO */}
-      <section className="relative flex flex-col items-center justify-center text-center px-6 pt-24 pb-20 overflow-hidden">
-        {/* Radial glow behind search */}
-        <div
-          aria-hidden
-          style={{
-            position: 'absolute',
-            top: '55%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            width: '700px',
-            height: '340px',
-            background: 'radial-gradient(ellipse at center, rgba(212,168,42,0.12) 0%, transparent 70%)',
-            pointerEvents: 'none',
-          }}
-        />
-
-        {/* Badge */}
-        <div
-          style={{ opacity: 0, animation: 'fadeIn 0.5s ease forwards 0.1s' }}
-          className="inline-flex items-center gap-2 text-xs text-gold-400 border border-gold-400/30 rounded-full px-4 py-1.5 mb-8 bg-gold-400/5"
-        >
-          <span className="w-1.5 h-1.5 bg-gold-400 rounded-full pulse-dot" />
-          Sistema agentico attivo
-        </div>
-
-        {/* Title */}
-        <h1
-          style={{ opacity: 0, animation: 'fadeIn 0.6s ease forwards 0.2s' }}
-          className="font-display font-bold text-6xl md:text-7xl text-zinc-100 leading-tight mb-6 max-w-3xl"
-        >
-          Trova il tuo orologio
-          <br />
-          al{' '}
-          <span className="text-gold-400">miglior prezzo</span>
-        </h1>
-
-        {/* Subtitle */}
-        <p
-          style={{ opacity: 0, animation: 'fadeIn 0.6s ease forwards 0.35s' }}
-          className="text-zinc-400 text-lg md:text-xl max-w-xl mx-auto mb-10 leading-relaxed"
-        >
-          Agenti AI che scansionano marketplace, social e reseller in parallelo.
-          Stessa referenza, prezzo più basso garantito.
-        </p>
-
-        {/* Search bar */}
-        <div
-          style={{ opacity: 0, animation: 'fadeIn 0.6s ease forwards 0.45s' }}
-          className="w-full max-w-xl mx-auto mb-5"
-        >
-          <div className="flex items-center gap-0 bg-zinc-900 border border-zinc-700 rounded-2xl overflow-hidden focus-within:ring-2 focus-within:ring-gold-400/50 focus-within:border-gold-400/60 transition-all duration-200">
-            <Search size={18} className="ml-5 text-zinc-500 flex-shrink-0" />
-            <input
-              ref={inputRef}
-              type="text"
-              value={query}
-              onChange={e => setQuery(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="es. 116610LN, Daytona, Nautilus"
-              className="flex-1 bg-transparent px-4 py-4 text-zinc-100 placeholder-zinc-500 focus:outline-none text-base"
-            />
-            <button
-              onClick={handleSearch}
-              className="bg-gold-400 text-zinc-900 font-semibold px-6 py-4 text-sm hover:bg-gold-500 active:bg-gold-600 transition-colors duration-150 flex-shrink-0"
-            >
-              Cerca
-            </button>
+      {/* ── 1. Market Highlights ──────────────────────────────────────────── */}
+      <section>
+        <div className="flex justify-between items-baseline mb-6">
+          <div>
+            <h2 className="font-h1 text-h1 text-zinc-100">{t.watchWorldTitle}</h2>
+            <p className="text-zinc-500 text-sm mt-1">{t.watchWorldSub}</p>
           </div>
         </div>
-
-        {/* Popular chips */}
-        <div
-          style={{ opacity: 0, animation: 'fadeIn 0.6s ease forwards 0.55s' }}
-          className="flex items-center justify-center gap-2 flex-wrap"
-        >
-          <span className="text-xs text-zinc-600">Popolari:</span>
-          {POPULAR_REFS.map(ref => (
-            <button
-              key={ref}
-              onClick={() => navigate(`/search?ref=${encodeURIComponent(ref)}`)}
-              className="text-xs text-zinc-400 bg-zinc-800 border border-zinc-700 rounded-full px-3 py-1 hover:border-gold-400/50 hover:text-gold-400 transition-colors duration-150"
-            >
-              {ref}
-            </button>
-          ))}
-        </div>
-      </section>
-
-      {/* RECOMMENDATIONS */}
-      <RecommendationsSection
-        onSearch={(ref) => navigate(`/search?ref=${encodeURIComponent(ref)}`)}
-      />
-
-      {/* STATS BAR */}
-      <section className="bg-zinc-900/60 border-y border-zinc-800">
-        <div className="max-w-4xl mx-auto px-6 py-8 grid grid-cols-3 divide-x divide-zinc-800">
-          {STATS.map(({ value, label }) => (
-            <div key={label} className="text-center px-4">
-              <p className="font-display font-bold text-3xl text-gold-400 mb-1">{value}</p>
-              <p className="text-xs text-zinc-500">{label}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* HOW IT WORKS */}
-      <section className="max-w-4xl mx-auto px-6 py-20">
-        <div className="text-center mb-12">
-          <h2 className="font-display font-bold text-3xl text-zinc-100 mb-3">Come funziona</h2>
-          <p className="text-zinc-500 text-sm max-w-md mx-auto">
-            Tre passi per trovare il prezzo più basso sul mercato.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-          {STEPS.map(({ number, icon: Icon, title, desc }) => (
-            <div
-              key={number}
-              className="relative bg-zinc-900 border border-zinc-800 rounded-2xl p-6 hover:border-zinc-700 hover:scale-105 transition-transform duration-200"
-            >
-              <span className="font-display font-bold text-5xl text-zinc-800 absolute top-4 right-5 select-none leading-none">
-                {number}
-              </span>
-              <div className="w-11 h-11 bg-gold-400/10 border border-gold-400/20 rounded-xl flex items-center justify-center mb-5">
-                <Icon size={20} className="text-gold-400" />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-[12px]">
+          {MARKET_HIGHLIGHTS.map((h, i) => (
+            <div key={i} className="bg-zinc-900 border border-zinc-800 p-6 flex flex-col gap-4 hover:border-zinc-700 transition-colors">
+              <div className="flex justify-between items-start">
+                <span className="material-symbols-outlined text-yellow-400 text-2xl">{h.icon}</span>
+                <span className={`text-[10px] font-bold px-2 py-0.5 border uppercase tracking-widest ${h.tagColor}`}>
+                  {h.tag[lang]}
+                </span>
               </div>
-              <h3 className="font-semibold text-zinc-100 text-sm mb-2">{title}</h3>
-              <p className="text-xs text-zinc-500 leading-relaxed">{desc}</p>
+              <div>
+                <h3 className="font-['Space_Grotesk'] font-semibold text-zinc-100 text-base mb-2">{h.title[lang]}</h3>
+                <p className="text-zinc-400 text-xs leading-relaxed">{h.body[lang]}</p>
+              </div>
             </div>
           ))}
         </div>
       </section>
 
-      {/* AGENTS */}
-      <section className="bg-zinc-900/40 border-y border-zinc-800">
-        <div className="max-w-4xl mx-auto px-6 py-20">
-          <div className="text-center mb-12">
-            <h2 className="font-display font-bold text-3xl text-zinc-100 mb-3">Agenti specializzati</h2>
-            <p className="text-zinc-500 text-sm max-w-md mx-auto">
-              Ogni agente si occupa di una fonte diversa, tutto in parallelo.
-            </p>
-          </div>
+      {/* ── 2. Auction Calendar ──────────────────────────────────────────── */}
+      <section>
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="font-h2 text-h2 text-zinc-100">{t.auctionCalendarTitle}</h2>
+        </div>
+        <div className="bg-zinc-900 border border-zinc-800 overflow-hidden">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-zinc-800">
+                <th className="text-left text-[10px] font-label-caps text-zinc-500 uppercase px-6 py-3">{t.auction_house}</th>
+                <th className="text-left text-[10px] font-label-caps text-zinc-500 uppercase px-6 py-3 hidden md:table-cell">Event</th>
+                <th className="text-left text-[10px] font-label-caps text-zinc-500 uppercase px-6 py-3">{t.auction_date}</th>
+                <th className="text-left text-[10px] font-label-caps text-zinc-500 uppercase px-6 py-3 hidden sm:table-cell">{t.auction_location}</th>
+                <th className="text-right text-[10px] font-label-caps text-zinc-500 uppercase px-6 py-3">{t.auction_lots}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {AUCTION_CALENDAR.map((a, i) => (
+                <tr
+                  key={i}
+                  className="border-b border-zinc-800/50 last:border-0 hover:bg-zinc-800/30 transition-colors cursor-pointer"
+                >
+                  <td className="px-6 py-4">
+                    <span className="font-['Space_Grotesk'] font-semibold text-zinc-100 text-sm">{a.house}</span>
+                  </td>
+                  <td className="px-6 py-4 hidden md:table-cell">
+                    <span className="text-zinc-400 text-xs">{a.event[lang]}</span>
+                  </td>
+                  <td className="px-6 py-4">
+                    <span className="font-mono-data text-yellow-400 text-xs">{a.date}</span>
+                  </td>
+                  <td className="px-6 py-4 hidden sm:table-cell">
+                    <span className="text-zinc-400 text-xs flex items-center gap-1.5">
+                      <span>{a.flag}</span>
+                      {a.location}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 text-right">
+                    <span className="font-mono-data text-zinc-300 text-xs">{a.lots} lots</span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            {AGENTS.map(({ icon: Icon, color, title, desc }) => (
-              <div
-                key={title}
-                className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 hover:border-zinc-700 hover:scale-105 transition-transform duration-200"
-              >
-                <div className={`w-12 h-12 border rounded-xl flex items-center justify-center mb-5 ${agentIconColor[color]}`}>
-                  <Icon size={22} />
+      {/* ── 3. Latest Auction Results ────────────────────────────────────── */}
+      <section>
+        <div className="flex justify-between items-baseline mb-6">
+          <div>
+            <h2 className="font-h2 text-h2 text-zinc-100">{t.auctionResultsTitle}</h2>
+            <p className="text-zinc-500 text-sm mt-1">{t.auctionResultsSub}</p>
+          </div>
+        </div>
+        <div className="bg-zinc-900 border border-zinc-800 overflow-hidden">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-zinc-800">
+                <th className="text-left text-[10px] font-label-caps text-zinc-500 uppercase px-6 py-3">Watch</th>
+                <th className="text-left text-[10px] font-label-caps text-zinc-500 uppercase px-6 py-3 hidden md:table-cell">{t.auction_house}</th>
+                <th className="text-left text-[10px] font-label-caps text-zinc-500 uppercase px-6 py-3 hidden sm:table-cell">{t.auction_date}</th>
+                <th className="text-right text-[10px] font-label-caps text-zinc-500 uppercase px-6 py-3">{t.auction_hammer}</th>
+                <th className="text-right text-[10px] font-label-caps text-zinc-500 uppercase px-6 py-3 hidden lg:table-cell">{t.auction_estimate}</th>
+                <th className="text-right text-[10px] font-label-caps text-zinc-500 uppercase px-6 py-3">{t.auction_result}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {AUCTION_RESULTS.map((r, i) => (
+                <tr key={i} className="border-b border-zinc-800/50 last:border-0 hover:bg-zinc-800/30 transition-colors">
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-3">
+                      {i === 0 && (
+                        <span className="material-symbols-outlined text-yellow-400 text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
+                      )}
+                      <span className="font-['Space_Grotesk'] font-medium text-zinc-100 text-sm">{r.watch}</span>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 hidden md:table-cell">
+                    <span className="text-zinc-400 text-xs">{r.house}</span>
+                  </td>
+                  <td className="px-6 py-4 hidden sm:table-cell">
+                    <span className="text-zinc-500 text-xs">{r.date}</span>
+                  </td>
+                  <td className="px-6 py-4 text-right">
+                    <span className="font-mono-data text-yellow-400 font-semibold">{r.hammer}</span>
+                  </td>
+                  <td className="px-6 py-4 text-right hidden lg:table-cell">
+                    <span className="font-mono-data text-zinc-500 text-xs">{r.estimate}</span>
+                  </td>
+                  <td className="px-6 py-4 text-right">
+                    {r.over ? (
+                      <span className="flex items-center justify-end gap-1 text-green-400 text-[10px] font-bold uppercase">
+                        <span className="material-symbols-outlined text-sm leading-none">arrow_upward</span>
+                        {t.priceUp}
+                      </span>
+                    ) : (
+                      <span className="text-zinc-500 text-[10px] uppercase">—</span>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      {/* ── 4. Top Investment Pick ───────────────────────────────────────── */}
+      <section>
+        <div className="flex justify-between items-center mb-6">
+          <div>
+            <h2 className="font-h2 text-h2 text-zinc-100">{t.topInvestmentTitle}</h2>
+            <p className="text-zinc-500 text-sm mt-1">{t.topInvestmentSub}</p>
+          </div>
+          <button
+            onClick={() => navigate(`/search?ref=${encodeURIComponent(TOP_INVESTMENT.ref)}`)}
+            className="text-xs text-yellow-400 uppercase tracking-widest font-bold hover:underline"
+          >
+            {t.searchNow}
+          </button>
+        </div>
+
+        <div className="bg-zinc-900 border border-zinc-800 p-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+            {/* Left: image + score */}
+            <div className="flex flex-col gap-4">
+              <div className="relative h-56 bg-zinc-950 border border-zinc-800 overflow-hidden">
+                <img src={TOP_INVESTMENT.img} alt={TOP_INVESTMENT.model} className="w-full h-full object-cover" />
+                <div className="absolute bottom-3 left-3 bg-primary text-on-primary text-[10px] font-bold px-2 py-1 uppercase tracking-tighter">
+                  {TOP_INVESTMENT.signal[lang]}
                 </div>
-                <h3 className="font-semibold text-zinc-100 text-sm mb-2">{title}</h3>
-                <p className="text-xs text-zinc-500 leading-relaxed">{desc}</p>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-zinc-950 border border-zinc-800 p-3">
+                  <p className="text-[10px] font-label-caps text-zinc-500 uppercase mb-1">{t.invest_score}</p>
+                  <p className="font-['Space_Grotesk'] font-bold text-yellow-400 text-2xl">{TOP_INVESTMENT.score}</p>
+                </div>
+                <div className="bg-zinc-950 border border-zinc-800 p-3">
+                  <p className="text-[10px] font-label-caps text-zinc-500 uppercase mb-1">{t.invest_12m}</p>
+                  <p className="font-['Space_Grotesk'] font-bold text-green-400 text-2xl">{TOP_INVESTMENT.return12m}</p>
+                </div>
+                <div className="bg-zinc-950 border border-zinc-800 p-3">
+                  <p className="text-[10px] font-label-caps text-zinc-500 uppercase mb-1">{t.invest_volume}</p>
+                  <p className="font-mono-data text-zinc-300 text-sm">{TOP_INVESTMENT.volume}</p>
+                </div>
+                <div className="bg-zinc-950 border border-zinc-800 p-3">
+                  <p className="text-[10px] font-label-caps text-zinc-500 uppercase mb-1">{t.invest_liquidity}</p>
+                  <p className="font-mono-data text-green-400 text-sm">{TOP_INVESTMENT.liquidity[lang]}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Center: title + analysis */}
+            <div className="flex flex-col justify-between gap-4">
+              <div>
+                <p className="text-[10px] font-label-caps text-zinc-500 uppercase mb-1">{TOP_INVESTMENT.brand}</p>
+                <h3 className="font-['Space_Grotesk'] font-bold text-zinc-100 text-2xl mb-4">{TOP_INVESTMENT.model}</h3>
+                <p className="text-zinc-400 text-sm leading-relaxed">{TOP_INVESTMENT.analysis[lang]}</p>
+              </div>
+            </div>
+
+            {/* Right: sparkline chart */}
+            <div className="flex flex-col gap-4">
+              <div className="flex justify-between items-baseline">
+                <span className="text-[10px] font-label-caps text-zinc-500 uppercase">12M Price Trend</span>
+                <span className="text-green-400 text-xs font-bold">{TOP_INVESTMENT.return12m}</span>
+              </div>
+              <div className="h-[120px] relative">
+                <Sparkline values={TOP_INVESTMENT.trend} />
+              </div>
+              <div className="flex justify-between text-[10px] text-zinc-600 font-mono-data uppercase">
+                {[months[0], months[3], months[6], months[9], months[11]].map(m => (
+                  <span key={m}>{m}</span>
+                ))}
+              </div>
+              <div className="border-t border-zinc-800 pt-4 space-y-2">
+                {[
+                  { label: 'Jan 2025', value: `€${(TOP_INVESTMENT.trend[0] * 900).toLocaleString()}` },
+                  { label: lang === 'it' ? 'Ora' : 'Now', value: `€${(TOP_INVESTMENT.trend[11] * 900).toLocaleString()}`, highlight: true },
+                ].map(row => (
+                  <div key={row.label} className="flex justify-between items-center text-xs">
+                    <span className="text-zinc-500">{row.label}</span>
+                    <span className={row.highlight ? 'text-yellow-400 font-bold font-mono-data' : 'text-zinc-400 font-mono-data'}>{row.value}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── 5. Recent Searches ───────────────────────────────────────────── */}
+      <section>
+        <div className="flex justify-between items-center mb-6">
+          <div>
+            <h2 className="font-h2 text-h2 text-zinc-100">{t.recentSearchesTitle}</h2>
+            <p className="text-zinc-500 text-sm mt-1">{t.recentSearchesSub}</p>
+          </div>
+          <button
+            onClick={() => navigate('/search')}
+            className="text-xs text-yellow-400 uppercase tracking-widest font-bold hover:underline"
+          >
+            {t.searchNow}
+          </button>
+        </div>
+
+        {recentSearches.length === 0 ? (
+          <div className="bg-zinc-900 border border-zinc-800 border-dashed p-12 flex flex-col items-center justify-center text-center">
+            <span className="material-symbols-outlined text-4xl text-zinc-700 mb-3">manage_search</span>
+            <p className="font-['Space_Grotesk'] font-semibold text-zinc-400 text-sm">{t.noRecentSearches}</p>
+            <p className="text-xs text-zinc-600 mt-1">{t.noRecentSub}</p>
+            <button
+              onClick={() => navigate('/search')}
+              className="mt-4 bg-primary text-on-primary text-xs font-bold uppercase tracking-widest px-4 py-2 hover:opacity-90 transition-opacity"
+            >
+              {t.searchNow}
+            </button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-[12px]">
+            {recentSearches.slice(0, 8).map(s => (
+              <div
+                key={s.ref}
+                onClick={() => navigate(`/search?ref=${encodeURIComponent(s.ref)}`)}
+                className="bg-zinc-900 border border-zinc-800 p-4 cursor-pointer hover:border-zinc-700 transition-colors group"
+              >
+                <div className="flex items-start justify-between mb-3">
+                  <span className="font-['Space_Grotesk'] font-bold text-zinc-100">{s.ref}</span>
+                  <span className="material-symbols-outlined text-zinc-600 group-hover:text-yellow-400 transition-colors text-sm">open_in_new</span>
+                </div>
+                <p className="text-[10px] text-zinc-600 uppercase tracking-widest">
+                  {new Date(s.ts).toLocaleDateString(lang === 'it' ? 'it-IT' : 'en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                </p>
               </div>
             ))}
           </div>
-        </div>
+        )}
       </section>
 
-      {/* CTA FINALE */}
-      <section className="max-w-4xl mx-auto px-6 py-20">
-        <div
-          className="rounded-2xl border border-gold-400/20 p-10 text-center"
-          style={{ background: 'linear-gradient(135deg, rgba(212,168,42,0.08) 0%, rgba(212,168,42,0.03) 100%)' }}
-        >
-          <h2 className="font-display font-bold text-3xl text-zinc-100 mb-3">
-            Pronto a trovare il tuo prossimo orologio?
-          </h2>
-          <p className="text-zinc-400 text-sm mb-8 max-w-sm mx-auto">
-            Inserisci la referenza e lascia che gli agenti facciano il lavoro per te.
-          </p>
-          <button
-            onClick={() => {
-              window.scrollTo({ top: 0, behavior: 'smooth' })
-              setTimeout(() => inputRef.current?.focus(), 400)
-            }}
-            className="inline-flex items-center gap-2 bg-gold-400 text-zinc-900 font-semibold px-8 py-3.5 rounded-xl hover:bg-gold-500 active:bg-gold-600 transition-colors duration-150"
-          >
-            Inizia la ricerca
-            <ChevronRight size={16} />
-          </button>
-        </div>
-      </section>
-
-      <style>{`
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(12px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
-      `}</style>
-    </div>
+    </main>
   )
 }

@@ -15,6 +15,9 @@ from analytics.deal_scorer import score_all_listings
 from analytics.price_history import save_snapshot, get_history
 from analytics.investment_scorer import compute_investment_score
 from analytics.recommender import analyze_reference as _analyze_reference, get_recommendations as _get_recommendations
+from verification.router import router as verification_router
+from auctions.router import router as auctions_router
+from encyclopedia.router import router as encyclopedia_router
 
 logger = get_logger("main")
 settings = get_settings()
@@ -81,6 +84,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(verification_router)
+app.include_router(auctions_router)
+app.include_router(encyclopedia_router)
 
 
 @app.get("/")

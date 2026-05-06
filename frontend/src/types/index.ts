@@ -114,3 +114,159 @@ export interface AnalysisResult {
   investment: InvestmentScore
   top_deal: ScoredListing | null
 }
+
+// ── Encyclopedia ──────────────────────────────────────────────────────────────
+
+export interface WatchStory {
+  id: number
+  reference: string
+  category: string | null
+  title: string
+  content: string
+  source_url: string | null
+}
+
+export interface WatchImage {
+  id: number
+  reference: string
+  url: string
+  source: string | null
+  is_primary: boolean
+  local_path: string | null
+}
+
+export interface WatchVariant {
+  id: number
+  parent_reference: string
+  variant_reference: string
+  description: string | null
+}
+
+export interface EncyclopediaWatch {
+  id: number
+  brand: string
+  model: string
+  reference: string
+  collection: string | null
+  year_introduced: number | null
+  year_discontinued: number | null
+  case_material: string | null
+  case_diameter_mm: number | null
+  case_thickness_mm: number | null
+  water_resistance_m: number | null
+  movement_type: string | null
+  movement_caliber: string | null
+  power_reserve_h: number | null
+  frequency_vph: number | null
+  jewels: number | null
+  dial_color: string | null
+  dial_material: string | null
+  bracelet_type: string | null
+  clasp_type: string | null
+  retail_price_eur: number | null
+  avg_market_price_eur: number | null
+  description: string | null
+  technical_notes: string | null
+  is_discontinued: boolean
+  is_limited_edition: boolean
+  production_numbers: number | null
+  images: WatchImage[]
+  variants: WatchVariant[]
+  stories: WatchStory[]
+}
+
+export interface EncyclopediaSearchResult {
+  reference: string
+  brand: string
+  model: string
+  collection: string | null
+  case_material: string | null
+  dial_color: string | null
+  retail_price_eur: number | null
+  avg_market_price_eur: number | null
+  description: string | null
+  is_discontinued: boolean
+}
+
+// ── Auctions ──────────────────────────────────────────────────────────────────
+
+export interface AuctionResult {
+  id: number | null
+  auction_house: string
+  sale_name: string | null
+  sale_location: string | null
+  sale_date: string
+  lot_number: string | null
+  brand: string
+  model: string
+  reference: string | null
+  description: string | null
+  year_made: string | null
+  condition: string | null
+  estimate_low_chf: number | null
+  estimate_high_chf: number | null
+  hammer_price_chf: number | null
+  buyer_premium_pct: number
+  total_price_chf: number | null
+  currency: string
+  lot_url: string | null
+  image_url: string | null
+  notes: string | null
+  is_record: boolean
+  hammer_to_estimate_ratio: number | null
+  estimate_midpoint_chf: number | null
+}
+
+export interface AuctionSentiment {
+  reference: string
+  brand: string
+  calculation_date: string
+  total_lots: number | null
+  avg_hammer_to_estimate_ratio: number | null
+  sell_through_rate: number | null
+  price_trend_12m: number | null
+  price_trend_36m: number | null
+  sentiment_score: number | null
+  sentiment_label: string | null
+  notes: string | null
+}
+
+export interface UpcomingAuction {
+  house: string
+  sale_name: string
+  location: string
+  date: string
+  preview_date: string | null
+  url: string | null
+  focus: string | null
+  highlights: string[] | null
+}
+
+// ── Verification ──────────────────────────────────────────────────────────────
+
+export interface VerificationCheck {
+  check: string
+  description: string
+  result: 'pass' | 'fail' | 'warning' | 'unknown'
+  details: string | null
+}
+
+export interface AuthenticityReport {
+  brand: string
+  model: string | null
+  reference: string | null
+  serial_number: string | null
+  overall_verdict: 'authentic' | 'suspicious' | 'likely_fake' | 'inconclusive'
+  confidence: number
+  authenticity_score: number
+  checks: VerificationCheck[]
+  serial_info: {
+    valid: boolean
+    year_range: string | null
+    production_period: string | null
+    notes: string | null
+  } | null
+  fake_patterns_found: string[]
+  recommendations: string[]
+  analyzed_at: string
+}

@@ -109,26 +109,26 @@ export default function PriceEvolutionChart({
   const isPartial = hasData && filtered.length < 7
 
   return (
-    <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 mb-6">
+    <div className="bg-zinc-900 border border-zinc-800 p-[24px] mb-[12px]">
       {/* Header */}
       <div className="flex items-start justify-between mb-5 gap-4">
         <div>
-          <p className="text-xs text-zinc-500 uppercase tracking-wider mb-0.5">Distribuzione Prezzi</p>
-          <h3 className="font-semibold text-zinc-100 text-sm">
+          <p className="font-label-caps text-label-caps text-zinc-400 uppercase mb-1">Distribuzione Prezzi</p>
+          <h3 className="font-h2 text-zinc-100" style={{ fontSize: '18px' }}>
             Andamento storico — {reference}
           </h3>
         </div>
 
         {/* Period selector */}
-        <div className="flex items-center gap-1 shrink-0 bg-zinc-800 rounded-lg p-1">
+        <div className="flex items-center gap-0 shrink-0 bg-zinc-800 rounded p-1">
           {PERIODS.map(p => (
             <button
               key={p}
               onClick={() => setPeriod(p)}
-              className={`text-xs px-3 py-1.5 rounded-md font-medium transition-all ${
+              className={`text-[10px] px-3 py-1 rounded font-bold uppercase transition-all ${
                 period === p
-                  ? 'bg-gold-400 text-zinc-900'
-                  : 'text-zinc-400 hover:text-zinc-200'
+                  ? 'bg-zinc-700 text-yellow-400'
+                  : 'text-zinc-500 hover:text-zinc-300'
               }`}
             >
               {p}
@@ -145,7 +145,7 @@ export default function PriceEvolutionChart({
 
       {/* Chart or empty state */}
       {!hasData ? (
-        <div className="flex items-center justify-center h-48 rounded-xl border border-zinc-800 bg-zinc-800/30">
+        <div className="flex items-center justify-center h-48 border border-zinc-800 bg-zinc-800/30">
           <p className="text-sm text-zinc-500 text-center px-6">
             Dati storici non ancora disponibili per questo periodo
           </p>

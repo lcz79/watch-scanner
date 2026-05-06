@@ -21,6 +21,17 @@ class Settings(BaseSettings):
     instagram_username: str = ""
     instagram_password: str = ""
 
+    # --- TikTok (Social Agent) ---
+    # Cookie sessionid TikTok per risultati autenticati (opzionale).
+    # Ottienilo da DevTools → Application → Cookies → tiktok.com → sessionid
+    tiktok_session_id: str = ""
+
+    # --- Facebook (Social Agent) ---
+    # Cookie sessione Facebook in formato JSON (array di oggetti Playwright cookie).
+    # Opzionale: se assente, Marketplace viene scrapato in modalità pubblica.
+    # Formato: '[{"name":"c_user","value":"...","domain":".facebook.com","path":"/"}]'
+    facebook_cookies: str = ""
+
     # --- Telegram (Alert) ---
     # Crea un bot con @BotFather e inserisci il token
     telegram_bot_token: str = ""

@@ -1,81 +1,63 @@
 import { NavLink } from 'react-router-dom'
-import { Search, Home, Bot, Bell, LayoutGrid } from 'lucide-react'
-import { clsx } from 'clsx'
-
-const nav = [
-  { to: '/', icon: Home, label: 'Dashboard', sub: 'Home' },
-  { to: '/catalog', icon: LayoutGrid, label: 'Catalogo', sub: 'Orologi disponibili' },
-  { to: '/search', icon: Search, label: 'Cerca', sub: 'Ricerca prezzi' },
-  { to: '/agents', icon: Bot, label: 'Agenti', sub: 'Gestione bot' },
-  { to: '/alerts', icon: Bell, label: 'Alert', sub: 'Notifiche' },
-]
+import { useLang } from '../lib/lang'
 
 export default function Sidebar() {
+  const { t } = useLang()
+
+  const nav = [
+    { to: '/',        icon: 'dashboard',           label: t.dashboard },
+    { to: '/search',  icon: 'query_stats',          label: t.marketFeed },
+    { to: '/catalog', icon: 'menu_book',             label: t.portfolio },
+    { to: '/alerts',  icon: 'notifications_active', label: t.priceAlerts },
+    { to: '/auctions', icon: 'gavel',               label: t.auctionsNav },
+    { to: '/agents',  icon: 'monitoring',           label: t.analytics },
+  ]
+
   return (
-    <aside className="w-56 shrink-0 flex flex-col bg-zinc-900 shadow-[1px_0_0_0_theme(colors.zinc.800)]">
-      {/* Logo */}
-      <div className="py-8 px-5 border-b border-zinc-800">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-gold-400 flex items-center justify-center shrink-0">
-            <svg viewBox="0 0 32 32" className="w-6 h-6">
-              <circle cx="16" cy="16" r="10" fill="none" stroke="#111" strokeWidth="2.5" />
-              <circle cx="16" cy="16" r="1.5" fill="#111" />
-              <line x1="16" y1="8" x2="16" y2="16" stroke="#111" strokeWidth="2" strokeLinecap="round" />
-              <line x1="16" y1="16" x2="21" y2="16" stroke="#111" strokeWidth="2" strokeLinecap="round" />
-            </svg>
-          </div>
-          <div className="min-w-0">
-            <p className="font-display font-bold text-lg text-zinc-100 leading-tight truncate">
-              WatchScanner
-            </p>
-            <p className="text-xs text-zinc-500 leading-tight">Trova il prezzo migliore</p>
-          </div>
-        </div>
+    <aside className="w-[224px] shrink-0 flex flex-col bg-zinc-900 border-r border-zinc-800 relative z-10 h-screen">
+
+      {/* Branding */}
+      <div className="mb-10 px-5 pt-6">
+        <h1 className="text-yellow-400 font-bold tracking-widest uppercase font-display-price text-lg leading-none">
+          WatchScanner
+        </h1>
+        <p className="text-[10px] text-zinc-500 font-mono tracking-widest uppercase mt-1">
+          Terminal v1.0
+        </p>
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 p-3 space-y-1">
-        {nav.map(({ to, icon: Icon, label, sub }) => (
+      <nav className="flex-1 space-y-1 px-1 overflow-y-auto">
+        {nav.map(({ to, icon, label }) => (
           <NavLink
-            key={to}
+            key={to + label}
             to={to}
             end={to === '/'}
             className={({ isActive }) =>
-              clsx(
-                'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 group',
-                isActive
-                  ? 'bg-gold-400/10 text-gold-400 border-l-2 border-gold-400'
-                  : 'text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 border-l-2 border-transparent'
-              )
+              isActive
+                ? 'flex items-center gap-3 px-3 py-2.5 text-yellow-400 font-bold border-r-2 border-yellow-400 bg-zinc-800/50 transition-all duration-200'
+                : 'flex items-center gap-3 px-3 py-2.5 text-zinc-400 hover:text-yellow-400 hover:bg-zinc-800 transition-all duration-200'
             }
           >
-            {({ isActive }) => (
-              <>
-                <Icon size={18} className="shrink-0" />
-                <div className="min-w-0">
-                  <p className="leading-tight">{label}</p>
-                  <p
-                    className={clsx(
-                      'text-[10px] leading-tight font-normal transition-colors duration-150',
-                      isActive ? 'text-gold-400/60' : 'text-zinc-600 group-hover:text-zinc-500'
-                    )}
-                  >
-                    {sub}
-                  </p>
-                </div>
-              </>
-            )}
+            <span className="material-symbols-outlined text-xl leading-none">{icon}</span>
+            <span className="font-['Space_Grotesk'] text-sm tracking-tight">{label}</span>
           </NavLink>
         ))}
       </nav>
 
-      {/* Status */}
-      <div className="border-t border-zinc-800 px-5 py-4 space-y-1">
-        <div className="flex items-center gap-2">
-          <span className="w-2 h-2 bg-emerald-400 rounded-full pulse-dot shrink-0" />
-          <span className="text-xs text-emerald-400 font-medium">Sistema attivo</span>
-        </div>
-        <p className="text-xs text-zinc-600 pl-4">v1.0</p>
+      {/* Footer */}
+      <div className="mt-auto space-y-1 pt-6 border-t border-zinc-800 px-3 pb-4">
+        <button className="w-full mb-4 py-3 bg-primary text-on-primary font-bold rounded text-xs uppercase tracking-widest transition-opacity hover:opacity-90">
+          {t.upgradePro}
+        </button>
+        <button className="w-full flex items-center gap-3 px-3 py-2.5 text-zinc-400 hover:text-zinc-100 transition-all duration-200">
+          <span className="material-symbols-outlined text-xl leading-none">help</span>
+          <span className="font-['Space_Grotesk'] text-sm tracking-tight">{t.support}</span>
+        </button>
+        <button className="w-full flex items-center gap-3 px-3 py-2.5 text-zinc-400 hover:text-zinc-100 transition-all duration-200">
+          <span className="material-symbols-outlined text-xl leading-none">settings</span>
+          <span className="font-['Space_Grotesk'] text-sm tracking-tight">{t.settings}</span>
+        </button>
       </div>
     </aside>
   )

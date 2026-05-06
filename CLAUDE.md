@@ -6,6 +6,14 @@ Sistema agentico per trovare il prezzo minimo su orologi di lusso.
 - **Frontend**: React + TailwindCSS → `/frontend/src/`
 - **Stack**: asyncio, httpx, Playwright, instagrapi, pydantic
 
+## Design System
+Il progetto usa **DESIGN.md** nella root come source of truth per colori, tipografia, spaziatura e componenti.
+- **Leggi sempre `DESIGN.md`** prima di generare o modificare qualsiasi componente UI
+- Usa solo i token definiti lì: niente colori, font o shadow inventati
+- Nel Tailwind config (`frontend/tailwind.config.js`) i token sono già mappati come classi usabili
+- Font display → `font-display` (Cabinet Grotesk), font body → `font-sans` (Satoshi)
+- Colore primario → `text-gold-400` / `bg-gold-400`, superfici → `bg-zinc-900` / `bg-zinc-950`
+
 ## Regola principale
 Quando l'utente dà un task di sviluppo, **analizza sempre il task e lancia gli agenti appropriati in parallelo** usando il tool Agent con `run_in_background: true`. Non fare tutto da solo in sequenza.
 

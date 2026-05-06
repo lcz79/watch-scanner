@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
-import { Search, Watch, ChevronRight, Loader2 } from 'lucide-react'
 import { getCatalog } from '../lib/api'
 import type { CatalogWatch } from '../lib/api'
 import { clsx } from 'clsx'
@@ -13,52 +12,43 @@ export default function CatalogPage() {
 
   const { data, isLoading } = useQuery({
     queryKey: ['catalog', selectedBrand, search],
-    queryFn: () => getCatalog({
-      brand: selectedBrand || undefined,
-      search: search || undefined,
-    }),
+    queryFn: () => getCatalog({ brand: selectedBrand || undefined, search: search || undefined }),
     staleTime: 60_000,
   })
 
-  const handleSelect = (watch: CatalogWatch) => {
-    // Vai alla pagina di ricerca con la referenza pre-compilata e avvia subito la scan
-    navigate(`/search?ref=${watch.reference}`)
-  }
-
   return (
-    <div className="max-w-5xl mx-auto px-6 py-12">
+    <div className="p-8 max-w-[1400px] mx-auto">
 
-      {/* Header */}
-      <div className="mb-10">
-        <h1 className="font-display font-bold text-3xl text-zinc-100 tracking-tight">
-          Catalogo orologi
-        </h1>
+      {/* ── Header ── */}
+      <div className="mb-8">
+        <nav className="flex text-[10px] uppercase tracking-[0.2em] text-zinc-500 mb-2 gap-2">
+          <span className="hover:text-yellow-400 cursor-pointer">Market Intelligence</span>
+          <span>/</span>
+          <span className="text-zinc-300">Encyclopedia</span>
+        </nav>
+        <h2 className="font-h1 text-h1 text-zinc-100">Encyclopedia</h2>
         <p className="text-zinc-500 text-sm mt-1">
-          Seleziona un orologio dalla foto — cercheremo solo annunci per quel modello esatto
+          Seleziona un orologio — cercheremo solo annunci per quel modello esatto
         </p>
       </div>
 
-      {/* Search + brand filter */}
-      <div className="flex gap-3 mb-6 flex-wrap">
-        <div className="relative flex-1 min-w-[200px]">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" />
+      {/* ── Search + brand filter ── */}
+      <div className="bg-zinc-900 border border-zinc-800 p-4 mb-6 flex items-center justify-between flex-wrap gap-4">
+        <div className="relative">
+          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 text-sm leading-none">search</span>
           <input
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Cerca referenza o modello..."
-            className="w-full bg-zinc-900 border border-zinc-700 rounded-xl pl-9 pr-4 py-2.5 text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-gold-400 text-sm"
+            className="bg-zinc-800 border border-zinc-700 text-sm pl-10 pr-4 py-2 w-72 rounded focus:outline-none focus:border-yellow-400 text-zinc-300 placeholder-zinc-600 transition-colors"
           />
         </div>
 
-        {/* Brand pills */}
-        <div className="flex gap-2 flex-wrap items-center">
+        <div className="flex gap-1.5 flex-wrap items-center">
           <button
             onClick={() => setSelectedBrand(null)}
-            className={clsx(
-              'text-xs px-3 py-2 rounded-lg border transition-colors',
-              !selectedBrand
-                ? 'bg-gold-400/20 border-gold-400 text-gold-400'
-                : 'bg-zinc-900 border-zinc-700 text-zinc-400 hover:border-zinc-500'
+            className={clsx('font-label-caps text-label-caps px-3 py-1.5 rounded border transition-colors uppercase',
+              !selectedBrand ? 'bg-zinc-700 border-zinc-600 text-yellow-400' : 'bg-transparent border-zinc-700 text-zinc-400 hover:border-zinc-500 hover:text-zinc-200'
             )}
           >
             Tutti
@@ -67,11 +57,8 @@ export default function CatalogPage() {
             <button
               key={brand}
               onClick={() => setSelectedBrand(brand === selectedBrand ? null : brand)}
-              className={clsx(
-                'text-xs px-3 py-2 rounded-lg border transition-colors',
-                brand === selectedBrand
-                  ? 'bg-gold-400/20 border-gold-400 text-gold-400'
-                  : 'bg-zinc-900 border-zinc-700 text-zinc-400 hover:border-zinc-500'
+              className={clsx('font-label-caps text-label-caps px-3 py-1.5 rounded border transition-colors uppercase',
+                brand === selectedBrand ? 'bg-zinc-700 border-zinc-600 text-yellow-400' : 'bg-transparent border-zinc-700 text-zinc-400 hover:border-zinc-500 hover:text-zinc-200'
               )}
             >
               {brand}
@@ -80,33 +67,32 @@ export default function CatalogPage() {
         </div>
       </div>
 
-      {/* Count */}
       {data && (
-        <p className="text-xs text-zinc-600 mb-5">
+        <p className="font-label-caps text-label-caps text-zinc-500 uppercase mb-5">
           {data.total} modelli disponibili
         </p>
       )}
 
-      {/* Loading */}
+      {/* ── Loading ── */}
       {isLoading && (
         <div className="flex items-center justify-center py-20">
-          <Loader2 className="animate-spin text-gold-400" size={28} />
+          <span className="material-symbols-outlined text-4xl text-yellow-400 animate-spin">autorenew</span>
         </div>
       )}
 
-      {/* Grid */}
+      {/* ── Grid ── */}
       {data && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-[12px]">
           {data.watches.map(watch => (
-            <WatchCard key={watch.id} watch={watch} onSelect={handleSelect} />
+            <WatchCard key={watch.id} watch={watch} onSelect={w => navigate(`/encyclopedia/${encodeURIComponent(w.reference)}`)} />
           ))}
         </div>
       )}
 
       {data?.watches.length === 0 && (
-        <div className="text-center py-20 text-zinc-500">
-          <Watch size={36} className="mx-auto mb-3 opacity-30" />
-          <p>Nessun orologio trovato</p>
+        <div className="text-center py-20 bg-zinc-900 border border-zinc-800">
+          <span className="material-symbols-outlined text-5xl text-zinc-700 block mb-4">watch_off</span>
+          <p className="font-['Space_Grotesk'] font-semibold text-zinc-400">Nessun orologio trovato</p>
         </div>
       )}
     </div>
@@ -119,7 +105,7 @@ function WatchCard({ watch, onSelect }: { watch: CatalogWatch; onSelect: (w: Cat
   return (
     <button
       onClick={() => onSelect(watch)}
-      className="group bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden hover:border-gold-400/50 hover:shadow-lg hover:shadow-black/40 transition-all duration-200 text-left"
+      className="group bg-zinc-900 border border-zinc-800 overflow-hidden hover:border-yellow-400/40 transition-colors text-left"
     >
       {/* Image */}
       <div className="aspect-square bg-zinc-800 relative overflow-hidden">
@@ -132,23 +118,23 @@ function WatchCard({ watch, onSelect }: { watch: CatalogWatch; onSelect: (w: Cat
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
-            <Watch size={32} className="text-zinc-700" />
+            <span className="material-symbols-outlined text-4xl text-zinc-700">watch</span>
           </div>
         )}
-        {/* Overlay on hover */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-3">
-          <span className="flex items-center gap-1 text-xs font-medium text-white">
-            Cerca annunci <ChevronRight size={12} />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-3">
+          <span className="flex items-center gap-1 text-[10px] font-bold text-white uppercase tracking-widest">
+            Apri scheda
+            <span className="material-symbols-outlined text-sm leading-none">chevron_right</span>
           </span>
         </div>
       </div>
 
       {/* Info */}
-      <div className="p-3">
-        <p className="text-xs text-zinc-500 mb-0.5">{watch.brand}</p>
-        <p className="text-sm font-semibold text-zinc-100 leading-tight">{watch.model}</p>
-        <p className="text-xs text-gold-400 font-mono mt-0.5">{watch.reference}</p>
-        <p className="text-xs text-zinc-600 mt-1.5">
+      <div className="p-3 border-t border-zinc-800">
+        <p className="font-label-caps text-label-caps text-zinc-500 uppercase mb-0.5">{watch.brand}</p>
+        <p className="font-['Space_Grotesk'] text-sm font-semibold text-zinc-100 leading-tight">{watch.model}</p>
+        <p className="font-mono-data text-mono-data text-yellow-400 mt-0.5">{watch.reference}</p>
+        <p className="text-[10px] text-zinc-500 uppercase tracking-widest mt-1.5">
           ~{watch.avg_price_eur.toLocaleString('it-IT')}€
         </p>
       </div>
