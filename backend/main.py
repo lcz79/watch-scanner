@@ -34,18 +34,29 @@ async def lifespan(app: FastAPI):
     mode = "MOCK" if settings.mock_mode else "REAL"
     logger.info(f"WatchScanner API avviata | mode={mode} | port={settings.port}")
 
+    # Inizializza Master Watch Database
+    from watch_db import init_db, populate_from_catalog, get_stats
+    init_db()
+    populate_from_catalog()
+    wdb_stats = get_stats()
+    logger.info(f"Master Watch DB: {wdb_stats['references']} referenze | {wdb_stats['aliases']} alias | {wdb_stats['brands']} brand")
+
     # Avvia scheduler notturno discovery + job stories ogni 6h
     tasks = []
     if settings.instagram_username and settings.instagram_password:
         from agents.discovery.orchestrator import start_nightly_scheduler
         from scrapers.instagram_stories import start_stories_scheduler
+        from agents.stories_intelligence_agent import start_stories_intelligence_scheduler
         tasks.append(asyncio.create_task(
             start_nightly_scheduler(settings.instagram_username, settings.instagram_password)
         ))
         tasks.append(asyncio.create_task(
             start_stories_scheduler(settings.instagram_username, settings.instagram_password)
         ))
-        logger.info("Scheduler discovery notturno + stories ogni 6h avviati")
+        tasks.append(asyncio.create_task(
+            start_stories_intelligence_scheduler(settings.instagram_username, settings.instagram_password)
+        ))
+        logger.info("Scheduler discovery notturno + stories OCR + stories AI (GPT-4o) avviati")
     else:
         logger.info("Scheduler disabilitato (configura INSTAGRAM_USERNAME/PASSWORD)")
 
@@ -62,6 +73,12 @@ async def lifespan(app: FastAPI):
         start_alert_scheduler(_alerts, settings)
     ))
     logger.info("Alert checker avviato (ogni 30 minuti)")
+
+    # Avvia news scheduler (ogni 12h, prima run dopo 30s)
+    from agents.news_agent import init_db as init_news_db, start_news_scheduler
+    init_news_db()
+    tasks.append(asyncio.create_task(start_news_scheduler()))
+    logger.info("News scheduler avviato (ogni 12h)")
 
     yield
 
@@ -385,9 +402,61 @@ async def run_stories_now(accounts: list[str] | None = None):
     return {"listings_found": len(results), "results": results[:10]}
 
 
+@app.post("/stories/ai-scan")
+async def run_stories_ai_scan():
+    """
+    Lancia manualmente la scansione AI (GPT-4o Vision) delle stories.
+    Richiede INSTAGRAM_USERNAME/PASSWORD e OPENAI_API_KEY nel .env
+    """
+    if not settings.instagram_username or not settings.instagram_password:
+        raise HTTPException(400, "Configura INSTAGRAM_USERNAME e INSTAGRAM_PASSWORD nel .env")
+    if not settings.openai_api_key:
+        raise HTTPException(400, "Configura OPENAI_API_KEY nel .env")
+    from scrapers.instagram import get_client
+    from agents.stories_intelligence_agent import run_full_stories_scan
+    cl = get_client(settings.instagram_username, settings.instagram_password)
+    if not cl:
+        raise HTTPException(503, "Login Instagram fallito")
+    count = await run_full_stories_scan(cl)
+    return {"listings_extracted": count}
+
+
+@app.get("/stories/listings")
+async def get_story_listings(reference: str | None = None, limit: int = 50):
+    """
+    Restituisce listing pre-indicizzati dalle stories Instagram.
+    Se reference è specificata, filtra per quella referenza.
+    """
+    from agents.stories_intelligence_agent import get_listings_for_reference, get_recent_listings
+    if reference:
+        results = get_listings_for_reference(reference)
+    else:
+        results = get_recent_listings(limit=limit)
+    return {"count": len(results), "listings": results}
+
+
 @app.get("/health")
 async def health():
-    return {"status": "ok", "mock_mode": settings.mock_mode}
+    from watch_db import get_stats
+    wdb = get_stats()
+    return {"status": "ok", "mock_mode": settings.mock_mode, "watch_db": wdb}
+
+
+@app.get("/watches/resolve")
+async def resolve_watch(q: str):
+    """Risolve una query libera alla referenza canonica. Es: ?q=hulk"""
+    from watch_db import resolve_reference
+    result = resolve_reference(q)
+    if not result:
+        raise HTTPException(404, f"Referenza non trovata per: {q}")
+    return result
+
+
+@app.get("/watches/db-stats")
+async def watch_db_stats():
+    """Statistiche del Master Watch Database."""
+    from watch_db import get_stats
+    return get_stats()
 
 
 @app.get("/catalog")
@@ -498,3 +567,41 @@ Se non riesci a identificare un orologio, usa brand: null, confidence: 0."""
     except Exception as e:
         logger.error(f"Identify error: {e}")
         raise HTTPException(status_code=500, detail=f"Errore identificazione: {str(e)}")
+
+
+# ── News endpoints ─────────────────────────────────────────────────────────────
+
+@app.get("/news")
+async def get_news(limit: int = 20, source: str | None = None, tag: str | None = None):
+    """
+    Ritorna le ultime news dal mondo dell'orologeria.
+    Parametri: limit (default 20), source (Hodinkee/WatchPro/...), tag (rolex/omega/auction/...)
+    """
+    try:
+        from agents.news_agent import get_recent_news
+        items = get_recent_news(limit=limit, source=source, tag=tag)
+        return {"news": items, "count": len(items)}
+    except Exception as e:
+        logger.error(f"News get error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/news/refresh")
+async def refresh_news(background_tasks: BackgroundTasks):
+    """Avvia manualmente una scansione dei feed RSS."""
+    try:
+        from agents.news_agent import run_news_scan
+        background_tasks.add_task(run_news_scan)
+        return {"status": "scan avviato in background"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/news/stats")
+async def news_stats():
+    """Statistiche news per fonte."""
+    try:
+        from agents.news_agent import get_stats
+        return get_stats()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

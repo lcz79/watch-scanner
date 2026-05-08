@@ -20,21 +20,43 @@ _agents = {
 }
 
 
-def _sort_and_deduplicate(listings: list[WatchListing]) -> list[WatchListing]:
-    """Rimuove duplicati per URL e ordina per prezzo crescente."""
+def _sort_and_deduplicate(listings: list[WatchListing], reference: str = "") -> list[WatchListing]:
+    """Rimuove duplicati per URL, filtra outlier di prezzo, ordina per prezzo crescente."""
+    try:
+        from watch_db import is_price_plausible
+        _price_check = lambda ref, price: is_price_plausible(ref, price)
+    except Exception:
+        _price_check = lambda ref, price: True
+
     seen_urls = set()
     unique = []
+    skipped = 0
     for l in listings:
-        if l.url not in seen_urls:
-            seen_urls.add(l.url)
-            unique.append(l)
+        if l.url in seen_urls:
+            continue
+        seen_urls.add(l.url)
 
-    # Filtra outlier di prezzo (accessori, OCR errati < 500€) e stories a bassa confidenza
-    unique = [
-        l for l in unique
-        if l.price >= 500
-        and not (l.source == "instagram_story" and getattr(l, 'confidence', 1.0) < 0.5)
-    ]
+        # Scarta prezzi assurdi (< 500€ = accessori/errori OCR)
+        if l.price < 500:
+            skipped += 1
+            continue
+
+        # Scarta stories a bassa confidence
+        if l.source == "instagram_story" and getattr(l, "confidence", 1.0) < 0.5:
+            skipped += 1
+            continue
+
+        # Verifica plausibilità prezzo rispetto al DB canonico
+        ref = reference or getattr(l, "reference", "")
+        if ref and not _price_check(ref, l.price):
+            logger.debug(f"Prezzo fuori range per {ref}: {l.price}€ da {l.source} — scartato")
+            skipped += 1
+            continue
+
+        unique.append(l)
+
+    if skipped:
+        logger.debug(f"Filtrati {skipped} listing con prezzo non plausibile")
 
     return sorted(unique, key=lambda x: x.price)
 
@@ -73,7 +95,30 @@ async def run_scan(query: WatchQuery) -> ScanResult:
             if result:
                 agents_used.append(agent_name)
 
-    listings = _sort_and_deduplicate(all_listings)
+    # Aggiungi listing pre-indicizzati dalle Instagram Stories (GPT-4o Vision)
+    try:
+        from agents.stories_intelligence_agent import get_listings_for_reference
+        story_listings_raw = get_listings_for_reference(query.reference)
+        for sl in story_listings_raw:
+            all_listings.append(WatchListing(
+                source="instagram_story_ai",
+                reference=sl.get("reference_raw") or query.reference,
+                price=float(sl["price"]) if sl.get("price") else 0,
+                currency=sl.get("currency", "EUR"),
+                seller=f"@{sl['dealer_username']}",
+                url=sl.get("story_url") or f"https://www.instagram.com/{sl['dealer_username']}/",
+                condition=sl.get("condition", "unknown"),
+                scraped_at=datetime.fromisoformat(sl["scraped_at"]) if sl.get("scraped_at") else datetime.now(),
+                description=f"{sl.get('brand', '')} {sl.get('model', '')} — story @{sl['dealer_username']}",
+                image_url=sl.get("image_url"),
+            ))
+        if story_listings_raw:
+            agents_used.append("stories_ai")
+            logger.info(f"[{scan_id}] stories_ai: {len(story_listings_raw)} listing pre-indicizzati")
+    except Exception as e:
+        logger.debug(f"[{scan_id}] stories_ai merge error: {e}")
+
+    listings = _sort_and_deduplicate(all_listings, reference=query.reference)
 
     # Filtra per max_price se specificato
     if query.max_price:

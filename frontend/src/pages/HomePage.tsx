@@ -1,38 +1,31 @@
 import { useNavigate } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
 import { useLang } from '../lib/lang'
 
 // ── Mock data ────────────────────────────────────────────────────────────────
 
-const MARKET_HIGHLIGHTS = [
+// Market models to query from the real API
+const MARKET_MODELS = [
   {
+    ref: '116610LN',
     icon: 'trending_up',
-    title: { en: 'Vintage Rolex', it: 'Rolex Vintage' },
-    body: {
-      en: 'Paul Newman Daytonas and Submariner MK1 dials continue commanding 20–35% premiums over 2024 highs.',
-      it: 'I Paul Newman Daytona e i quadranti Submariner MK1 continuano a raggiungere premi del 20–35% rispetto ai massimi del 2024.',
-    },
-    tag: { en: 'Trending', it: 'In Rialzo' },
-    tagColor: 'bg-green-400/10 text-green-400 border-green-400/20',
+    label: { en: 'Rolex Submariner', it: 'Rolex Submariner' },
+    fallbackTag: { en: 'Trending', it: 'In Rialzo' },
+    fallbackTagColor: 'bg-green-400/10 text-green-400 border-green-400/20',
   },
   {
+    ref: '15500ST',
     icon: 'query_stats',
-    title: { en: 'AP Royal Oak Correction', it: 'Correzione AP Royal Oak' },
-    body: {
-      en: 'Steel 15500ST stabilising around €40–44k after the 2023 peak. Considered a prime accumulation window.',
-      it: 'Il 15500ST in acciaio si stabilizza attorno a €40–44k dopo il picco del 2023. Considerata una finestra di accumulo.',
-    },
-    tag: { en: 'Accumulate', it: 'Accumulo' },
-    tagColor: 'bg-yellow-400/10 text-yellow-400 border-yellow-400/20',
+    label: { en: 'AP Royal Oak 15500ST', it: 'AP Royal Oak 15500ST' },
+    fallbackTag: { en: 'Accumulate', it: 'Accumulo' },
+    fallbackTagColor: 'bg-yellow-400/10 text-yellow-400 border-yellow-400/20',
   },
   {
+    ref: '5711/1A',
     icon: 'new_releases',
-    title: { en: 'Patek Nautilus Demand', it: 'Domanda Patek Nautilus' },
-    body: {
-      en: '5726A sky moon tourbillon breaks €500k private sales ceiling. Steel 5711/1A waitlist exceeds 8 years.',
-      it: 'Il 5726A sky moon tourbillon supera i €500k nelle vendite private. Lista d\'attesa 5711/1A supera 8 anni.',
-    },
-    tag: { en: 'High Demand', it: 'Alta Domanda' },
-    tagColor: 'bg-blue-400/10 text-blue-400 border-blue-400/20',
+    label: { en: 'Patek Nautilus 5711/1A', it: 'Patek Nautilus 5711/1A' },
+    fallbackTag: { en: 'High Demand', it: 'Alta Domanda' },
+    fallbackTagColor: 'bg-blue-400/10 text-blue-400 border-blue-400/20',
   },
 ]
 
@@ -164,6 +157,18 @@ function Sparkline({ values, color = '#f2c345' }: { values: number[]; color?: st
   )
 }
 
+// ── Market stat query helper ──────────────────────────────────────────────────
+function useMarketStat(ref: string) {
+  return useQuery({
+    queryKey: ['market-stats', ref],
+    queryFn: () =>
+      fetch(`http://localhost:8000/analytics/market-stats?reference=${encodeURIComponent(ref)}`)
+        .then(r => { if (!r.ok) throw new Error('api error'); return r.json() }),
+    retry: false,
+    staleTime: 5 * 60 * 1000,
+  })
+}
+
 // ── Component ─────────────────────────────────────────────────────────────────
 export default function HomePage() {
   const navigate = useNavigate()
@@ -173,6 +178,45 @@ export default function HomePage() {
   const months = lang === 'it'
     ? ['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic']
     : ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+
+  // ── Market stats queries (one per model) ──────────────────────────────────
+  const stat0 = useMarketStat(MARKET_MODELS[0].ref)
+  const stat1 = useMarketStat(MARKET_MODELS[1].ref)
+  const stat2 = useMarketStat(MARKET_MODELS[2].ref)
+  const marketStats = [stat0, stat1, stat2]
+
+  // ── News query ────────────────────────────────────────────────────────────
+  const { data: newsData } = useQuery({
+    queryKey: ['news'],
+    queryFn: () =>
+      fetch('http://localhost:8000/news?limit=6')
+        .then(r => { if (!r.ok) throw new Error('api error'); return r.json() }),
+    retry: false,
+    staleTime: 10 * 60 * 1000,
+  })
+
+  // ── Auction upcoming query (with mock fallback) ───────────────────────────
+  const { data: upcomingData } = useQuery({
+    queryKey: ['auctions-upcoming'],
+    queryFn: () =>
+      fetch('http://localhost:8000/auctions/upcoming')
+        .then(r => { if (!r.ok) throw new Error('api error'); return r.json() }),
+    retry: false,
+    staleTime: 30 * 60 * 1000,
+  })
+
+  const auctionCalendar: typeof AUCTION_CALENDAR =
+    upcomingData?.auctions?.length ? upcomingData.auctions : AUCTION_CALENDAR
+
+  const newsItems: Array<{
+    title: string
+    summary?: string
+    url: string
+    image_url?: string
+    source?: string
+    published_at?: string
+    tags?: string[]
+  }> = newsData?.news ?? []
 
   return (
     <main className="p-8 max-w-[1600px] mx-auto space-y-[32px]">
@@ -186,20 +230,77 @@ export default function HomePage() {
           </div>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-[12px]">
-          {MARKET_HIGHLIGHTS.map((h, i) => (
-            <div key={i} className="bg-zinc-900 border border-zinc-800 p-6 flex flex-col gap-4 hover:border-zinc-700 transition-colors">
-              <div className="flex justify-between items-start">
-                <span className="material-symbols-outlined text-yellow-400 text-2xl">{h.icon}</span>
-                <span className={`text-[10px] font-bold px-2 py-0.5 border uppercase tracking-widest ${h.tagColor}`}>
-                  {h.tag[lang]}
-                </span>
+          {MARKET_MODELS.map((model, i) => {
+            const query = marketStats[i]
+            const stats = query.data
+            const hasData = !query.isError && stats && (stats.median_price || stats.listing_count)
+            const isLoading = query.isLoading
+
+            // Derived display values
+            const medianPrice: string | null = stats?.median_price
+              ? `€${Number(stats.median_price).toLocaleString()}`
+              : null
+            const listingCount: number | null = stats?.listing_count ?? null
+            const changePct: number | null = stats?.change_1m ?? null
+
+            // Tag: from real data if available, else fallback
+            let tagLabel = model.fallbackTag[lang]
+            let tagColor = model.fallbackTagColor
+            if (changePct !== null) {
+              if (changePct > 0) {
+                tagLabel = lang === 'it' ? `+${changePct.toFixed(1)}%` : `+${changePct.toFixed(1)}%`
+                tagColor = 'bg-green-400/10 text-green-400 border-green-400/20'
+              } else if (changePct < 0) {
+                tagLabel = `${changePct.toFixed(1)}%`
+                tagColor = 'bg-red-400/10 text-red-400 border-red-400/20'
+              }
+            }
+
+            return (
+              <div
+                key={model.ref}
+                className="bg-zinc-900 border border-zinc-800 p-6 flex flex-col gap-4 hover:border-zinc-700 transition-colors cursor-pointer"
+                onClick={() => navigate(`/search?ref=${encodeURIComponent(model.ref)}`)}
+              >
+                <div className="flex justify-between items-start">
+                  <span className="material-symbols-outlined text-yellow-400 text-2xl">{model.icon}</span>
+                  <span className={`text-[10px] font-bold px-2 py-0.5 border uppercase tracking-widest ${tagColor}`}>
+                    {tagLabel}
+                  </span>
+                </div>
+                <div>
+                  <h3 className="font-['Space_Grotesk'] font-semibold text-zinc-100 text-base mb-2">
+                    {model.label[lang]}
+                  </h3>
+                  {isLoading ? (
+                    <p className="text-zinc-600 text-xs animate-pulse">
+                      {lang === 'it' ? 'Dati in aggiornamento…' : 'Data updating…'}
+                    </p>
+                  ) : hasData ? (
+                    <div className="flex flex-col gap-1">
+                      {medianPrice && (
+                        <div className="flex items-baseline gap-2">
+                          <span className="font-mono-data text-yellow-400 text-lg font-bold">{medianPrice}</span>
+                          <span className="text-zinc-500 text-[10px] uppercase tracking-widest">
+                            {lang === 'it' ? 'mediana' : 'median'}
+                          </span>
+                        </div>
+                      )}
+                      {listingCount !== null && (
+                        <p className="text-zinc-500 text-xs">
+                          {listingCount} {lang === 'it' ? 'annunci trovati' : 'listings found'}
+                        </p>
+                      )}
+                    </div>
+                  ) : (
+                    <p className="text-zinc-600 text-xs">
+                      {lang === 'it' ? 'Dati in aggiornamento…' : 'Data updating…'}
+                    </p>
+                  )}
+                </div>
               </div>
-              <div>
-                <h3 className="font-['Space_Grotesk'] font-semibold text-zinc-100 text-base mb-2">{h.title[lang]}</h3>
-                <p className="text-zinc-400 text-xs leading-relaxed">{h.body[lang]}</p>
-              </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       </section>
 
@@ -220,7 +321,7 @@ export default function HomePage() {
               </tr>
             </thead>
             <tbody>
-              {AUCTION_CALENDAR.map((a, i) => (
+              {auctionCalendar.map((a, i) => (
                 <tr
                   key={i}
                   className="border-b border-zinc-800/50 last:border-0 hover:bg-zinc-800/30 transition-colors cursor-pointer"
@@ -442,6 +543,105 @@ export default function HomePage() {
           </div>
         )}
       </section>
+
+      {/* ── 6. Market News ───────────────────────────────────────────────── */}
+      {newsData !== undefined && (
+        <section>
+          <div className="flex justify-between items-baseline mb-6">
+            <div>
+              <h2 className="font-h2 text-h2 text-zinc-100">
+                {lang === 'it' ? 'Notizie dal Mercato' : 'Market News'}
+              </h2>
+              <p className="text-zinc-500 text-sm mt-1">
+                {lang === 'it' ? 'Ultime dal mondo degli orologi' : 'Latest from the watch world'}
+              </p>
+            </div>
+          </div>
+
+          {newsItems.length === 0 ? (
+            <div className="bg-zinc-900 border border-zinc-800 border-dashed p-12 flex flex-col items-center justify-center text-center">
+              <span className="material-symbols-outlined text-4xl text-zinc-700 mb-3">newspaper</span>
+              <p className="font-['Space_Grotesk'] font-semibold text-zinc-400 text-sm">
+                {lang === 'it'
+                  ? 'Notizie in caricamento... Il feed RSS si aggiorna ogni 12 ore.'
+                  : 'News loading... The RSS feed updates every 12 hours.'}
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[12px]">
+              {newsItems.map((item, i) => {
+                const pubDate = item.published_at
+                  ? new Date(item.published_at).toLocaleDateString(
+                      lang === 'it' ? 'it-IT' : 'en-GB',
+                      { day: 'numeric', month: 'short', year: 'numeric' }
+                    )
+                  : null
+
+                return (
+                  <a
+                    key={i}
+                    href={item.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="bg-zinc-900 border border-zinc-800 flex flex-col hover:border-zinc-700 transition-colors group"
+                  >
+                    {/* Image */}
+                    <div className="relative h-40 bg-zinc-950 overflow-hidden flex-shrink-0">
+                      {item.image_url ? (
+                        <img
+                          src={item.image_url}
+                          alt={item.title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none' }}
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <span className="material-symbols-outlined text-5xl text-zinc-800">newspaper</span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Content */}
+                    <div className="p-4 flex flex-col gap-2 flex-1">
+                      {/* Source badge + date */}
+                      <div className="flex items-center justify-between gap-2">
+                        {item.source && (
+                          <span className="text-[9px] font-bold uppercase tracking-widest bg-yellow-400/10 text-yellow-400 border border-yellow-400/20 px-2 py-0.5">
+                            {item.source}
+                          </span>
+                        )}
+                        {pubDate && (
+                          <span className="text-[10px] text-zinc-600 font-mono-data ml-auto">{pubDate}</span>
+                        )}
+                      </div>
+
+                      {/* Title */}
+                      <h3 className="font-['Space_Grotesk'] font-semibold text-zinc-100 text-sm leading-snug line-clamp-2">
+                        {item.title}
+                      </h3>
+
+                      {/* Summary */}
+                      {item.summary && (
+                        <p className="text-zinc-400 text-xs leading-relaxed line-clamp-3 flex-1">
+                          {item.summary}
+                        </p>
+                      )}
+
+                      {/* Read more */}
+                      <div className="flex items-center gap-1 mt-auto pt-2">
+                        <span className="text-[10px] text-zinc-600 uppercase tracking-widest group-hover:text-yellow-400 transition-colors">
+                          {lang === 'it' ? 'Leggi' : 'Read'}
+                        </span>
+                        <span className="material-symbols-outlined text-zinc-600 group-hover:text-yellow-400 transition-colors text-xs">open_in_new</span>
+                      </div>
+                    </div>
+                  </a>
+                )
+              })}
+            </div>
+          )}
+        </section>
+      )}
 
     </main>
   )

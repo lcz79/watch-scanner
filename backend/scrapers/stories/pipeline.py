@@ -1,17 +1,19 @@
 """
 Pipeline principale Instagram Stories.
-Coordina capture → OCR → storage per tutti i dealer prioritari.
-Scheduler: ogni 2-3 ore in background.
+Coordina capture (Playwright) → Vision AI (GPT-4o) → storage.
 
-Novità rispetto alla versione precedente:
-  - Usa le regole OCR avanzate da ocr.py (prezzo, valuta, disponibilità, contatto)
-  - Filtra listing non-disponibili (sold, reserved) prima del salvataggio
-  - Espone `availability` e `contact` nel record salvato
-  - Confidence minima configurabile (default 0.4)
+Playwright = browser reale → nessun ban Meta.
+GPT-4o Vision = analisi precisa, niente OCR impreciso.
+Fallback OCR se OPENAI_API_KEY non configurata.
+
+Account target: dealer dal DB discovery + PRIORITY_DEALERS statici.
 """
 import asyncio
+import base64
+import json
 import random
 from datetime import datetime
+from pathlib import Path
 from utils.logger import get_logger
 from models.schemas import WatchListing
 from scrapers.stories.capture import (
@@ -23,71 +25,166 @@ from scrapers.stories.storage import save_listing, get_stories_for_reference
 logger = get_logger("stories.pipeline")
 
 # Configurazione run
-MAX_ACCOUNTS_PER_RUN = 8
+MAX_ACCOUNTS_PER_RUN = 30        # con Vision AI possiamo essere più ambiziosi
 INTER_ACCOUNT_DELAY = (8, 18)   # secondi tra un account e l'altro
-MIN_CONFIDENCE = 0.40            # scarta frame con confidenza inferiore
+MIN_CONFIDENCE = 0.50            # Vision AI è più precisa, alziamo la soglia
+
+
+def _get_dealer_accounts() -> list[str]:
+    """
+    Ritorna la lista di account da scansionare.
+    Priorità: dealer dal DB discovery → PRIORITY_DEALERS statici.
+    """
+    try:
+        from agents.discovery.resellers_db import get_all_resellers
+        db_dealers = [r["username"] for r in get_all_resellers(min_score=3, platform="instagram")]
+        if db_dealers:
+            combined = list(dict.fromkeys(PRIORITY_DEALERS + db_dealers))  # dedup, ordine preservato
+            logger.debug(f"Account target: {len(combined)} ({len(db_dealers)} dal DB + {len(PRIORITY_DEALERS)} statici)")
+            return combined
+    except Exception as e:
+        logger.debug(f"DB resellers non disponibile: {e}")
+    return list(PRIORITY_DEALERS)
+
+
+async def _analyze_frame_with_vision(screenshot_path: str, username: str) -> list[dict]:
+    """
+    Invia lo screenshot a GPT-4o Vision.
+    Ritorna lista di listing (stessa struttura di _analyze_story_with_vision).
+    """
+    from config import get_settings
+    settings = get_settings()
+    if not settings.openai_api_key:
+        return []
+
+    import httpx
+    from agents.stories_intelligence_agent import VISION_PROMPT
+
+    path = Path(screenshot_path)
+    if not path.exists():
+        return []
+
+    b64 = base64.b64encode(path.read_bytes()).decode()
+    data_url = f"data:image/png;base64,{b64}"
+
+    async with httpx.AsyncClient(timeout=45) as client:
+        try:
+            resp = await client.post(
+                "https://api.openai.com/v1/chat/completions",
+                headers={
+                    "Authorization": f"Bearer {settings.openai_api_key}",
+                    "Content-Type": "application/json",
+                },
+                json={
+                    "model": settings.openai_model,
+                    "max_tokens": 800,
+                    "messages": [{
+                        "role": "user",
+                        "content": [
+                            {"type": "text", "text": VISION_PROMPT},
+                            {"type": "image_url", "image_url": {"url": data_url, "detail": "high"}},
+                        ],
+                    }],
+                    "response_format": {"type": "json_object"},
+                },
+            )
+            resp.raise_for_status()
+            raw = resp.json()["choices"][0]["message"]["content"]
+            return json.loads(raw).get("listings", [])
+        except Exception as e:
+            logger.debug(f"  @{username} Vision error: {e}")
+            return []
 
 
 async def process_account(username: str) -> list[dict]:
     """
-    Processa un singolo account:
-      1. Tenta stories → se vuoto, fallback su post recenti
-      2. OCR + parsing avanzato di ogni frame
-      3. Filtra per confidenza minima e disponibilità
-      4. Salva nel DB
-    Ritorna lista di listing strutturati.
+    Processa un singolo account dealer:
+      1. Playwright cattura screenshot delle stories (browser reale → nessun ban)
+      2. GPT-4o Vision analizza ogni screenshot (se OPENAI_API_KEY presente)
+         oppure OCR come fallback
+      3. Salva in dealer_listings (stories_intelligence_agent) + storage locale
     """
+    from config import get_settings
+    settings = get_settings()
+    use_vision = bool(settings.openai_api_key)
+
     results = []
 
-    # Tenta stories Playwright
-    frames = await capture_stories(username, max_frames=15)
+    # Skip dealer opt-out
+    try:
+        from agents.stories_intelligence_agent import _is_opted_out
+        if _is_opted_out(username):
+            logger.debug(f"@{username}: opt-out — skip")
+            return []
+    except Exception:
+        pass
 
-    # Fallback: post recenti se non ci sono stories
+    # Cattura Playwright (browser reale, cookie session salvata)
+    frames = await capture_stories(username, max_frames=15)
     if not frames:
         logger.debug(f"@{username}: nessuna story — fallback post recenti")
         frames = await capture_recent_posts(username, max_posts=6)
-
     if not frames:
-        logger.debug(f"@{username}: nessun contenuto trovato")
         return []
 
+    logger.info(f"@{username}: {len(frames)} frame catturati — analisi {'Vision AI' if use_vision else 'OCR'}")
+
     for frame in frames:
-        parsed = parse_frame(
-            screenshot_path=frame["screenshot_path"],
-            raw_page_text=frame.get("raw_page_text", ""),
-            username=frame["username"],
-            timestamp=frame["timestamp"],
-            post_url=frame.get("post_url", ""),
-        )
+        screenshot_path = frame.get("screenshot_path", "")
+        frame_idx = frame.get("frame_index", 0)
+        story_id = f"{username}_{frame['timestamp']}_{frame_idx}"
 
-        if not parsed:
-            continue
-
-        # Filtra per confidenza minima
-        if parsed["confidence"] < MIN_CONFIDENCE:
-            logger.debug(
-                f"@{username} frame {frame['frame_index']}: "
-                f"confidenza bassa ({parsed['confidence']:.2f}) — skip"
+        if use_vision:
+            # ── GPT-4o Vision ──────────────────────────────────────────────
+            vision_listings = await _analyze_frame_with_vision(screenshot_path, username)
+            for lst in vision_listings:
+                confidence = float(lst.get("confidence", 0))
+                if confidence < MIN_CONFIDENCE:
+                    continue
+                parsed = {
+                    "username": username,
+                    "frame_index": frame_idx,
+                    "screenshot_path": screenshot_path,
+                    "timestamp": frame["timestamp"],
+                    "post_url": frame.get("post_url", f"https://www.instagram.com/{username}/"),
+                    "brand": lst.get("brand"),
+                    "model": lst.get("model"),
+                    "reference": lst.get("reference"),
+                    "price": lst.get("price"),
+                    "currency": lst.get("currency", "EUR"),
+                    "condition": lst.get("condition", "unknown"),
+                    "confidence": confidence,
+                    "availability": "available",
+                    "text_raw": frame.get("raw_page_text", "")[:300],
+                }
+                # Persisti in dealer_listings
+                try:
+                    from agents.stories_intelligence_agent import _upsert_listings
+                    _upsert_listings(
+                        username, story_id,
+                        parsed["post_url"], screenshot_path,
+                        [lst], json.dumps([lst]),
+                    )
+                except Exception as e:
+                    logger.debug(f"  upsert_listings error: {e}")
+                save_listing(parsed)
+                results.append(parsed)
+                logger.debug(f"@{username} frame {frame_idx}: {lst.get('brand')} {lst.get('reference')} {lst.get('price')}€ conf={confidence:.2f}")
+        else:
+            # ── Fallback OCR ───────────────────────────────────────────────
+            parsed = parse_frame(
+                screenshot_path=screenshot_path,
+                raw_page_text=frame.get("raw_page_text", ""),
+                username=username,
+                timestamp=frame["timestamp"],
+                post_url=frame.get("post_url", ""),
             )
-            continue
-
-        # Salta listing già venduti o riservati (non più acquistabili)
-        availability = parsed.get("availability", "available")
-        if availability in ("sold", "reserved"):
-            logger.debug(
-                f"@{username} frame {frame['frame_index']}: "
-                f"non disponibile ({availability}) — skip"
-            )
-            continue
-
-        saved = save_listing(parsed)
-        if saved:
+            if not parsed or parsed.get("confidence", 0) < MIN_CONFIDENCE:
+                continue
+            if parsed.get("availability") in ("sold", "reserved"):
+                continue
+            save_listing(parsed)
             results.append(parsed)
-            logger.debug(
-                f"@{username} frame {frame['frame_index']}: "
-                f"listing salvato — {parsed['price']}{parsed['currency']} "
-                f"ref={parsed.get('reference')} conf={parsed['confidence']:.2f}"
-            )
 
     logger.info(f"@{username}: {len(results)} listing estratti")
     return results
@@ -108,7 +205,7 @@ async def run_stories_pipeline(
         )
         return []
 
-    target_accounts = list(accounts or PRIORITY_DEALERS)
+    target_accounts = list(accounts or _get_dealer_accounts())
     # Shuffle: non colpire sempre gli stessi account per primi
     random.shuffle(target_accounts)
     target_accounts = target_accounts[:max_accounts]
@@ -193,16 +290,54 @@ async def get_stories_listings(reference: str) -> list[WatchListing]:
 
 # ── Scheduler background ───────────────────────────────────────────────────────
 
-async def start_stories_scheduler_playwright(interval_hours: float = 2.5):
+# Orari fissi di scansione (ora locale italiana)
+# 8:00 — dealer aprono, prima occhiata alle stories notturne
+# 12:00 — pausa pranzo, picco di post
+# 16:00 — pomeriggio, nuove stories business
+# 19:00 — chiusura giornata lavorativa, ultime stories del giorno
+SCAN_TIMES = [(8, 0), (12, 0), (16, 0), (19, 0)]
+
+
+def _seconds_until_next_scan() -> float:
+    """Calcola i secondi fino al prossimo orario di scansione pianificato."""
+    from datetime import datetime as _dt
+    now = _dt.now()
+    today_slots = [
+        now.replace(hour=h, minute=m, second=0, microsecond=0)
+        for h, m in SCAN_TIMES
+    ]
+    # Prossimo slot nel giorno corrente
+    future = [t for t in today_slots if t > now]
+    if future:
+        next_scan = future[0]
+    else:
+        # Nessun slot rimasto oggi — primo slot di domani
+        tomorrow = now.replace(hour=SCAN_TIMES[0][0], minute=SCAN_TIMES[0][1],
+                                second=0, microsecond=0)
+        next_scan = tomorrow.replace(day=tomorrow.day + 1)  # semplice +1 giorno
+        # gestione fine mese via timedelta
+        from datetime import timedelta
+        next_scan = (now + timedelta(days=1)).replace(
+            hour=SCAN_TIMES[0][0], minute=SCAN_TIMES[0][1], second=0, microsecond=0
+        )
+    delta = (next_scan - now).total_seconds()
+    logger.info(f"Prossima scansione stories: {next_scan.strftime('%H:%M')} (tra {delta/3600:.1f}h)")
+    return delta
+
+
+async def start_stories_scheduler_playwright():
     """
-    Background scheduler: gira ogni 2.5h (configurabile).
-    Chiama run_stories_pipeline() su tutti i dealer prioritari.
+    Background scheduler a orari fissi: 08:00, 12:00, 16:00, 19:00 (ora italiana).
+    Molto più efficiente dell'intervallo fisso — scansiona solo quando i dealer sono attivi.
     """
-    logger.info(f"Stories scheduler (Playwright) avviato — ogni {interval_hours}h")
+    slots_str = ", ".join(f"{h:02d}:{m:02d}" for h, m in SCAN_TIMES)
+    logger.info(f"Stories scheduler (Playwright) avviato — scansioni alle {slots_str}")
+
     while True:
-        await asyncio.sleep(interval_hours * 3600)
+        wait = _seconds_until_next_scan()
+        await asyncio.sleep(wait)
         try:
-            logger.info("Stories scheduler: avvio run...")
+            logger.info("Stories scheduler: avvio run pianificato...")
             results = await run_stories_pipeline()
             logger.info(f"Stories scheduler: {len(results)} nuovi listing")
         except Exception as e:
