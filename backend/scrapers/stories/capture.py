@@ -84,33 +84,34 @@ async def save_auth_state(username: str, password: str) -> bool:
             except Exception:
                 logger.info("Compilazione automatica fallita — completa il login manualmente nel browser")
 
-            logger.info("In attesa del login completato (max 3 minuti)...")
+            logger.info("In attesa del sessionid (max 5 minuti) — completa il login nel browser...")
 
-            # Aspetta che l'URL diventi la home di Instagram (login completato)
-            await page.wait_for_url(
-                lambda url: "instagram.com" in url and "/login" not in url and "/accounts" not in url,
-                timeout=180_000,  # 3 minuti
-            )
-            await asyncio.sleep(4)
-
-            # Chiudi popup "Non ora"
-            for text in ["Non ora", "Not Now", "Adesso no", "Salta"]:
+            # Aspetta specificamente il cookie sessionid — non chiudiamo prima.
+            # Questo gestisce challenge, 2FA, verifica identità: qualunque flusso,
+            # aspettiamo finché Instagram non emette sessionid.
+            found = False
+            for _ in range(300):  # max 5 minuti, check ogni secondo
                 try:
-                    await page.click(f'text="{text}"', timeout=2000)
-                    await asyncio.sleep(1)
+                    cookies = await context.cookies()
+                    if any(c["name"] == "sessionid" for c in cookies):
+                        logger.info("Cookie sessionid trovato!")
+                        found = True
+                        break
                 except Exception:
                     pass
-
-            # Aspetta il cookie sessionid (fondamentale per autenticazione)
-            logger.info("Attendo cookie sessionid...")
-            for _ in range(30):  # max 30 secondi
-                cookies = await context.cookies()
-                if any(c["name"] == "sessionid" for c in cookies):
-                    logger.info("Cookie sessionid trovato!")
-                    break
                 await asyncio.sleep(1)
-            else:
-                logger.warning("sessionid non trovato — potrebbe essere necessario completare il login manualmente")
+
+            if not found:
+                logger.warning("sessionid non trovato dopo 5 minuti — salvo comunque quello che c'è")
+
+            # Chiudi popup "Non ora" / notifiche (se presenti dopo il login)
+            await asyncio.sleep(2)
+            for text in ["Non ora", "Not Now", "Adesso no", "Salta", "Chiudi"]:
+                try:
+                    await page.click(f'text="{text}"', timeout=1500)
+                    await asyncio.sleep(0.5)
+                except Exception:
+                    pass
 
             await asyncio.sleep(2)
 
@@ -118,9 +119,10 @@ async def save_auth_state(username: str, password: str) -> bool:
             state = await context.storage_state()
             cookies = state.get("cookies", [])
             ig_cookies = [c for c in cookies if "instagram" in c.get("domain", "")]
-            logger.info(f"Sessione salvata: {len(ig_cookies)} cookie Instagram ({AUTH_STATE_FILE})")
+            has_session = any(c["name"] == "sessionid" for c in ig_cookies)
+            logger.info(f"Sessione salvata: {len(ig_cookies)} cookie Instagram | sessionid={'OK' if has_session else 'ASSENTE'}")
             AUTH_STATE_FILE.write_text(json.dumps(state))
-            return True
+            return has_session
 
         except Exception as e:
             logger.error(f"Login error: {e}")
@@ -209,6 +211,9 @@ async def capture_stories(
                 if f"/stories/{username}/" not in current_url:
                     logger.debug(f"@{username}: story terminata al frame {frame_index}")
                     break
+
+                # Attesa extra per video — lascia caricare il primo frame
+                await asyncio.sleep(2.5)
 
                 # Screenshot del frame corrente
                 ts = datetime.now().strftime("%Y%m%d_%H%M%S")
