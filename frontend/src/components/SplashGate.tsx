@@ -9,9 +9,9 @@ import { useState, useEffect, useRef } from 'react'
 const GATE_PASSWORD = 'ws2026'
 const STORAGE_KEY   = 'ws_gate_unlocked'
 
-// Rolex Daytona "Patrizzi" — dramatic vintage chronograph
+// Rolex Daytona Cosmograph ref. 16520 — Zenith era, white dial, dramatic smoke
 const BG_IMAGE =
-  'https://images.unsplash.com/photo-1548171916-c8fd5d4b0e7e?q=90&w=2200&auto=format&fit=crop'
+  'https://images.unsplash.com/photo-1657104996708-044ef9812f85?q=90&w=2200&auto=format&fit=crop'
 
 export function useSplashGate() {
   const [unlocked, setUnlocked] = useState(() => {
@@ -94,9 +94,9 @@ export default function SplashGate({ onUnlock }: { onUnlock: () => void }) {
       <div className="hidden lg:flex flex-1 relative overflow-hidden">
         <img
           src={BG_IMAGE}
-          alt="Rolex Daytona Patrizzi"
+          alt="Rolex Daytona 16520"
           className="absolute inset-0 w-full h-full object-cover scale-[1.04]"
-          style={{ filter: 'brightness(0.5) contrast(1.1)' }}
+          style={{ filter: 'brightness(0.65) saturate(0.85)' }}
         />
         {/* Vignette + right-fade */}
         <div className="absolute inset-0 bg-gradient-to-r from-black/10 via-black/5 to-zinc-950/95" />
@@ -109,7 +109,7 @@ export default function SplashGate({ onUnlock }: { onUnlock: () => void }) {
           </p>
           <div className="w-10 h-px bg-yellow-400 mb-3" />
           <p className="text-zinc-500 text-[11px] uppercase tracking-widest">
-            Rolex Daytona — Ref. 6241 Patrizzi
+            Rolex Cosmograph Daytona — Ref. 16520
           </p>
         </div>
 
@@ -124,7 +124,7 @@ export default function SplashGate({ onUnlock }: { onUnlock: () => void }) {
         {/* Mobile BG */}
         <div className="lg:hidden absolute inset-0 overflow-hidden pointer-events-none">
           <img src={BG_IMAGE} alt="" className="w-full h-full object-cover"
-            style={{ filter: 'brightness(0.22) contrast(1.1)' }} />
+            style={{ filter: 'brightness(0.18) saturate(0.6)' }} />
           <div className="absolute inset-0 bg-zinc-950/75" />
         </div>
 
