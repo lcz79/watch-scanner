@@ -6,13 +6,13 @@ import { useLang } from '../lib/lang'
 // ---------------------------------------------------------------------------
 
 const HOUSES = [
-  { id: 'christies', name: "Christie's",       url: 'christies.com',   loc: 'Geneva · New York · Hong Kong', status: 'active' as const, ago: '2h',  specialty: 'Important Watches — May & Nov' },
-  { id: 'phillips',  name: 'Phillips',          url: 'phillips.com',    loc: 'Geneva · New York · Hong Kong', status: 'active' as const, ago: '1h',  specialty: 'Watches — May & Nov + Online' },
-  { id: 'sothebys',  name: "Sotheby's",         url: 'sothebys.com',    loc: 'Geneva · London · New York',    status: 'active' as const, ago: '3h',  specialty: 'Important Watches — May & Nov' },
-  { id: 'antiquorum',name: 'Antiquorum',        url: 'antiquorum.com',  loc: 'Geneva · Hong Kong',            status: 'active' as const, ago: '5h',  specialty: 'Modern & Vintage Timepieces' },
-  { id: 'artcurial', name: 'Artcurial',         url: 'artcurial.com',   loc: 'Paris · Monaco',                status: 'active' as const, ago: '6h',  specialty: 'Montres de Collection' },
-  { id: 'bonhams',   name: 'Bonhams',           url: 'bonhams.com',     loc: 'London · Los Angeles',          status: 'pending' as const, ago: '—', specialty: 'Watches & Clocks' },
-  { id: 'dorotheum', name: 'Dorotheum',         url: 'dorotheum.com',   loc: 'Vienna · Prague',               status: 'pending' as const, ago: '—', specialty: 'Uhren & Taschenuhren' },
+  { id: 'christies', name: "Christie's",       url: 'https://www.christies.com/departments/watches',   loc: 'Geneva · New York · Hong Kong', status: 'active' as const, ago: '2h',  specialty: 'Important Watches — May & Nov' },
+  { id: 'phillips',  name: 'Phillips',          url: 'https://www.phillips.com/watches',                loc: 'Geneva · New York · Hong Kong', status: 'active' as const, ago: '1h',  specialty: 'Watches — May & Nov + Online' },
+  { id: 'sothebys',  name: "Sotheby's",         url: 'https://www.sothebys.com/en/departments/watches', loc: 'Geneva · London · New York',    status: 'active' as const, ago: '3h',  specialty: 'Important Watches — May & Nov' },
+  { id: 'antiquorum',name: 'Antiquorum',        url: 'https://www.antiquorum.swiss',                    loc: 'Geneva · Hong Kong',            status: 'active' as const, ago: '5h',  specialty: 'Modern & Vintage Timepieces' },
+  { id: 'artcurial', name: 'Artcurial',         url: 'https://www.artcurial.com/fr/departements/montres', loc: 'Paris · Monaco',              status: 'active' as const, ago: '6h',  specialty: 'Montres de Collection' },
+  { id: 'bonhams',   name: 'Bonhams',           url: 'https://www.bonhams.com/departments/WAT/',        loc: 'London · Los Angeles',          status: 'pending' as const, ago: '—', specialty: 'Watches & Clocks' },
+  { id: 'dorotheum', name: 'Dorotheum',         url: 'https://www.dorotheum.com/en/auctions/watch-auctions/', loc: 'Vienna · Prague',         status: 'pending' as const, ago: '—', specialty: 'Uhren & Taschenuhren' },
 ]
 
 type Upcoming = {
@@ -241,11 +241,13 @@ export default function AuctionsPage() {
 
             <div className="divide-y divide-zinc-800">
               {HOUSES.map(h => (
-                <div key={h.id} className="px-5 py-3 flex items-center justify-between gap-3">
+                <a key={h.id} href={h.url} target="_blank" rel="noopener noreferrer"
+                  className="px-5 py-3 flex items-center justify-between gap-3 hover:bg-zinc-800/50 transition-colors cursor-pointer">
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 mb-0.5">
                       <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${h.status === 'active' ? 'bg-green-500' : 'bg-zinc-600'}`} />
-                      <p className="font-['Space_Grotesk'] text-sm text-zinc-200 truncate">{h.name}</p>
+                      <p className="font-['Space_Grotesk'] text-sm text-zinc-200 truncate hover:text-yellow-400 transition-colors">{h.name}</p>
+                      <span className="material-symbols-outlined text-[11px] text-zinc-600">open_in_new</span>
                     </div>
                     <p className="text-[10px] text-zinc-500 truncate pl-3.5">{h.loc}</p>
                   </div>
@@ -257,7 +259,7 @@ export default function AuctionsPage() {
                       <p className="font-mono-data text-[9px] text-zinc-600">{t.lastUpdatedLabel} {h.ago}</p>
                     )}
                   </div>
-                </div>
+                </a>
               ))}
             </div>
 
@@ -301,8 +303,13 @@ export default function AuctionsPage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-              {filteredLots.map(lot => (
-                <article key={lot.id} className="bg-zinc-900 border border-zinc-800 hover:border-primary/40 transition-colors group">
+              {filteredLots.map(lot => {
+                const houseObj = HOUSES.find(h => h.name === lot.house)
+                const lotSearchUrl = `https://www.google.com/search?q=${encodeURIComponent(`${lot.house} ${lot.brand} ${lot.ref} lot ${lot.lotNum} auction ${lot.sale}`)}`
+                const lotHref = houseObj?.url ?? lotSearchUrl
+                return (
+                <a key={lot.id} href={lotHref} target="_blank" rel="noopener noreferrer" className="block group">
+                <article className="bg-zinc-900 border border-zinc-800 hover:border-primary/40 transition-colors h-full">
                   {/* Image placeholder */}
                   <div className="h-36 bg-zinc-950 border-b border-zinc-800 flex items-center justify-center relative overflow-hidden">
                     <span className="material-symbols-outlined text-5xl text-zinc-800 group-hover:text-zinc-700 transition-colors">watch</span>
@@ -337,13 +344,16 @@ export default function AuctionsPage() {
                           {fmtM(lot.low, '')}–{fmtM(lot.high, lot.currency)}
                         </p>
                       </div>
-                      <button className="px-3 py-1.5 bg-primary/10 hover:bg-primary text-primary hover:text-zinc-950 text-[9px] font-bold uppercase tracking-widest transition-colors rounded">
+                      <span className="flex items-center gap-1 px-3 py-1.5 bg-primary/10 group-hover:bg-primary text-primary group-hover:text-zinc-950 text-[9px] font-bold uppercase tracking-widest transition-colors rounded">
+                        <span className="material-symbols-outlined text-[11px]">open_in_new</span>
                         {t.trackLotLabel}
-                      </button>
+                      </span>
                     </div>
                   </div>
                 </article>
-              ))}
+                </a>
+                )
+              })}
             </div>
           </section>
 
@@ -382,8 +392,10 @@ export default function AuctionsPage() {
                 const ratio = r.hammer / r.estimate
                 const pct = ((ratio - 1) * 100).toFixed(0)
                 const isHigh = ratio > 2
+                const recordHref = `https://www.google.com/search?q=${encodeURIComponent(`${r.house} ${r.brand} ${r.ref} ${r.date} auction result`)}`
                 return (
-                  <div key={i} className="grid grid-cols-12 gap-3 px-4 py-3 border-b border-zinc-800 hover:bg-zinc-800/40 transition-colors items-center">
+                  <a key={i} href={recordHref} target="_blank" rel="noopener noreferrer"
+                    className="grid grid-cols-12 gap-3 px-4 py-3 border-b border-zinc-800 hover:bg-zinc-800/40 transition-colors items-center cursor-pointer">
                     <div className="col-span-1 font-mono-data text-[11px] text-zinc-600">{String(i + 1).padStart(2, '0')}</div>
                     <div className="col-span-3">
                       <p className="text-xs text-zinc-200 font-['Space_Grotesk'] font-medium leading-tight">{r.ref}</p>
@@ -406,7 +418,7 @@ export default function AuctionsPage() {
                         +{pct}%
                       </span>
                     </div>
-                  </div>
+                  </a>
                 )
               })}
             </div>

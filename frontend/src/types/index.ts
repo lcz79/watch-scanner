@@ -23,6 +23,7 @@ export interface ScanResult {
   scan_id: string
   query: WatchQuery
   listings: WatchListing[]
+  related_listings?: WatchListing[]
   best_price?: number
   best_listing?: WatchListing
   total_found: number

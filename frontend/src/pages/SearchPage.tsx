@@ -155,9 +155,20 @@ function ListingCard({ listing, isBest, isBestDeal = false }: {
         </div>
       )}
 
-      {/* Image placeholder */}
-      <div className="w-48 h-48 bg-zinc-950 border border-zinc-800 overflow-hidden flex-shrink-0 flex items-center justify-center grayscale group-hover:grayscale-0 transition-all">
-        <span className="material-symbols-outlined text-5xl text-zinc-700">watch</span>
+      {/* Image */}
+      <div className="w-48 h-48 bg-zinc-950 border border-zinc-800 overflow-hidden flex-shrink-0 flex items-center justify-center grayscale group-hover:grayscale-0 transition-all relative">
+        {listing.image_url ? (
+          <img
+            src={listing.image_url}
+            alt={listing.seller}
+            className="w-full h-full object-cover"
+            onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none'; (e.currentTarget.nextElementSibling as HTMLElement | null)?.style.setProperty('display', 'flex') }}
+          />
+        ) : null}
+        <span
+          className="material-symbols-outlined text-5xl text-zinc-700 absolute inset-0 flex items-center justify-center"
+          style={{ display: listing.image_url ? 'none' : 'flex' }}
+        >watch</span>
       </div>
 
       {/* Content */}
@@ -223,12 +234,16 @@ function saveRecentSearch(ref: string) {
 
 export default function SearchPage() {
   const [params] = useSearchParams()
-  const { t } = useLang()
+  const { t, lang } = useLang()
   const [reference, setReference] = useState(params.get('ref') || '')
   const [maxPrice, setMaxPrice] = useState('')
   const [result, setResult] = useState<ScanResult | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [scanStep, setScanStep] = useState(0)
+  const [scanTimer, setScanTimer] = useState(0)
+  const scanTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const [scanEncyclopedia, setScanEncyclopedia] = useState<import('../types').EncyclopediaWatch | null>(null)
+  const [scanEncyLoading, setScanEncyLoading] = useState(false)
   const [filterGeo, setFilterGeo] = useState<'all'|'italy'|'europe'>('all')
   const [filterSet, setFilterSet] = useState<'all'|'fullset'|'watchonly'>('all')
   const [filterSeller, setFilterSeller] = useState('')
@@ -236,6 +251,7 @@ export default function SearchPage() {
   const [filterPriceMax, setFilterPriceMax] = useState('')
   const [filterSources, setFilterSources] = useState<Set<string>>(new Set())
   const scanStepRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const [showRelated, setShowRelated] = useState(false)
   const [identifying, setIdentifying] = useState(false)
   const [identifyResult, setIdentifyResult] = useState<{brand:string|null;model:string|null;reference:string|null;confidence:number;notes:string|null}|null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -244,12 +260,14 @@ export default function SearchPage() {
     mutationFn: scanWatch,
     onSuccess: (data) => {
       if (scanStepRef.current) clearTimeout(scanStepRef.current)
+      if (scanTimerRef.current) { clearInterval(scanTimerRef.current); scanTimerRef.current = null }
       setScanStep(SCAN_STEPS.length)
       setResult(data)
       setError(null)
     },
     onError: (err: any) => {
       if (scanStepRef.current) clearTimeout(scanStepRef.current)
+      if (scanTimerRef.current) { clearInterval(scanTimerRef.current); scanTimerRef.current = null }
       setScanStep(0)
       setError(err?.response?.data?.detail || err?.message || 'Errore durante la scansione')
     },
@@ -281,9 +299,21 @@ export default function SearchPage() {
     if (!target) return
     if (ref) setReference(ref)
     saveRecentSearch(target.toUpperCase())
-    setError(null); setResult(null); setScanStep(0)
+    setError(null); setResult(null); setScanStep(0); setScanTimer(0); setScanEncyclopedia(null)
     setFilterGeo('all'); setFilterSet('all'); setFilterSeller('')
     setFilterPriceMin(''); setFilterPriceMax(''); setFilterSources(new Set())
+
+    // Timer
+    if (scanTimerRef.current) clearInterval(scanTimerRef.current)
+    scanTimerRef.current = setInterval(() => setScanTimer(s => s + 1), 1000)
+
+    // Fetch enciclopedia in parallelo
+    setScanEncyLoading(true)
+    fetch(`/api/encyclopedia/reference/${encodeURIComponent(target.toUpperCase())}`)
+      .then(r => r.ok ? r.json() : null)
+      .then(data => { setScanEncyclopedia(data); setScanEncyLoading(false) })
+      .catch(() => setScanEncyLoading(false))
+
     let step = 0
     const advance = () => {
       step += 1
@@ -458,50 +488,219 @@ export default function SearchPage() {
 
       {/* ── Loading ── */}
       {isPending && (
-        <div className="bg-zinc-900 border border-zinc-800 p-[24px]">
-          <div className="flex items-center gap-3 mb-6">
-            <span className="material-symbols-outlined text-2xl text-yellow-400 animate-spin">autorenew</span>
-            <div>
-              <p className="font-['Space_Grotesk'] font-semibold text-zinc-100 text-sm">
-                {t.scanningFor} <span className="text-yellow-400">{reference.toUpperCase()}</span>
-              </p>
-              <p className="text-[10px] text-zinc-500 uppercase tracking-widest mt-0.5">{t.agentsActive}</p>
+        <div className="space-y-4">
+          {/* Header: timer + barra progresso */}
+          <div className="bg-zinc-900 border border-zinc-800 p-5">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <span className="material-symbols-outlined text-xl text-yellow-400 animate-spin">autorenew</span>
+                <div>
+                  <p className="font-['Space_Grotesk'] font-semibold text-zinc-100 text-sm">
+                    {t.scanningFor} <span className="text-yellow-400">{reference.toUpperCase()}</span>
+                  </p>
+                  <p className="text-[10px] text-zinc-500 uppercase tracking-widest mt-0.5">
+                    {SCAN_STEPS[Math.min(scanStep, SCAN_STEPS.length - 1)]?.label}
+                  </p>
+                </div>
+              </div>
+              {/* Contatore secondi */}
+              <div className="text-right">
+                <span className="font-mono text-3xl font-bold tabular-nums text-zinc-100 leading-none">
+                  {String(Math.floor(scanTimer / 60)).padStart(2, '0')}:{String(scanTimer % 60).padStart(2, '0')}
+                </span>
+                <p className="text-[9px] text-zinc-600 uppercase tracking-widest mt-1">
+                  {lang === 'it' ? 'tempo trascorso' : 'elapsed'}
+                </p>
+              </div>
+            </div>
+            {/* Barra progresso */}
+            <div className="w-full bg-zinc-800 h-0.5 rounded-full overflow-hidden">
+              <div
+                className="bg-yellow-400 h-0.5 rounded-full transition-all duration-700"
+                style={{ width: `${progressPercent}%` }}
+              />
+            </div>
+            {/* Step pill */}
+            <div className="flex gap-1.5 mt-3">
+              {SCAN_STEPS.map((_, i) => (
+                <div key={i} className={clsx(
+                  'h-1 flex-1 rounded-full transition-all duration-500',
+                  i < scanStep ? 'bg-green-500' : i === scanStep ? 'bg-yellow-400' : 'bg-zinc-800'
+                )} />
+              ))}
             </div>
           </div>
 
-          <div className="space-y-2 mb-6">
-            {SCAN_STEPS.map((step, i) => {
-              const done = i < scanStep
-              const active = i === scanStep
-              return (
-                <div key={i} className={clsx(
-                  'flex items-center gap-3 px-3 py-2.5 transition-all',
-                  active && 'bg-yellow-400/5 border border-yellow-400/15',
-                  done && 'opacity-50'
-                )}>
-                  <span className={clsx('material-symbols-outlined text-base leading-none shrink-0',
-                    done ? 'text-green-400' : active ? 'text-yellow-400 animate-spin' : 'text-zinc-700'
-                  )}>
-                    {done ? 'check_circle' : active ? 'autorenew' : 'radio_button_unchecked'}
-                  </span>
-                  <span className={clsx('material-symbols-outlined text-sm leading-none shrink-0',
-                    done ? 'text-green-500' : active ? 'text-yellow-400' : 'text-zinc-700'
-                  )}>{step.icon}</span>
-                  <span className={clsx('text-sm flex-1',
-                    done ? 'text-zinc-500 line-through decoration-zinc-700' : active ? 'text-zinc-100 font-medium' : 'text-zinc-600'
-                  )}>{step.label}</span>
-                  {done && <span className="text-xs text-green-500 font-medium">Fatto</span>}
-                </div>
-              )
-            })}
-          </div>
+          {/* Scheda enciclopedia */}
+          <div className="bg-zinc-900 border border-zinc-800 overflow-hidden">
+            {scanEncyLoading && !scanEncyclopedia ? (
+              <div className="p-6 animate-pulse space-y-3">
+                <div className="h-3 bg-zinc-800 rounded w-1/3" />
+                <div className="h-5 bg-zinc-800 rounded w-2/3" />
+                <div className="h-3 bg-zinc-800 rounded w-full" />
+                <div className="h-3 bg-zinc-800 rounded w-5/6" />
+                <div className="h-3 bg-zinc-800 rounded w-4/6" />
+              </div>
+            ) : scanEncyclopedia ? (
+              <div className="flex gap-0 divide-x divide-zinc-800">
+                {/* Colonna sinistra: identità */}
+                <div className="p-6 flex-1 min-w-0 space-y-4">
+                  <div>
+                    <p className="font-label-caps text-[9px] text-zinc-500 uppercase tracking-widest mb-1">
+                      {scanEncyclopedia.brand}
+                    </p>
+                    <h2 className="font-['Space_Grotesk'] font-bold text-xl text-zinc-100 leading-tight">
+                      {scanEncyclopedia.model}
+                    </h2>
+                    <p className="font-mono-data text-xs text-yellow-400 mt-0.5">{scanEncyclopedia.reference}</p>
+                  </div>
 
-          <div className="w-full bg-zinc-800 h-1">
-            <div className="bg-yellow-400 h-1 transition-all duration-700" style={{ width: `${progressPercent}%` }} />
+                  {/* Periodo produzione */}
+                  {(scanEncyclopedia.year_introduced || scanEncyclopedia.year_discontinued) && (
+                    <div className="flex items-center gap-6">
+                      {scanEncyclopedia.year_introduced && (
+                        <div>
+                          <p className="font-label-caps text-[9px] text-zinc-600 uppercase">{lang === 'it' ? 'Anno lancio' : 'Introduced'}</p>
+                          <p className="font-mono-data text-lg text-zinc-100 font-bold">{scanEncyclopedia.year_introduced}</p>
+                        </div>
+                      )}
+                      {scanEncyclopedia.year_discontinued ? (
+                        <div>
+                          <p className="font-label-caps text-[9px] text-zinc-600 uppercase">{lang === 'it' ? 'Fine produzione' : 'Discontinued'}</p>
+                          <p className="font-mono-data text-lg text-red-400 font-bold">{scanEncyclopedia.year_discontinued}</p>
+                        </div>
+                      ) : (
+                        <div>
+                          <p className="font-label-caps text-[9px] text-zinc-600 uppercase">{lang === 'it' ? 'Stato' : 'Status'}</p>
+                          <p className="font-mono-data text-sm text-green-400 font-bold">{lang === 'it' ? 'In produzione' : 'In production'}</p>
+                        </div>
+                      )}
+                      {scanEncyclopedia.is_limited_edition && (
+                        <div className="px-2 py-0.5 bg-amber-900/40 border border-amber-700/40 text-amber-400 text-[9px] font-bold uppercase tracking-widest self-center">
+                          {lang === 'it' ? 'Edizione Limitata' : 'Limited Edition'}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Descrizione */}
+                  {scanEncyclopedia.description && (
+                    <p className="text-zinc-400 text-sm leading-relaxed border-l-2 border-yellow-400/30 pl-3">
+                      {scanEncyclopedia.description}
+                    </p>
+                  )}
+
+                  {/* Storie / curiosità */}
+                  {scanEncyclopedia.stories && scanEncyclopedia.stories.length > 0 && (
+                    <div className="space-y-2">
+                      {scanEncyclopedia.stories.slice(0, 2).map((s, i) => (
+                        <div key={i} className="bg-zinc-800/50 p-3 border-l border-yellow-400/20">
+                          <p className="font-label-caps text-[9px] text-yellow-400/70 uppercase tracking-widest mb-1">{s.category || (lang === 'it' ? 'Storia' : 'History')}</p>
+                          <p className="text-xs text-zinc-400 leading-relaxed line-clamp-3">{s.content}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Colonna destra: specifiche tecniche + prezzi */}
+                <div className="p-6 w-64 flex-shrink-0 space-y-4">
+                  {/* Prezzi */}
+                  {(scanEncyclopedia.retail_price_eur || scanEncyclopedia.avg_market_price_eur) && (
+                    <div className="space-y-2">
+                      <p className="font-label-caps text-[9px] text-zinc-500 uppercase tracking-widest">{lang === 'it' ? 'Prezzi di riferimento' : 'Reference prices'}</p>
+                      {scanEncyclopedia.retail_price_eur && (
+                        <div className="flex justify-between items-baseline">
+                          <span className="text-xs text-zinc-500">{lang === 'it' ? 'Retail' : 'Retail'}</span>
+                          <span className="font-mono-data text-sm text-zinc-300">
+                            {scanEncyclopedia.retail_price_eur.toLocaleString('it-IT')} €
+                          </span>
+                        </div>
+                      )}
+                      {scanEncyclopedia.avg_market_price_eur && (
+                        <div className="flex justify-between items-baseline">
+                          <span className="text-xs text-zinc-500">{lang === 'it' ? 'Mercato medio' : 'Avg market'}</span>
+                          <span className="font-mono-data text-sm text-yellow-400 font-bold">
+                            {scanEncyclopedia.avg_market_price_eur.toLocaleString('it-IT')} €
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Cassa */}
+                  {(scanEncyclopedia.case_material || scanEncyclopedia.case_diameter_mm) && (
+                    <div className="space-y-1.5">
+                      <p className="font-label-caps text-[9px] text-zinc-500 uppercase tracking-widest">{lang === 'it' ? 'Cassa' : 'Case'}</p>
+                      {scanEncyclopedia.case_material && (
+                        <div className="flex justify-between">
+                          <span className="text-xs text-zinc-500">{lang === 'it' ? 'Materiale' : 'Material'}</span>
+                          <span className="text-xs text-zinc-300">{scanEncyclopedia.case_material}</span>
+                        </div>
+                      )}
+                      {scanEncyclopedia.case_diameter_mm && (
+                        <div className="flex justify-between">
+                          <span className="text-xs text-zinc-500">{lang === 'it' ? 'Diametro' : 'Diameter'}</span>
+                          <span className="font-mono-data text-xs text-zinc-300">{scanEncyclopedia.case_diameter_mm} mm</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Quadrante */}
+                  {scanEncyclopedia.dial_color && (
+                    <div className="space-y-1.5">
+                      <p className="font-label-caps text-[9px] text-zinc-500 uppercase tracking-widest">{lang === 'it' ? 'Quadrante' : 'Dial'}</p>
+                      <div className="flex justify-between">
+                        <span className="text-xs text-zinc-500">{lang === 'it' ? 'Colore' : 'Color'}</span>
+                        <span className="text-xs text-zinc-300">{scanEncyclopedia.dial_color}</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Movimento */}
+                  {(scanEncyclopedia.movement_type || scanEncyclopedia.movement_caliber) && (
+                    <div className="space-y-1.5">
+                      <p className="font-label-caps text-[9px] text-zinc-500 uppercase tracking-widest">{lang === 'it' ? 'Movimento' : 'Movement'}</p>
+                      {scanEncyclopedia.movement_type && (
+                        <div className="flex justify-between">
+                          <span className="text-xs text-zinc-500">{lang === 'it' ? 'Tipo' : 'Type'}</span>
+                          <span className="text-xs text-zinc-300">{scanEncyclopedia.movement_type}</span>
+                        </div>
+                      )}
+                      {scanEncyclopedia.movement_caliber && (
+                        <div className="flex justify-between">
+                          <span className="text-xs text-zinc-500">Calibro</span>
+                          <span className="font-mono-data text-xs text-zinc-300">{scanEncyclopedia.movement_caliber}</span>
+                        </div>
+                      )}
+                      {scanEncyclopedia.power_reserve_h && (
+                        <div className="flex justify-between">
+                          <span className="text-xs text-zinc-500">{lang === 'it' ? 'Riserva' : 'Reserve'}</span>
+                          <span className="font-mono-data text-xs text-zinc-300">{scanEncyclopedia.power_reserve_h}h</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+            ) : (
+              /* Nessun dato enciclopedia */
+              <div className="p-6 flex items-center gap-4">
+                <span className="material-symbols-outlined text-4xl text-zinc-700">watch</span>
+                <div>
+                  <p className="font-['Space_Grotesk'] font-semibold text-zinc-300 text-sm mb-0.5">
+                    {reference.toUpperCase()}
+                  </p>
+                  <p className="text-xs text-zinc-600">
+                    {lang === 'it'
+                      ? 'Referenza non ancora in enciclopedia — i risultati di mercato sono in arrivo...'
+                      : 'Reference not in encyclopedia yet — market results incoming...'}
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
-          <p className="text-[10px] text-zinc-600 uppercase tracking-widest mt-3 text-center">
-            {t.scanDuration}
-          </p>
         </div>
       )}
 
@@ -677,6 +876,50 @@ export default function SearchPage() {
               )}
             </div>
           </div>
+
+          {/* Related Listings — collapsible */}
+          {result.related_listings && result.related_listings.length > 0 && (
+            <div className="mt-6 border border-zinc-800 rounded-none bg-zinc-950">
+              <button
+                onClick={() => setShowRelated(v => !v)}
+                className="w-full flex items-center justify-between px-6 py-4 text-left hover:bg-zinc-900 transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <span className="material-symbols-outlined text-zinc-500">blur_on</span>
+                  <div>
+                    <span className="font-['Space_Grotesk'] font-semibold text-zinc-300 text-sm">
+                      {t.relatedListingsTitle}
+                    </span>
+                    <span className="ml-2 text-xs bg-zinc-800 text-zinc-400 px-2 py-0.5 rounded-full">
+                      {result.related_listings.length}
+                    </span>
+                  </div>
+                  <span className="text-xs text-zinc-600 ml-1">{t.relatedListingsSub}</span>
+                </div>
+                <span className="material-symbols-outlined text-zinc-600 text-base">
+                  {showRelated ? 'expand_less' : 'expand_more'}
+                </span>
+              </button>
+
+              {showRelated && (
+                <div className="px-6 pb-6 space-y-4">
+                  {result.related_listings.map((listing, i) => (
+                    <div key={`rel-${listing.source}-${listing.url}-${i}`} className="relative">
+                      <div className="absolute top-3 right-3 z-10 flex items-center gap-1 bg-amber-900/60 border border-amber-700/50 px-2 py-0.5 rounded text-[10px] font-bold tracking-widest text-amber-400 uppercase">
+                        <span className="material-symbols-outlined text-[11px]">blur_on</span>
+                        {lang === 'it' ? 'CORRELATO' : 'RELATED'}
+                      </div>
+                      <ListingCard
+                        listing={listing}
+                        isBest={false}
+                        isBestDeal={false}
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       )}
     </div>
