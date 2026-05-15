@@ -605,3 +605,33 @@ async def news_stats():
         return get_stats()
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# ── Waitlist ──────────────────────────────────────────────────────────────────
+
+WAITLIST_FILE = Path("data/waitlist.txt")
+
+@app.post("/waitlist")
+async def add_to_waitlist(payload: dict):
+    """Salva email nella waitlist di lancio."""
+    email = (payload.get("email") or "").strip().lower()
+    if not email or "@" not in email or "." not in email.split("@")[-1]:
+        raise HTTPException(status_code=400, detail="Email non valida")
+    WAITLIST_FILE.parent.mkdir(parents=True, exist_ok=True)
+    # Evita duplicati
+    existing = set()
+    if WAITLIST_FILE.exists():
+        existing = {l.strip() for l in WAITLIST_FILE.read_text().splitlines() if l.strip()}
+    if email not in existing:
+        with open(WAITLIST_FILE, "a") as f:
+            f.write(f"{email}\n")
+        logger.info(f"Waitlist: +{email} (totale: {len(existing)+1})")
+    return {"ok": True, "already_registered": email in existing}
+
+@app.get("/waitlist")
+async def get_waitlist():
+    """Visualizza la waitlist (solo in locale)."""
+    if not WAITLIST_FILE.exists():
+        return {"emails": [], "count": 0}
+    emails = [l.strip() for l in WAITLIST_FILE.read_text().splitlines() if l.strip()]
+    return {"emails": emails, "count": len(emails)}
