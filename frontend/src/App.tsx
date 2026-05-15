@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Routes, Route, useNavigate } from 'react-router-dom'
 import Sidebar from './components/Sidebar'
 import WatchBackground from './components/WatchBackground'
+import SplashGate, { useSplashGate } from './components/SplashGate'
 import HomePage from './pages/HomePage'
 import SearchPage from './pages/SearchPage'
 import AgentsPage from './pages/AgentsPage'
@@ -86,6 +87,12 @@ function TopBar() {
 }
 
 export default function App() {
+  const { unlocked, unlock } = useSplashGate()
+
+  if (!unlocked) {
+    return <SplashGate onUnlock={unlock} />
+  }
+
   return (
     <div className="flex h-screen overflow-hidden bg-zinc-950">
       <WatchBackground />
