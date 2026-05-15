@@ -20,8 +20,32 @@ _agents = {
 }
 
 
-def _sort_and_deduplicate(listings: list[WatchListing], reference: str = "") -> list[WatchListing]:
-    """Rimuove duplicati per URL, filtra outlier di prezzo, ordina per prezzo crescente."""
+def _normalize_ref(s: str) -> str:
+    """Normalizza una referenza: uppercase, rimuove spazi e trattini."""
+    return s.upper().replace(" ", "").replace("-", "")
+
+
+def _is_exact_match(listing_ref: str, query_ref: str) -> bool:
+    """
+    True se la referenza del listing corrisponde esattamente alla query.
+    Confronto case-insensitive, ignorando spazi e trattini.
+    """
+    norm_query = _normalize_ref(query_ref)
+    norm_listing = _normalize_ref(listing_ref)
+    return norm_query in norm_listing or norm_listing in norm_query
+
+
+def _sort_and_deduplicate(
+    listings: list[WatchListing],
+    reference: str = "",
+) -> tuple[list[WatchListing], list[WatchListing]]:
+    """
+    Rimuove duplicati per URL, filtra outlier di prezzo, ordina per prezzo crescente.
+
+    Ritorna una tupla (exact_matches, related):
+    - exact_matches: listing che corrispondono esattamente alla referenza cercata
+    - related: listing della stessa famiglia ma con variante diversa (es. 5711/1G vs 5711/1A)
+    """
     try:
         from watch_db import is_price_plausible
         _price_check = lambda ref, price: is_price_plausible(ref, price)
@@ -29,8 +53,10 @@ def _sort_and_deduplicate(listings: list[WatchListing], reference: str = "") -> 
         _price_check = lambda ref, price: True
 
     seen_urls = set()
-    unique = []
+    exact: list[WatchListing] = []
+    related: list[WatchListing] = []
     skipped = 0
+
     for l in listings:
         if l.url in seen_urls:
             continue
@@ -53,12 +79,22 @@ def _sort_and_deduplicate(listings: list[WatchListing], reference: str = "") -> 
             skipped += 1
             continue
 
-        unique.append(l)
+        # Separa exact match da related
+        if reference:
+            listing_ref_field = getattr(l, "reference", "") or ""
+            listing_description = getattr(l, "description", "") or ""
+            # Controlla sia il campo reference che la description
+            if _is_exact_match(listing_ref_field, reference) or _is_exact_match(listing_description, reference):
+                exact.append(l)
+            else:
+                related.append(l)
+        else:
+            exact.append(l)
 
     if skipped:
         logger.debug(f"Filtrati {skipped} listing con prezzo non plausibile")
 
-    return sorted(unique, key=lambda x: x.price)
+    return sorted(exact, key=lambda x: x.price), sorted(related, key=lambda x: x.price)
 
 
 async def _apply_vision_filter(listings: list[WatchListing]) -> list[WatchListing]:
@@ -76,6 +112,9 @@ async def run_scan(query: WatchQuery) -> ScanResult:
     Esegue tutti gli agenti in parallelo e aggrega i risultati.
     Gli errori di un singolo agente non bloccano gli altri.
     """
+    # Normalizza referenza: strip + uppercase per matching coerente
+    query = query.model_copy(update={"reference": query.reference.strip().upper()})
+
     start_time = datetime.now()
     scan_id = str(uuid.uuid4())[:8]
 
@@ -118,21 +157,26 @@ async def run_scan(query: WatchQuery) -> ScanResult:
     except Exception as e:
         logger.debug(f"[{scan_id}] stories_ai merge error: {e}")
 
-    listings = _sort_and_deduplicate(all_listings, reference=query.reference)
+    listings, related_listings = _sort_and_deduplicate(all_listings, reference=query.reference)
 
     # Filtra per max_price se specificato
     if query.max_price:
         listings = [l for l in listings if l.price <= query.max_price]
+        related_listings = [l for l in related_listings if l.price <= query.max_price]
 
     best = listings[0] if listings else None
     duration = (datetime.now() - start_time).total_seconds()
 
-    logger.info(f"[{scan_id}] Done | found={len(listings)} | best={best.price if best else 'N/A'} | {duration:.2f}s")
+    logger.info(
+        f"[{scan_id}] Done | found={len(listings)} exact + {len(related_listings)} related"
+        f" | best={best.price if best else 'N/A'} | {duration:.2f}s"
+    )
 
     return ScanResult(
         scan_id=scan_id,
         query=query,
         listings=listings,
+        related_listings=related_listings,
         best_price=best.price if best else None,
         best_listing=best,
         total_found=len(listings),

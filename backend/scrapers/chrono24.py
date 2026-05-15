@@ -4,6 +4,7 @@ Usa Playwright (browser headless) per bypassare Cloudflare.
 Restituisce listing individuali con URL diretto all'annuncio.
 """
 import re
+import random
 import asyncio
 from datetime import datetime
 from playwright.async_api import async_playwright, BrowserContext
@@ -25,6 +26,14 @@ CONDITION_MAP = {
     "good": "good",
     "fair": "fair",
 }
+
+_USER_AGENTS = [
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 13_4) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.5 Safari/605.1.15",
+    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:125.0) Gecko/20100101 Firefox/125.0",
+]
 
 
 def _parse_price(text: str) -> float | None:
@@ -54,23 +63,54 @@ def _parse_condition(text: str) -> str:
     return "unknown"
 
 
-async def scrape(reference: str, context: BrowserContext) -> list[WatchListing]:
+async def _scrape_attempt(reference: str, context: BrowserContext) -> tuple[list[WatchListing], int, str]:
+    """
+    Singolo tentativo di scraping. Ritorna (listings, status_code, response_preview).
+    status_code è -1 se non recuperato (es. timeout/errore di rete).
+    """
     page = await context.new_page()
-    await page.add_init_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
+
+    # Extra headers per sembrare traffico organico
+    await page.set_extra_http_headers({
+        "Accept-Language": "it-IT,it;q=0.9,en;q=0.8",
+        "Referer": "https://www.google.com/",
+    })
+    await page.add_init_script(
+        "Object.defineProperty(navigator, 'webdriver', {get: () => undefined})"
+    )
+
     listings = []
+    status_code = -1
+    response_preview = ""
+
     try:
         url = f"https://www.chrono24.it/search/index.htm?query={reference}&dosearch=1&resultview=list"
-        logger.info(f"Chrono24: scraping {reference}")
-        await page.goto(url, timeout=40000, wait_until="domcontentloaded")
+
+        response = await page.goto(url, timeout=40000, wait_until="domcontentloaded")
+        if response:
+            status_code = response.status
+            if status_code != 200:
+                try:
+                    body = await response.text()
+                    response_preview = body[:200]
+                except Exception:
+                    response_preview = "(body non leggibile)"
+                return listings, status_code, response_preview
+
         await page.wait_for_timeout(8000)  # JS listing cards need time to render
 
-        # Estrai tutti i link di listing con il loro testo (che include prezzo)
+        # Estrai tutti i link di listing con il loro testo (che include prezzo) e immagine
         raw_links = await page.evaluate("""
             () => Array.from(document.querySelectorAll('a[href*="--id"]'))
                 .filter(a => a.innerText.includes('€'))
                 .map(a => ({
                     href: a.href,
-                    text: a.innerText.trim()
+                    text: a.innerText.trim(),
+                    image: a.querySelector('img')?.src
+                        || a.querySelector('img')?.dataset.src
+                        || a.closest('article,div[class*="article"],div[class*="card"]')?.querySelector('img')?.src
+                        || a.closest('article,div[class*="article"],div[class*="card"]')?.querySelector('img')?.dataset.src
+                        || null
                 }))
         """)
 
@@ -119,15 +159,50 @@ async def scrape(reference: str, context: BrowserContext) -> list[WatchListing]:
                 scraped_at=datetime.now(),
                 location=location,
                 description=description or title,
+                image_url=item.get("image") or None,
             ))
 
-        logger.info(f"Chrono24: {len(listings)} listing trovati per {reference}")
     except Exception as e:
-        logger.error(f"Chrono24 scrape error: {e}")
+        logger.error(f"Chrono24 attempt error: {e}")
     finally:
         await page.close()
 
-    return listings
+    return listings, status_code, response_preview
+
+
+async def scrape(reference: str, context: BrowserContext) -> list[WatchListing]:
+    logger.info(f"Chrono24: scraping {reference}")
+
+    max_attempts = 3
+    last_status = -1
+    last_preview = ""
+
+    for attempt in range(1, max_attempts + 1):
+        if attempt > 1:
+            logger.info(f"Chrono24: tentativo {attempt}/{max_attempts} per {reference} (delay 3s)")
+            await asyncio.sleep(3)
+
+        listings, status_code, response_preview = await _scrape_attempt(reference, context)
+        last_status = status_code
+        last_preview = response_preview
+
+        if status_code not in (-1, 200):
+            logger.warning(
+                f"Chrono24: tentativo {attempt} status {status_code} | preview: {response_preview!r}"
+            )
+            continue
+
+        if listings:
+            logger.info(f"Chrono24: {len(listings)} listing trovati per {reference} (tentativo {attempt})")
+            return listings
+
+        logger.debug(f"Chrono24: tentativo {attempt} — 0 risultati per {reference}")
+
+    logger.warning(
+        f"Chrono24: 0 risultati dopo {max_attempts} tentativi per {reference} | "
+        f"ultimo status={last_status} | preview={last_preview!r}"
+    )
+    return []
 
 
 async def scrape_standalone(reference: str) -> list[WatchListing]:
@@ -135,7 +210,7 @@ async def scrape_standalone(reference: str) -> list[WatchListing]:
     async with async_playwright() as pw:
         browser = await pw.chromium.launch(headless=True)
         context = await browser.new_context(
-            user_agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+            user_agent=random.choice(_USER_AGENTS),
             locale="it-IT",
             timezone_id="Europe/Rome",
         )

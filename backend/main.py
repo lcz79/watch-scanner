@@ -1,10 +1,12 @@
 import asyncio
+import time as _time
 from fastapi import FastAPI, HTTPException, BackgroundTasks, File, UploadFile
 import base64
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 import uuid
 from datetime import datetime
+from pathlib import Path as _Path
 
 from config import get_settings
 from models.schemas import WatchQuery, ScanResult, AlertConfig, Alert, AgentStatus
@@ -79,6 +81,16 @@ async def lifespan(app: FastAPI):
     init_news_db()
     tasks.append(asyncio.create_task(start_news_scheduler()))
     logger.info("News scheduler avviato (ogni 12h)")
+
+    # Avvia backup scheduler (ogni 24h)
+    from utils.backup import start_backup_scheduler
+    tasks.append(asyncio.create_task(start_backup_scheduler()))
+    logger.info("Backup scheduler avviato (ogni 24h)")
+
+    # Avvia IG session monitor (ogni 24h)
+    from utils.ig_session_monitor import start_session_monitor
+    tasks.append(asyncio.create_task(start_session_monitor(settings)))
+    logger.info("IG session monitor avviato")
 
     yield
 
@@ -605,3 +617,79 @@ async def news_stats():
         return get_stats()
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# ── System endpoints ────────────────────────────────────────────────────────────
+
+_startup_time: float = _time.time()
+
+
+@app.get("/system/health-full")
+async def system_health_full():
+    """
+    Stato completo di tutti i componenti del sistema:
+    - Dimensioni dei DB SQLite in data/
+    - Recency dei backup
+    - Validità sessione Instagram
+    - Conteggio news
+    - Uptime
+    """
+    data_dir = _Path(__file__).parent / "data"
+
+    # DB sizes
+    db_sizes: dict[str, int] = {}
+    if data_dir.exists():
+        for db_file in sorted(data_dir.glob("*.db")):
+            db_sizes[db_file.name] = db_file.stat().st_size
+
+    # Backup recency
+    from utils.backup import get_backup_status
+    backup_status = get_backup_status()
+
+    # IG session validity
+    from utils.ig_session_monitor import check_session_valid
+    ig_valid, ig_message = check_session_valid()
+
+    # News count
+    news_count: int = 0
+    try:
+        from agents.news_agent import get_stats as get_news_stats
+        news_stats_data = get_news_stats()
+        news_count = news_stats_data.get("total", 0)
+    except Exception:
+        pass
+
+    # Uptime
+    uptime_seconds = int(_time.time() - _startup_time)
+    uptime_str = f"{uptime_seconds // 3600}h {(uptime_seconds % 3600) // 60}m {uptime_seconds % 60}s"
+
+    return {
+        "status": "ok",
+        "uptime": uptime_str,
+        "uptime_seconds": uptime_seconds,
+        "dbs": {
+            name: {"size_bytes": size, "size_kb": size // 1024}
+            for name, size in db_sizes.items()
+        },
+        "backups": backup_status,
+        "ig_session": {
+            "valid": ig_valid,
+            "message": ig_message,
+        },
+        "news": {
+            "total": news_count,
+        },
+        "checked_at": datetime.now().isoformat(),
+    }
+
+
+@app.post("/system/backup")
+async def trigger_backup(background_tasks: BackgroundTasks):
+    """Avvia manualmente il backup di tutti i DB SQLite."""
+    from utils.backup import backup_all_dbs
+
+    def _run():
+        return backup_all_dbs()
+
+    background_tasks.add_task(_run)
+    return {"status": "backup avviato in background", "check": "/system/health-full"}

@@ -136,6 +136,56 @@ def has_valid_auth() -> bool:
     return AUTH_STATE_FILE.exists()
 
 
+def check_session_health() -> dict:
+    """
+    Verifica se la sessione IG è ancora valida facendo una lettura
+    del cookie `sessionid` da data/ig_browser_auth.json (pagina protetta).
+    Non apre il browser — legge solo il JSON.
+
+    Ritorna: {"valid": bool, "expires_at": str|None, "days_left": int|None}
+    """
+    if not AUTH_STATE_FILE.exists():
+        return {"valid": False, "expires_at": None, "days_left": None}
+
+    try:
+        state = json.loads(AUTH_STATE_FILE.read_text())
+    except (json.JSONDecodeError, OSError) as e:
+        logger.warning(f"check_session_health: impossibile leggere auth file: {e}")
+        return {"valid": False, "expires_at": None, "days_left": None}
+
+    cookies = state.get("cookies", [])
+    session_cookie = next(
+        (c for c in cookies if c.get("name") == "sessionid" and "instagram" in c.get("domain", "")),
+        None,
+    )
+
+    if not session_cookie:
+        logger.warning("check_session_health: cookie sessionid non trovato nell'auth state")
+        return {"valid": False, "expires_at": None, "days_left": None}
+
+    expiration_ts = session_cookie.get("expires") or session_cookie.get("expirationDate")
+    if not expiration_ts:
+        # Cookie di sessione senza scadenza esplicita: assumiamo valido ma senza info
+        logger.debug("check_session_health: sessionid presente ma senza expirationDate")
+        return {"valid": True, "expires_at": None, "days_left": None}
+
+    try:
+        expiration_ts = float(expiration_ts)
+        expires_dt = datetime.utcfromtimestamp(expiration_ts)
+        expires_at_str = expires_dt.strftime("%Y-%m-%dT%H:%M:%SZ")
+        now = datetime.utcnow()
+        days_left = (expires_dt - now).days
+        valid = days_left > 0
+        if not valid:
+            logger.warning(f"check_session_health: sessione scaduta il {expires_at_str}")
+        else:
+            logger.debug(f"check_session_health: sessione valida, scade il {expires_at_str} ({days_left} giorni)")
+        return {"valid": valid, "expires_at": expires_at_str, "days_left": days_left}
+    except (ValueError, TypeError, OSError) as e:
+        logger.warning(f"check_session_health: errore parsing expirationDate: {e}")
+        return {"valid": False, "expires_at": None, "days_left": None}
+
+
 async def capture_stories(
     username: str,
     max_frames: int = 15,

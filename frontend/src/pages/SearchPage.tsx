@@ -14,7 +14,7 @@ const QUICK_REFS = ['116610LN', '126710BLNR', '5711/1A', '116500LN', '15500ST']
 
 const ALL_SOURCES = ['chrono24', 'ebay', 'instagram', 'instagram_story', 'watchbox', 'watchfinder', 'subito', 'vision_ai', 'tiktok', 'reseller_website']
 
-const SOURCE_LABELS: Record<string, string> = {
+const SOURCE_LABELS_BASE: Record<string, string> = {
   chrono24: 'Chrono24',
   watchbox: 'WatchBox',
   ebay: 'eBay',
@@ -25,7 +25,11 @@ const SOURCE_LABELS: Record<string, string> = {
   tiktok: 'TikTok',
   vision_ai: 'Vision AI',
   subito: 'Subito.it',
-  reseller_website: 'Sito Reseller',
+}
+
+function getSourceLabel(source: string, resellerWebsite: string): string {
+  if (source === 'reseller_website') return resellerWebsite
+  return SOURCE_LABELS_BASE[source] || source
 }
 
 const SOURCE_COLORS: Record<string, string> = {
@@ -41,13 +45,18 @@ const SOURCE_COLORS: Record<string, string> = {
   reseller_website: 'text-violet-400 bg-violet-400/10 border-violet-400/20',
 }
 
-const SCAN_STEPS = [
-  { label: 'Connessione agli agenti', icon: 'wifi' },
-  { label: 'Scansione Chrono24',       icon: 'language' },
-  { label: 'Scansione eBay',           icon: 'sell' },
-  { label: 'Analisi Instagram + Subito.it', icon: 'bolt' },
-  { label: 'Aggregazione risultati',   icon: 'bar_chart' },
-]
+const SOURCE_BADGE_COLORS: Record<string, string> = {
+  chrono24: 'bg-yellow-500/90 text-zinc-950',
+  ebay: 'bg-blue-600/90 text-white',
+  instagram: 'bg-purple-600/90 text-white',
+  instagram_story: 'bg-purple-700/90 text-white',
+  watchbox: 'bg-violet-600/90 text-white',
+  watchfinder: 'bg-green-600/90 text-white',
+  tiktok: 'bg-cyan-600/90 text-white',
+  vision_ai: 'bg-amber-500/90 text-zinc-950',
+  subito: 'bg-orange-500/90 text-white',
+  reseller_website: 'bg-zinc-600/90 text-white',
+}
 
 const SCAN_DURATIONS = [3000, 15000, 8000, 10000, 4000]
 
@@ -124,12 +133,15 @@ function ListingCard({ listing, isBest, isBestDeal = false }: {
   listing: WatchListing; isBest: boolean; isBestDeal?: boolean
 }) {
   const { t, lang } = useLang()
+  const [imgError, setImgError] = useState(false)
   const sourceColor = SOURCE_COLORS[listing.source] || 'text-zinc-400 bg-zinc-400/10 border-zinc-400/20'
+  const badgeColor = SOURCE_BADGE_COLORS[listing.source] || 'bg-zinc-600/90 text-white'
   const isSocial = ['instagram', 'vision_ai', 'tiktok', 'instagram_story'].includes(listing.source)
   const conditionLabels = lang === 'it'
     ? { new: 'Nuovo', mint: 'Perfetto', good: 'Buono', fair: 'Discreto', unknown: 'N/D' }
     : { new: 'New', mint: 'Mint', good: 'Good', fair: 'Fair', unknown: 'N/A' }
   const conditionLabel = (conditionLabels as Record<string,string>)[listing.condition] ?? listing.condition
+  const showImage = !!listing.image_url && !imgError
 
   return (
     <a
@@ -155,9 +167,30 @@ function ListingCard({ listing, isBest, isBestDeal = false }: {
         </div>
       )}
 
-      {/* Image placeholder */}
-      <div className="w-48 h-48 bg-zinc-950 border border-zinc-800 overflow-hidden flex-shrink-0 flex items-center justify-center grayscale group-hover:grayscale-0 transition-all">
-        <span className="material-symbols-outlined text-5xl text-zinc-700">watch</span>
+      {/* Image */}
+      <div className="relative flex-shrink-0 overflow-hidden" style={{ width: '192px', aspectRatio: '4/3' }}>
+        {showImage ? (
+          <img
+            src={listing.image_url!}
+            alt={listing.seller}
+            loading="lazy"
+            onError={() => setImgError(true)}
+            className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all"
+          />
+        ) : (
+          <div className="w-full h-full bg-zinc-800 border border-zinc-700 flex flex-col items-center justify-center gap-2">
+            <span className="material-symbols-outlined text-5xl text-zinc-600">watch</span>
+            <span className="text-[10px] uppercase tracking-widest text-zinc-600 font-bold">
+              {listing.source}
+            </span>
+          </div>
+        )}
+        <span className={clsx(
+          'absolute bottom-2 left-2 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider rounded-sm',
+          badgeColor
+        )}>
+          {getSourceLabel(listing.source, listing.source)}
+        </span>
       </div>
 
       {/* Content */}
@@ -188,7 +221,7 @@ function ListingCard({ listing, isBest, isBestDeal = false }: {
         <div className="mt-auto flex items-center justify-between border-t border-zinc-800 pt-4">
           <div className="flex gap-4 flex-wrap">
             <span className={clsx('px-2 py-1 text-[10px] font-bold uppercase border', sourceColor)}>
-              {SOURCE_LABELS[listing.source] || listing.source}
+              {getSourceLabel(listing.source, t.resellerWebsite)}
             </span>
             {listing.location && (
               <span className="flex items-center gap-1 text-zinc-500 text-xs">
@@ -235,10 +268,19 @@ export default function SearchPage() {
   const [filterPriceMin, setFilterPriceMin] = useState('')
   const [filterPriceMax, setFilterPriceMax] = useState('')
   const [filterSources, setFilterSources] = useState<Set<string>>(new Set())
+  const [relatedOpen, setRelatedOpen] = useState(false)
   const scanStepRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [identifying, setIdentifying] = useState(false)
   const [identifyResult, setIdentifyResult] = useState<{brand:string|null;model:string|null;reference:string|null;confidence:number;notes:string|null}|null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const SCAN_STEPS = [
+    { label: t.scanStep0, icon: 'wifi' },
+    { label: t.scanStep1, icon: 'language' },
+    { label: t.scanStep2, icon: 'sell' },
+    { label: t.scanStep3, icon: 'bolt' },
+    { label: t.scanStep4, icon: 'bar_chart' },
+  ]
 
   const { mutate, isPending } = useMutation({
     mutationFn: scanWatch,
@@ -251,7 +293,7 @@ export default function SearchPage() {
     onError: (err: any) => {
       if (scanStepRef.current) clearTimeout(scanStepRef.current)
       setScanStep(0)
-      setError(err?.response?.data?.detail || err?.message || 'Errore durante la scansione')
+      setError(err?.response?.data?.detail || err?.message || t.errorScan)
     },
   })
 
@@ -266,10 +308,10 @@ export default function SearchPage() {
         setIdentifyResult(r)
         if (r.reference) setReference(r.reference)
       } else {
-        setIdentifyResult({ brand:null, model:null, reference:null, confidence:0, notes:'Orologio non riconosciuto' })
+        setIdentifyResult({ brand:null, model:null, reference:null, confidence:0, notes: t.errorNotRecognised })
       }
     } catch {
-      setIdentifyResult({ brand:null, model:null, reference:null, confidence:0, notes:'Errore durante il riconoscimento' })
+      setIdentifyResult({ brand:null, model:null, reference:null, confidence:0, notes: t.errorRecognition })
     } finally {
       setIdentifying(false)
       if (fileInputRef.current) fileInputRef.current.value = ''
@@ -283,7 +325,7 @@ export default function SearchPage() {
     saveRecentSearch(target.toUpperCase())
     setError(null); setResult(null); setScanStep(0)
     setFilterGeo('all'); setFilterSet('all'); setFilterSeller('')
-    setFilterPriceMin(''); setFilterPriceMax(''); setFilterSources(new Set())
+    setFilterPriceMin(''); setFilterPriceMax(''); setFilterSources(new Set()); setRelatedOpen(false)
     let step = 0
     const advance = () => {
       step += 1
@@ -458,50 +500,79 @@ export default function SearchPage() {
 
       {/* ── Loading ── */}
       {isPending && (
-        <div className="bg-zinc-900 border border-zinc-800 p-[24px]">
-          <div className="flex items-center gap-3 mb-6">
-            <span className="material-symbols-outlined text-2xl text-yellow-400 animate-spin">autorenew</span>
-            <div>
-              <p className="font-['Space_Grotesk'] font-semibold text-zinc-100 text-sm">
-                {t.scanningFor} <span className="text-yellow-400">{reference.toUpperCase()}</span>
+        <div className="bg-zinc-900 border border-zinc-800 overflow-hidden">
+          <div className="flex flex-col md:flex-row">
+
+            {/* Left: emotional image */}
+            <div className="relative md:w-[340px] shrink-0 h-[220px] md:h-auto overflow-hidden">
+              <img
+                src="/daytona-16520.jpg"
+                alt="Rolex Daytona 16520"
+                className="w-full h-full object-cover object-center grayscale brightness-75"
+                style={{ filter: 'grayscale(1) brightness(0.55) contrast(1.15)' }}
+              />
+              {/* gold shimmer overlay — pulsates like a heartbeat */}
+              <div
+                className="absolute inset-0 bg-gradient-to-tr from-yellow-500/0 via-yellow-400/10 to-yellow-500/0"
+                style={{ animation: 'pulse 2.4s ease-in-out infinite' }}
+              />
+              {/* vignette */}
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-zinc-900 hidden md:block" />
+              <div className="absolute inset-0 bg-gradient-to-b from-transparent to-zinc-900 md:hidden" />
+              {/* caption */}
+              <div className="absolute bottom-3 left-3">
+                <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-yellow-400/70">Rolex Daytona</p>
+                <p className="text-[8px] uppercase tracking-widest text-zinc-500">Ref. 16520 · Zenith El Primero</p>
+              </div>
+            </div>
+
+            {/* Right: steps + progress */}
+            <div className="flex-1 p-[24px] flex flex-col">
+              <div className="flex items-center gap-3 mb-6">
+                <span className="material-symbols-outlined text-2xl text-yellow-400 animate-spin">autorenew</span>
+                <div>
+                  <p className="font-['Space_Grotesk'] font-semibold text-zinc-100 text-sm">
+                    {t.scanningFor} <span className="text-yellow-400">{reference.toUpperCase()}</span>
+                  </p>
+                  <p className="text-[10px] text-zinc-500 uppercase tracking-widest mt-0.5">{t.agentsActive}</p>
+                </div>
+              </div>
+
+              <div className="space-y-2 mb-6 flex-1">
+                {SCAN_STEPS.map((step, i) => {
+                  const done = i < scanStep
+                  const active = i === scanStep
+                  return (
+                    <div key={i} className={clsx(
+                      'flex items-center gap-3 px-3 py-2.5 transition-all',
+                      active && 'bg-yellow-400/5 border border-yellow-400/15',
+                      done && 'opacity-50'
+                    )}>
+                      <span className={clsx('material-symbols-outlined text-base leading-none shrink-0',
+                        done ? 'text-green-400' : active ? 'text-yellow-400 animate-spin' : 'text-zinc-700'
+                      )}>
+                        {done ? 'check_circle' : active ? 'autorenew' : 'radio_button_unchecked'}
+                      </span>
+                      <span className={clsx('material-symbols-outlined text-sm leading-none shrink-0',
+                        done ? 'text-green-500' : active ? 'text-yellow-400' : 'text-zinc-700'
+                      )}>{step.icon}</span>
+                      <span className={clsx('text-sm flex-1',
+                        done ? 'text-zinc-500 line-through decoration-zinc-700' : active ? 'text-zinc-100 font-medium' : 'text-zinc-600'
+                      )}>{step.label}</span>
+                      {done && <span className="text-xs text-green-500 font-medium">{t.stepDone}</span>}
+                    </div>
+                  )
+                })}
+              </div>
+
+              <div className="w-full bg-zinc-800 h-1">
+                <div className="bg-yellow-400 h-1 transition-all duration-700" style={{ width: `${progressPercent}%` }} />
+              </div>
+              <p className="text-[10px] text-zinc-600 uppercase tracking-widest mt-3 text-center">
+                {t.scanDuration}
               </p>
-              <p className="text-[10px] text-zinc-500 uppercase tracking-widest mt-0.5">{t.agentsActive}</p>
             </div>
           </div>
-
-          <div className="space-y-2 mb-6">
-            {SCAN_STEPS.map((step, i) => {
-              const done = i < scanStep
-              const active = i === scanStep
-              return (
-                <div key={i} className={clsx(
-                  'flex items-center gap-3 px-3 py-2.5 transition-all',
-                  active && 'bg-yellow-400/5 border border-yellow-400/15',
-                  done && 'opacity-50'
-                )}>
-                  <span className={clsx('material-symbols-outlined text-base leading-none shrink-0',
-                    done ? 'text-green-400' : active ? 'text-yellow-400 animate-spin' : 'text-zinc-700'
-                  )}>
-                    {done ? 'check_circle' : active ? 'autorenew' : 'radio_button_unchecked'}
-                  </span>
-                  <span className={clsx('material-symbols-outlined text-sm leading-none shrink-0',
-                    done ? 'text-green-500' : active ? 'text-yellow-400' : 'text-zinc-700'
-                  )}>{step.icon}</span>
-                  <span className={clsx('text-sm flex-1',
-                    done ? 'text-zinc-500 line-through decoration-zinc-700' : active ? 'text-zinc-100 font-medium' : 'text-zinc-600'
-                  )}>{step.label}</span>
-                  {done && <span className="text-xs text-green-500 font-medium">Fatto</span>}
-                </div>
-              )
-            })}
-          </div>
-
-          <div className="w-full bg-zinc-800 h-1">
-            <div className="bg-yellow-400 h-1 transition-all duration-700" style={{ width: `${progressPercent}%` }} />
-          </div>
-          <p className="text-[10px] text-zinc-600 uppercase tracking-widest mt-3 text-center">
-            {t.scanDuration}
-          </p>
         </div>
       )}
 
@@ -638,7 +709,7 @@ export default function SearchPage() {
                             }}
                             className="rounded border-zinc-700 bg-zinc-800 text-primary focus:ring-0"
                           />
-                          {SOURCE_LABELS[src] || src}
+                          {getSourceLabel(src, t.resellerWebsite)}
                         </span>
                         <span className="text-[10px] text-zinc-600">{count}</span>
                       </label>

@@ -28,6 +28,7 @@ class ScanResult(BaseModel):
     scan_id: str
     query: WatchQuery
     listings: list[WatchListing]
+    related_listings: list[WatchListing] = []
     best_price: float | None = None
     best_listing: WatchListing | None = None
     total_found: int

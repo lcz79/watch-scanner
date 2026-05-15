@@ -194,6 +194,44 @@ const T = {
     sourcePending: 'Pending',
     totalLots: 'Lots tracked',
     housesConnected: 'Houses connected',
+
+    // SearchPage — scan steps
+    scanStep0: 'Connecting to agents',
+    scanStep1: 'Scanning Chrono24',
+    scanStep2: 'Scanning eBay',
+    scanStep3: 'Analysing Instagram + Subito.it',
+    scanStep4: 'Aggregating results',
+    stepDone: 'Done',
+
+    // SearchPage — source label
+    resellerWebsite: 'Reseller Site',
+
+    // SearchPage — related listings
+    relatedListingsTitle: 'Related Listings',
+    relatedListingsSub: 'Same family, different reference',
+    relatedBadge: 'RELATED',
+    showRelated: 'Show',
+    relatedListingsUnit: 'related listings',
+    hideRelated: 'Hide related listings',
+
+    // SearchPage — errors
+    errorScan: 'Error during scan',
+    errorNotRecognised: 'Watch not recognised',
+    errorRecognition: 'Error during recognition',
+
+    // AgentsPage
+    agentsSystem: 'System',
+    agentsTitle: 'Scanning Agents',
+    agentsSubtitle: 'Status and configuration of active agents',
+    agentsNavAgents: 'Agents',
+    agentDescMarketplace: 'Monitors the main used-watch marketplaces',
+    agentDescSocial: 'Scans reseller posts and stories on social media',
+    agentDescVision: 'Analyses images with GPT-4o to identify references and prices',
+    agentStatusActive: 'Active',
+    agentStatusRunning: 'Running',
+    agentStatusError: 'Error',
+    agentStatusMock: 'Mock',
+    agentMockWarning: 'Mock mode active — configure API keys in .env to enable real scraping',
   },
 
   it: {
@@ -387,6 +425,44 @@ const T = {
     sourcePending: 'In attesa',
     totalLots: 'Lotti monitorati',
     housesConnected: 'Case collegate',
+
+    // SearchPage — scan steps
+    scanStep0: 'Connessione agli agenti',
+    scanStep1: 'Scansione Chrono24',
+    scanStep2: 'Scansione eBay',
+    scanStep3: 'Analisi Instagram + Subito.it',
+    scanStep4: 'Aggregazione risultati',
+    stepDone: 'Fatto',
+
+    // SearchPage — source label
+    resellerWebsite: 'Sito Reseller',
+
+    // SearchPage — related listings
+    relatedListingsTitle: 'Annunci correlati',
+    relatedListingsSub: 'Stessa famiglia, referenza diversa',
+    relatedBadge: 'CORRELATO',
+    showRelated: 'Mostra',
+    relatedListingsUnit: 'annunci correlati',
+    hideRelated: 'Nascondi annunci correlati',
+
+    // SearchPage — errors
+    errorScan: 'Errore durante la scansione',
+    errorNotRecognised: 'Orologio non riconosciuto',
+    errorRecognition: 'Errore durante il riconoscimento',
+
+    // AgentsPage
+    agentsSystem: 'Sistema',
+    agentsTitle: 'Agenti di Scansione',
+    agentsSubtitle: 'Stato e configurazione degli agenti attivi',
+    agentsNavAgents: 'Agenti',
+    agentDescMarketplace: 'Monitora i principali marketplace di orologi usati',
+    agentDescSocial: 'Scannerizza post e stories dei reseller sui social',
+    agentDescVision: 'Analizza immagini con GPT-4o per identificare referenze e prezzi',
+    agentStatusActive: 'Attivo',
+    agentStatusRunning: 'In Esecuzione',
+    agentStatusError: 'Errore',
+    agentStatusMock: 'Mock',
+    agentMockWarning: 'Modalità mock attiva — configura le API key nel file .env per abilitare lo scraping reale',
   },
 } as const
 

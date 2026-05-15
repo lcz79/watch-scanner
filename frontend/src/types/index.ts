@@ -23,6 +23,7 @@ export interface ScanResult {
   scan_id: string
   query: WatchQuery
   listings: WatchListing[]
+  related_listings?: WatchListing[]
   best_price?: number
   best_listing?: WatchListing
   total_found: number
@@ -33,10 +34,15 @@ export interface ScanResult {
 
 export interface AgentStatus {
   name: string
-  status: 'ok' | 'error' | 'mock'
+  status: 'ok' | 'error' | 'mock' | 'running' | 'idle'
   mock_mode: boolean
   last_run?: string
+  items_found?: number
   error?: string
+}
+
+export interface AgentsStatusResponse {
+  agents: AgentStatus[]
 }
 
 export interface AlertConfig {

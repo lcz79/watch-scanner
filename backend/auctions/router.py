@@ -3,6 +3,7 @@ FastAPI router per il sistema aste mondiali.
 Prefisso: /auctions
 """
 from datetime import datetime
+from urllib.parse import quote
 
 from fastapi import APIRouter, HTTPException, Query, BackgroundTasks
 
@@ -24,6 +25,38 @@ logger = get_logger("auctions")
 
 router = APIRouter(prefix="/auctions", tags=["auctions"])
 
+# ---------------------------------------------------------------------------
+# Case d'aste con siti ufficiali
+# ---------------------------------------------------------------------------
+
+AUCTION_HOUSES = {
+    "Christie's": "https://www.christies.com/watches",
+    "Sotheby's": "https://www.sothebys.com/en/departments/watches",
+    "Phillips": "https://www.phillips.com/watches",
+    "Antiquorum": "https://www.antiquorum.swiss",
+    "Bonhams": "https://www.bonhams.com/departments/WAT/",
+}
+
+
+def _fallback_lot_url(record: dict) -> str:
+    """Costruisce un URL di fallback Google per un lotto d'asta senza URL diretto."""
+    house = record.get("auction_house", "")
+    title = record.get("model") or record.get("description") or record.get("reference") or ""
+    brand = record.get("brand", "")
+    query = f"{house} {brand} {title} auction".strip()
+    return f"https://www.google.com/search?q={quote(query)}"
+
+
+def _ensure_lot_urls(records: list[dict]) -> list[dict]:
+    """Garantisce che ogni record abbia un lot_url valido. Se mancante, usa fallback Google."""
+    result = []
+    for r in records:
+        if not r.get("lot_url"):
+            r = dict(r)
+            r["lot_url"] = _fallback_lot_url(r)
+        result.append(r)
+    return result
+
 
 # ---------------------------------------------------------------------------
 # Risultati aste per referenza
@@ -44,7 +77,7 @@ async def get_auction_results(
         raise HTTPException(status_code=400, detail="Reference non può essere vuota")
 
     results = get_results_by_reference(reference, limit=limit, sort_by=sort_by)
-    enriched = enrich_results(results)
+    enriched = _ensure_lot_urls(enrich_results(results))
 
     return {
         "reference": reference,
@@ -126,7 +159,7 @@ async def get_auction_records(
     Ordinati per hammer_price_chf decrescente.
     """
     records = get_records(brand=brand, limit=limit)
-    return enrich_results(records)
+    return _ensure_lot_urls(enrich_results(records))
 
 
 # ---------------------------------------------------------------------------
@@ -185,10 +218,11 @@ async def get_recent_auction_results(
 ) -> dict:
     """Ultimi N risultati d'asta nel DB, qualsiasi referenza."""
     results = get_recent_results(limit=limit)
+    enriched = _ensure_lot_urls(enrich_results(results))
     return {
         "total_in_db": count_results(),
-        "shown": len(results),
-        "results": enrich_results(results),
+        "shown": len(enriched),
+        "results": enriched,
     }
 
 

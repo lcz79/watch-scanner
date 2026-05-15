@@ -1,6 +1,6 @@
 import axios from 'axios'
 import type {
-  WatchQuery, ScanResult, AgentStatus, AlertConfig, Alert,
+  WatchQuery, ScanResult, AgentStatus, AgentsStatusResponse, AlertConfig, Alert,
   AnalysisResult, MarketStats, PriceSnapshot, ScoredListing, Recommendation,
   EncyclopediaWatch, EncyclopediaSearchResult,
   AuctionResult, AuctionSentiment, UpcomingAuction,
@@ -15,8 +15,10 @@ const api = axios.create({
 export const scanWatch = (query: WatchQuery): Promise<ScanResult> =>
   api.post('/scan', query).then(r => r.data)
 
-export const getAgentsStatus = (): Promise<AgentStatus[]> =>
-  api.get('/agents/status').then(r => r.data)
+export async function getAgentsStatus(): Promise<AgentsStatusResponse | AgentStatus[]> {
+  const { data } = await api.get('/agents/status')
+  return data
+}
 
 export const createAlert = (config: AlertConfig): Promise<Alert> =>
   api.post('/alerts', config).then(r => r.data)
