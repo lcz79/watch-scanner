@@ -1,21 +1,26 @@
 services:
   backend:
     build: ./backend
-    ports:
-      - "8000:8000"
-    environment:
-      - MOCK_MODE=true
+    restart: always
+    expose:
+      - "8000"
+    env_file:
+      - ./backend/.env
     volumes:
-      - ./backend:/app
-    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+      - watch_data:/app/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   frontend:
     build: ./frontend
+    restart: always
     ports:
-      - "5173:5173"
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
-    command: npm run dev -- --host
+      - "80:80"
     depends_on:
       - backend
+
+volumes:
+  watch_data:

@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { getAgentsStatus } from '../lib/api'
 import { clsx } from 'clsx'
+import { useLang } from '../lib/lang'
 
 const AGENT_INFO: Record<string, { desc: string; sources: string[]; icon: string }> = {
   marketplace_agent: {
@@ -21,11 +22,53 @@ const AGENT_INFO: Record<string, { desc: string; sources: string[]; icon: string
 }
 
 export default function AgentsPage() {
+  const { lang } = useLang()
   const { data: agents, isLoading } = useQuery({
     queryKey: ['agents-status'],
     queryFn: getAgentsStatus,
     refetchInterval: 10_000,
   })
+
+  const { data: sysHealth } = useQuery({
+    queryKey: ['system-health'],
+    queryFn: async () => {
+      const r = await fetch('/api/system/health-full')
+      if (!r.ok) return null
+      return r.json()
+    },
+    refetchInterval: 30_000,
+    retry: false,
+  })
+
+  const systemStats = [
+    {
+      icon: 'database',
+      label: lang === 'it' ? 'Database' : 'Database',
+      value: sysHealth ? `${sysHealth.db_count ?? '—'} DB` : '—',
+      sub: sysHealth?.total_news ? `${sysHealth.total_news} news` : 'in caricamento...',
+      color: 'text-blue-400',
+    },
+    {
+      icon: 'backup',
+      label: lang === 'it' ? 'Ultimo Backup' : 'Last Backup',
+      value: sysHealth?.last_backup ?? '—',
+      sub: lang === 'it' ? 'automatico ogni 24h' : 'auto every 24h',
+      color: 'text-green-400',
+    },
+    {
+      icon: 'instagram',
+      label: lang === 'it' ? 'Sessione Instagram' : 'Instagram Session',
+      value: sysHealth?.ig_session_valid === true
+        ? (lang === 'it' ? 'Attiva' : 'Active')
+        : sysHealth?.ig_session_valid === false
+        ? (lang === 'it' ? 'Scaduta' : 'Expired')
+        : '—',
+      sub: sysHealth?.ig_days_left != null
+        ? `${sysHealth.ig_days_left} ${lang === 'it' ? 'giorni rimasti' : 'days left'}`
+        : '',
+      color: sysHealth?.ig_session_valid === false ? 'text-red-400' : 'text-yellow-400',
+    },
+  ]
 
   return (
     <div className="p-8 max-w-[1400px] mx-auto">
@@ -33,12 +76,26 @@ export default function AgentsPage() {
       {/* ── Header ── */}
       <div className="mb-8">
         <nav className="flex text-[10px] uppercase tracking-[0.2em] text-zinc-500 mb-2 gap-2">
-          <span className="hover:text-yellow-400 cursor-pointer">Sistema</span>
+          <span className="hover:text-yellow-400 cursor-pointer">{lang === 'it' ? 'Sistema' : 'System'}</span>
           <span>/</span>
-          <span className="text-zinc-300">Agenti</span>
+          <span className="text-zinc-300">{lang === 'it' ? 'Agenti' : 'Agents'}</span>
         </nav>
-        <h2 className="font-h1 text-h1 text-zinc-100">Agenti di Scansione</h2>
-        <p className="text-zinc-500 text-sm mt-1">Stato e configurazione degli agenti attivi</p>
+        <h2 className="font-h1 text-h1 text-zinc-100">{lang === 'it' ? 'Agenti di Scansione' : 'Scanning Agents'}</h2>
+        <p className="text-zinc-500 text-sm mt-1">{lang === 'it' ? 'Stato e configurazione degli agenti attivi' : 'Status and configuration of active agents'}</p>
+      </div>
+
+      {/* ── System stats ── */}
+      <div className="grid grid-cols-3 gap-[4px] mb-8">
+        {systemStats.map(stat => (
+          <div key={stat.label} className="bg-zinc-900 border border-zinc-800 p-5 flex items-start gap-4">
+            <span className={clsx('material-symbols-outlined text-2xl leading-none mt-0.5', stat.color)}>{stat.icon}</span>
+            <div>
+              <p className="text-[10px] uppercase tracking-widest text-zinc-500 mb-1">{stat.label}</p>
+              <p className="text-xl font-bold text-zinc-100">{stat.value}</p>
+              {stat.sub && <p className="text-xs text-zinc-500 mt-0.5">{stat.sub}</p>}
+            </div>
+          </div>
+        ))}
       </div>
 
       {/* ── Loading skeleton ── */}

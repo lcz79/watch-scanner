@@ -10,6 +10,7 @@ import AuctionsPage from './pages/AuctionsPage'
 import CatalogPage from './pages/CatalogPage'
 import EncyclopediaDetailPage from './pages/EncyclopediaDetailPage'
 import VerificationPage from './pages/VerificationPage'
+import OptOutPage from './pages/OptOutPage'
 import { useLang } from './lib/lang'
 
 function TopBar() {
@@ -101,8 +102,12 @@ export default function App() {
             <Route path="/catalog" element={<CatalogPage />} />
             <Route path="/encyclopedia/:reference" element={<EncyclopediaDetailPage />} />
             <Route path="/verify" element={<VerificationPage />} />
+            <Route path="/opt-out" element={<OptOutPage />} />
           </Routes>
         </main>
+        <footer className="h-8 bg-zinc-950 border-t border-zinc-900 flex items-center justify-center">
+          <span className="text-[10px] text-zinc-700">watchscanner.it © 2026</span>
+        </footer>
       </div>
     </div>
   )

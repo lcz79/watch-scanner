@@ -194,6 +194,21 @@ const T = {
     sourcePending: 'Pending',
     totalLots: 'Lots tracked',
     housesConnected: 'Houses connected',
+
+    // OptOutPage
+    optOut: 'Opt-Out',
+    optOutTitle: 'Manage your presence on WatchScanner',
+    optOutSub: 'If you are a dealer and want your listings to not be indexed by WatchScanner, fill in the form below. The request will be processed within 24 hours.',
+    optOutUsernameLabel: 'Instagram Username',
+    optOutUsernamePlaceholder: 'e.g. watchdealer_milan',
+    optOutEmailLabel: 'Email (optional)',
+    optOutEmailPlaceholder: 'your@email.com',
+    optOutReasonLabel: 'Reason (optional)',
+    optOutReasonPlaceholder: 'Tell us why you want to be removed…',
+    optOutSubmit: 'Submit Opt-Out Request',
+    optOutSubmitting: 'Sending…',
+    optOutSuccess: 'Request registered. You will be removed from WatchScanner within 24 hours.',
+    optOutError: 'An error occurred. Please try again later.',
   },
 
   it: {
@@ -387,6 +402,21 @@ const T = {
     sourcePending: 'In attesa',
     totalLots: 'Lotti monitorati',
     housesConnected: 'Case collegate',
+
+    // OptOutPage
+    optOut: 'Opt-Out',
+    optOutTitle: 'Gestisci la tua presenza su WatchScanner',
+    optOutSub: 'Se sei un dealer e vuoi che i tuoi annunci non vengano indicizzati da WatchScanner, compila il modulo sottostante. La richiesta verrà elaborata entro 24 ore.',
+    optOutUsernameLabel: 'Username Instagram',
+    optOutUsernamePlaceholder: 'es. watchdealer_milano',
+    optOutEmailLabel: 'Email (opzionale)',
+    optOutEmailPlaceholder: 'tua@email.com',
+    optOutReasonLabel: 'Motivo (opzionale)',
+    optOutReasonPlaceholder: 'Spiegaci perché vuoi essere rimosso…',
+    optOutSubmit: 'Invia Richiesta Opt-Out',
+    optOutSubmitting: 'Invio in corso…',
+    optOutSuccess: 'Richiesta registrata. Verrai rimosso da WatchScanner entro 24 ore.',
+    optOutError: 'Si è verificato un errore. Riprova più tardi.',
   },
 } as const
 

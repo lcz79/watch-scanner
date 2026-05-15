@@ -136,6 +136,44 @@ def has_valid_auth() -> bool:
     return AUTH_STATE_FILE.exists()
 
 
+def check_session_health() -> dict:
+    """
+    Controlla la validità della sessione Instagram leggendo il JSON dell'auth state.
+    Non apre il browser — legge solo il cookie sessionid dal file.
+    Ritorna: {"valid": bool, "expires_at": str|None, "days_left": int|None}
+    """
+    if not AUTH_STATE_FILE.exists():
+        return {"valid": False, "expires_at": None, "days_left": None}
+    try:
+        state = json.loads(AUTH_STATE_FILE.read_text())
+        cookies = state.get("cookies", [])
+        session = next(
+            (c for c in cookies if c.get("name") == "sessionid" and "instagram" in c.get("domain", "")),
+            None,
+        )
+        if not session:
+            return {"valid": False, "expires_at": None, "days_left": None}
+
+        # Playwright salva come "expires", browser export come "expirationDate"
+        exp = session.get("expires", session.get("expirationDate", -1))
+        if exp is None or exp == -1:
+            return {"valid": True, "expires_at": None, "days_left": 999}
+
+        from datetime import timezone
+        exp_dt = datetime.fromtimestamp(float(exp), tz=timezone.utc)
+        now = datetime.now(tz=timezone.utc)
+        days_left = max(0, (exp_dt - now).days)
+        valid = days_left > 0
+        return {
+            "valid": valid,
+            "expires_at": exp_dt.strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "days_left": days_left,
+        }
+    except Exception as e:
+        logger.debug(f"check_session_health error: {e}")
+        return {"valid": False, "expires_at": None, "days_left": None}
+
+
 async def capture_stories(
     username: str,
     max_frames: int = 15,

@@ -11,6 +11,7 @@ export default function Sidebar() {
     { to: '/alerts',  icon: 'notifications_active', label: t.priceAlerts },
     { to: '/auctions', icon: 'gavel',               label: t.auctionsNav },
     { to: '/agents',  icon: 'monitoring',           label: t.analytics },
+    { to: '/opt-out', icon: 'do_not_disturb_on',    label: t.optOut },
   ]
 
   return (
@@ -44,6 +45,20 @@ export default function Sidebar() {
           </NavLink>
         ))}
       </nav>
+
+      {/* Monitoring external link */}
+      <div className="px-1 pb-2">
+        <a
+          href="https://uptimerobot.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-3 px-3 py-2.5 text-zinc-500 hover:text-zinc-300 transition-all duration-200"
+        >
+          <span className="material-symbols-outlined text-xl leading-none">monitor_heart</span>
+          <span className="font-['Space_Grotesk'] text-sm tracking-tight">Monitoring</span>
+          <span className="material-symbols-outlined text-xs leading-none ml-auto">open_in_new</span>
+        </a>
+      </div>
 
       {/* Footer */}
       <div className="mt-auto space-y-1 pt-6 border-t border-zinc-800 px-3 pb-4">
