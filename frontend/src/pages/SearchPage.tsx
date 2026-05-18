@@ -489,6 +489,30 @@ export default function SearchPage() {
       {/* ── Loading ── */}
       {isPending && (
         <div className="space-y-4">
+
+          {/* Trieste hero image */}
+          <div className="relative overflow-hidden border border-zinc-800" style={{ height: '220px' }}>
+            <img
+              src="/daytona-16520.jpg"
+              alt="Rolex Deep Sea Special — Bathyscaphe Trieste"
+              className="w-full h-full object-cover object-center"
+              style={{ filter: 'grayscale(0.4) brightness(0.5) contrast(1.2)' }}
+            />
+            {/* vignette bottom */}
+            <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/40 to-transparent" />
+            {/* copy */}
+            <div className="absolute bottom-0 left-0 right-0 p-5">
+              <p className="text-yellow-400 font-bold uppercase tracking-[0.18em] text-[10px] mb-1">
+                Rolex Oyster · Batiscafo Trieste · 10.916 m
+              </p>
+              <p className="text-zinc-100 font-['Space_Grotesk'] font-semibold text-lg leading-snug">
+                {lang === 'it'
+                  ? 'Scandaglieremo ogni angolo del web fino agli abissi per trovare il prezzo migliore.'
+                  : 'We dive to the deepest corners of the web to surface the best price.'}
+              </p>
+            </div>
+          </div>
+
           {/* Header: timer + barra progresso */}
           <div className="bg-zinc-900 border border-zinc-800 p-5">
             <div className="flex items-center justify-between mb-4">
