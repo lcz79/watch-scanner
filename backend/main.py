@@ -464,7 +464,7 @@ async def get_catalog(brand: str | None = None, search: str | None = None):
     """Catalogo orologi con immagini per ricerca visuale."""
     import json
     from pathlib import Path
-    catalog_path = Path(__file__).parent / "catalog" / "watches.json"
+    catalog_path = _Path(__file__).parent / "catalog" / "watches.json"
     watches = json.loads(catalog_path.read_text())
 
     if brand:
@@ -486,7 +486,7 @@ async def get_catalog_item(watch_id: str):
     """Dettaglio singolo orologio dal catalogo."""
     import json
     from pathlib import Path
-    catalog_path = Path(__file__).parent / "catalog" / "watches.json"
+    catalog_path = _Path(__file__).parent / "catalog" / "watches.json"
     watches = json.loads(catalog_path.read_text())
     watch = next((w for w in watches if w["id"] == watch_id), None)
     if not watch:
@@ -609,7 +609,7 @@ async def news_stats():
 
 # ── Waitlist ──────────────────────────────────────────────────────────────────
 
-WAITLIST_FILE = Path("data/waitlist.txt")
+WAITLIST_FILE = _Path("data/waitlist.txt")
 
 @app.post("/waitlist")
 async def add_to_waitlist(payload: dict):
