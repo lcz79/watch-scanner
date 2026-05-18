@@ -9,9 +9,8 @@ import { useState, useEffect, useRef } from 'react'
 const GATE_PASSWORD = 'ws2026'
 const STORAGE_KEY   = 'ws_gate_unlocked'
 
-// Rolex Daytona Cosmograph ref. 16520 — Zenith era, white dial, dramatic smoke
-const BG_IMAGE =
-  'https://images.unsplash.com/photo-1657104996708-044ef9812f85?q=90&w=2200&auto=format&fit=crop'
+// Rolex Deep Sea Special — sul guscio del Batiscafo Trieste, 10.916 m
+const BG_IMAGE = '/daytona-16520.jpg'
 
 export function useSplashGate() {
   const [unlocked, setUnlocked] = useState(() => {
@@ -94,23 +93,23 @@ export default function SplashGate({ onUnlock }: { onUnlock: () => void }) {
       <div className="hidden lg:flex flex-1 relative overflow-hidden">
         <img
           src={BG_IMAGE}
-          alt="Rolex Daytona 16520"
+          alt="Rolex Deep Sea Special — Batiscafo Trieste, 10.916 m"
           className="absolute inset-0 w-full h-full object-cover scale-[1.04]"
-          style={{ filter: 'brightness(0.65) saturate(0.85)' }}
+          style={{ filter: 'brightness(0.55) saturate(0.7) contrast(1.1)' }}
         />
         {/* Vignette + right-fade */}
         <div className="absolute inset-0 bg-gradient-to-r from-black/10 via-black/5 to-zinc-950/95" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/20" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/20" />
 
         {/* Caption bottom-left */}
-        <div className="absolute bottom-10 left-10 max-w-[280px]">
-          <p className="text-zinc-200 text-xl font-light leading-snug italic mb-3">
-            "Il mercato non dorme.<br />Il tuo vantaggio neanche."
+        <div className="absolute bottom-10 left-10 max-w-[300px]">
+          <p className="text-yellow-400 text-[9px] uppercase tracking-[0.22em] font-semibold mb-2">
+            Rolex Oyster · Batiscafo Trieste · 10.916 m
           </p>
-          <div className="w-10 h-px bg-yellow-400 mb-3" />
-          <p className="text-zinc-500 text-[11px] uppercase tracking-widest">
-            Rolex Cosmograph Daytona — Ref. 16520
+          <p className="text-zinc-100 text-lg font-light leading-snug mb-3">
+            Scandaglieremo ogni angolo del web fino agli abissi per trovare il prezzo migliore.
           </p>
+          <div className="w-10 h-px bg-yellow-400/50" />
         </div>
 
         {/* Corner marks */}
