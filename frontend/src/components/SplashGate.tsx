@@ -120,14 +120,23 @@ export default function SplashGate({ onUnlock }: { onUnlock: () => void }) {
       {/* ── Right: brand + content ────────────────────────────────────────── */}
       <div className="w-full lg:w-[500px] flex-shrink-0 bg-zinc-950 flex flex-col relative overflow-y-auto">
 
-        {/* Mobile BG */}
-        <div className="lg:hidden absolute inset-0 overflow-hidden pointer-events-none">
-          <img src={BG_IMAGE} alt="" className="w-full h-full object-cover"
-            style={{ filter: 'brightness(0.18) saturate(0.6)' }} />
-          <div className="absolute inset-0 bg-zinc-950/75" />
+        {/* Mobile hero image — visible at top */}
+        <div className="lg:hidden relative h-52 overflow-hidden flex-shrink-0">
+          <img src={BG_IMAGE} alt="Rolex Deep Sea Special — Batiscafo Trieste"
+            className="w-full h-full object-cover object-center"
+            style={{ filter: 'brightness(0.6) saturate(0.75) contrast(1.1)' }} />
+          <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/30 to-transparent" />
+          <div className="absolute bottom-0 left-0 right-0 px-6 pb-4">
+            <p className="text-yellow-400 text-[8px] uppercase tracking-[0.22em] font-semibold mb-1">
+              Rolex Oyster · Batiscafo Trieste · 10.916 m
+            </p>
+            <p className="text-zinc-100 text-sm font-light leading-snug">
+              Scandaglieremo ogni angolo del web fino agli abissi per trovare il prezzo migliore.
+            </p>
+          </div>
         </div>
 
-        <div className="relative flex flex-col min-h-full px-10 py-12 gap-0">
+        <div className="relative flex flex-col min-h-full px-6 lg:px-10 py-8 lg:py-12 gap-0">
 
           {/* Logo */}
           <div className="flex items-center gap-2.5 mb-1">
@@ -139,7 +148,7 @@ export default function SplashGate({ onUnlock }: { onUnlock: () => void }) {
               WatchScanner
             </span>
           </div>
-          <p className="text-[9px] text-zinc-600 uppercase tracking-[0.18em] ml-[38px] mb-12">
+          <p className="text-[9px] text-zinc-600 uppercase tracking-[0.18em] ml-[38px] mb-8 lg:mb-12">
             Market Intelligence Platform
           </p>
 
