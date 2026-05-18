@@ -1,0 +1,38 @@
+name: Deploy to DigitalOcean
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          script: |
+            set -e
+
+            # Installa git se mancante
+            if ! command -v git &>/dev/null; then
+              apt-get update -qq && apt-get install -y -qq git
+            fi
+
+            cd /opt/watch-scanner
+
+            # Prima volta: inizializza git
+            if [ ! -d ".git" ]; then
+              git init
+              git remote add origin https://github.com/lcz79/watch-scanner.git
+            fi
+
+            # Aggiorna il codice
+            git fetch origin main
+            git reset --hard origin/main
+
+            # Ricostruisce e riavvia i container
+            docker compose up -d --build
