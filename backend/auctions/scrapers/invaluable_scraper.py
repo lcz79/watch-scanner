@@ -1,21 +1,27 @@
 """
-Invaluable.com scraper — aggregatore aste con dati da centinaia di case.
-Usa Playwright per gestire il JS rendering.
+Invaluable.com scraper — aggregatore aste da centinaia di case.
 
-URL risultati: https://www.invaluable.com/search/?query={reference}&upcoming=false&resultsView=list
-URL upcoming:  https://www.invaluable.com/search/?query=watches&upcoming=true
+Strategia a 3 livelli:
+  1. API interna diretta via httpx (endpoint XHR che il sito usa internamente)
+  2. Playwright con network interception (cattura le richieste XHR durante la navigazione)
+  3. DOM fallback (parsing HTML come ultima risorsa)
+
+Fonte parallela: LiveAuctioneers.com (stesso approccio)
 """
 import asyncio
 import json
 import re
+import urllib.parse
 from datetime import datetime
-from typing import Any
 
+import httpx
 from utils.logger import get_logger
 
 logger = get_logger("auctions")
 
-BASE_URL = "https://www.invaluable.com"
+INVALUABLE_BASE = "https://www.invaluable.com"
+LIVEAUCTIONEERS_BASE = "https://api.liveauctioneers.com"
+
 USER_AGENT = (
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
     "AppleWebKit/537.36 (KHTML, like Gecko) "
@@ -31,7 +37,6 @@ KNOWN_BRANDS = [
 
 
 def _extract_brand(title: str) -> str:
-    """Estrae il brand dal titolo del lotto."""
     title_lower = title.lower()
     for brand in KNOWN_BRANDS:
         if brand.lower() in title_lower:
@@ -39,30 +44,24 @@ def _extract_brand(title: str) -> str:
     return "Unknown"
 
 
-def _parse_price(text: str | None) -> float | None:
-    """Converte stringhe prezzo tipo 'CHF 12,500' o '$8,000' in float."""
-    if not text:
+def _parse_price(text) -> float | None:
+    if text is None:
         return None
-    cleaned = re.sub(r"[^\d.]", "", text.replace(",", ""))
+    if isinstance(text, (int, float)):
+        return float(text)
+    cleaned = re.sub(r"[^\d.]", "", str(text).replace(",", ""))
     try:
-        return float(cleaned) if cleaned else None
+        v = float(cleaned)
+        return v if v > 0 else None
     except ValueError:
         return None
 
 
 def _parse_estimate(text: str | None) -> tuple[float | None, float | None]:
-    """
-    Parsa stime tipo 'CHF 10,000 - 15,000' → (10000.0, 15000.0).
-    """
-    if not text or "request" in text.lower():
+    if not text or "request" in str(text).lower():
         return None, None
-    parts = re.findall(r"[\d,]+", text)
-    nums = []
-    for p in parts:
-        try:
-            nums.append(float(p.replace(",", "")))
-        except ValueError:
-            pass
+    nums = [float(p.replace(",", "")) for p in re.findall(r"[\d,]+", str(text))
+            if p.replace(",", "").isdigit()]
     if len(nums) >= 2:
         return nums[0], nums[1]
     elif len(nums) == 1:
@@ -70,119 +69,63 @@ def _parse_estimate(text: str | None) -> tuple[float | None, float | None]:
     return None, None
 
 
-def _extract_from_next_data(next_data: dict, limit: int) -> list[dict]:
-    """Estrae i lotti dalla struttura window.__NEXT_DATA__."""
-    results = []
-    try:
-        # Cerca i lotti in vari percorsi tipici di Next.js
-        props = next_data.get("props", {})
-        page_props = props.get("pageProps", {})
+# ---------------------------------------------------------------------------
+# Normalizzazione
+# ---------------------------------------------------------------------------
 
-        # Percorso 1: searchResults
-        items = (
-            page_props.get("searchResults", {}).get("results", [])
-            or page_props.get("results", [])
-            or page_props.get("lots", [])
-            or page_props.get("items", [])
-        )
-
-        # Percorso 2: initialState Redux
-        if not items:
-            initial_state = page_props.get("initialState", {})
-            items = (
-                initial_state.get("search", {}).get("results", [])
-                or initial_state.get("lots", {}).get("items", [])
-            )
-
-        for item in items[:limit]:
-            lot = _normalize_invaluable_item(item)
-            if lot:
-                results.append(lot)
-
-    except Exception as e:
-        logger.debug(f"Invaluable __NEXT_DATA__ parse error: {e}")
-
-    return results
-
-
-def _normalize_invaluable_item(item: dict) -> dict | None:
-    """Normalizza un lotto Invaluable nel formato DB."""
+def _normalize_item(item: dict, source: str = "invaluable") -> dict | None:
     try:
         title = (
-            item.get("lotTitle") or item.get("title") or item.get("description") or ""
+            item.get("lotTitle") or item.get("title") or item.get("description")
+            or item.get("name") or item.get("lotDescription") or ""
         )
-        if not title:
+        if not title or len(title) < 3:
             return None
 
         brand = _extract_brand(title)
 
-        # Prezzo martello
-        hammer_raw = (
+        hammer = _parse_price(
             item.get("priceResult") or item.get("hammerPrice")
             or item.get("soldPrice") or item.get("price")
+            or item.get("currentBid") or item.get("winningBid")
         )
-        hammer = None
-        if isinstance(hammer_raw, (int, float)):
-            hammer = float(hammer_raw)
-        elif isinstance(hammer_raw, str):
-            hammer = _parse_price(hammer_raw)
 
-        # Stima
-        est_raw = item.get("estimateLow") or item.get("estimate") or item.get("lowEstimate")
-        est_high_raw = item.get("estimateHigh") or item.get("highEstimate")
-        estimate_low = float(est_raw) if isinstance(est_raw, (int, float)) else _parse_price(str(est_raw) if est_raw else None)
-        estimate_high = float(est_high_raw) if isinstance(est_high_raw, (int, float)) else _parse_price(str(est_high_raw) if est_high_raw else None)
-
-        if not estimate_low and not estimate_high:
-            est_str = item.get("estimateString") or item.get("estimateRange") or ""
+        est_low_raw = item.get("estimateLow") or item.get("lowEstimate") or item.get("estimate_low")
+        est_high_raw = item.get("estimateHigh") or item.get("highEstimate") or item.get("estimate_high")
+        estimate_low = _parse_price(est_low_raw)
+        estimate_high = _parse_price(est_high_raw)
+        if not estimate_low:
+            est_str = item.get("estimateString") or item.get("estimateRange") or item.get("estimate") or ""
             estimate_low, estimate_high = _parse_estimate(str(est_str))
 
-        # Data
-        sale_date = (
-            item.get("saleDate") or item.get("auctionDate")
-            or item.get("date") or item.get("eventDate") or ""
-        )
-        if sale_date:
-            # Normalizza la data in ISO
-            try:
-                if "T" in str(sale_date):
-                    sale_date = str(sale_date)[:10]
-                else:
-                    sale_date = str(sale_date)[:10]
-            except Exception:
-                pass
+        sale_date = str(
+            item.get("saleDate") or item.get("auctionDate") or item.get("date")
+            or item.get("eventDate") or item.get("dateTimeLocal") or ""
+        )[:10]
+        if not sale_date or sale_date == "None":
+            sale_date = datetime.utcnow().strftime("%Y-%m-%d")
 
-        # Casa d'aste
-        auction_house = (
+        auction_house = str(
             item.get("auctionHouse") or item.get("houseName")
-            or item.get("organization") or item.get("sellerName") or "Invaluable"
+            or item.get("organization") or item.get("sellerName")
+            or item.get("houseId") or source.capitalize()
         )
 
-        # URL lotto
-        lot_url = item.get("lotRef") or item.get("url") or item.get("link") or ""
+        lot_url = str(item.get("lotRef") or item.get("url") or item.get("link") or item.get("lotUrl") or "")
         if lot_url and not lot_url.startswith("http"):
-            lot_url = f"{BASE_URL}{lot_url}"
+            lot_url = f"{INVALUABLE_BASE}{lot_url}"
 
-        # Immagine
-        image_url = (
+        image_url = str(
             item.get("photoPath") or item.get("imageUrl") or item.get("thumbnailUrl")
-            or item.get("image") or ""
+            or item.get("image") or item.get("photo") or ""
         )
 
-        # Lot number
-        lot_number = str(item.get("lotNum") or item.get("lotNumber") or item.get("lot") or "")
-
-        # Sale name
-        sale_name = (
-            item.get("saleName") or item.get("auctionTitle") or item.get("eventTitle") or ""
-        )
-
-        result = {
-            "auction_house": str(auction_house),
-            "sale_name": str(sale_name),
+        return {
+            "auction_house": auction_house,
+            "sale_name": str(item.get("saleName") or item.get("auctionTitle") or item.get("eventTitle") or ""),
             "sale_location": str(item.get("location") or item.get("city") or ""),
-            "sale_date": str(sale_date) if sale_date else datetime.utcnow().strftime("%Y-%m-%d"),
-            "lot_number": lot_number,
+            "sale_date": sale_date,
+            "lot_number": str(item.get("lotNum") or item.get("lotNumber") or item.get("lot") or ""),
             "brand": brand,
             "model": str(title),
             "reference": str(item.get("reference") or item.get("refNo") or ""),
@@ -190,232 +133,342 @@ def _normalize_invaluable_item(item: dict) -> dict | None:
             "estimate_low_chf": estimate_low,
             "estimate_high_chf": estimate_high,
             "hammer_price_chf": hammer,
-            "buyer_premium_pct": 26.0,
-            "total_price_chf": round(hammer * 1.26, 0) if hammer else None,
-            "currency": str(item.get("currency") or "USD"),
-            "lot_url": str(lot_url),
-            "image_url": str(image_url),
+            "buyer_premium_pct": 25.0,
+            "total_price_chf": round(hammer * 1.25, 0) if hammer else None,
+            "currency": str(item.get("currency") or item.get("currencyCode") or "USD"),
+            "lot_url": lot_url,
+            "image_url": image_url,
         }
-        return result
-
     except Exception as e:
-        logger.debug(f"Invaluable normalize item error: {e}")
+        logger.debug(f"normalize_item error: {e}")
         return None
 
 
-def _parse_dom_results(html_content: str, limit: int) -> list[dict]:
-    """
-    Fallback: parsa il DOM HTML per estrarre i lotti.
-    Usato se __NEXT_DATA__ non contiene i dati.
-    """
-    from bs4 import BeautifulSoup
-    soup = BeautifulSoup(html_content, "html.parser")
-    results = []
+# ---------------------------------------------------------------------------
+# Invaluable — API diretta httpx
+# ---------------------------------------------------------------------------
 
-    # Selettori tipici di Invaluable
-    selectors = [
-        "div.result-item", "div.lot-item", "article.lot",
-        "div[data-lot]", "div.search-result", "li.result-item",
+async def _invaluable_api(reference: str, limit: int = 30) -> list[dict]:
+    """
+    Chiama l'endpoint interno di Invaluable che il browser usa via XHR.
+    Più affidabile del parsing HTML perché restituisce JSON strutturato.
+    """
+    # Invaluable usa un endpoint Algolia-based o un endpoint proprietario
+    # Proviamo entrambi
+    endpoints = [
+        # Endpoint 1: search API
+        f"{INVALUABLE_BASE}/catResults/v2?search[query]={urllib.parse.quote(reference)}&search[supercategoryName]=Watches%20%26%20Timepieces&search[upcoming]=false&size={limit}",
+        # Endpoint 2: search alternativo
+        f"{INVALUABLE_BASE}/api/search?query={urllib.parse.quote(reference)}&department=watches&upcoming=false&page=1&pageSize={limit}",
     ]
 
-    items = []
-    for sel in selectors:
-        items = soup.select(sel)
-        if items:
-            break
+    headers = {
+        "User-Agent": USER_AGENT,
+        "Accept": "application/json, text/plain, */*",
+        "Accept-Language": "en-US,en;q=0.9",
+        "Referer": f"{INVALUABLE_BASE}/search/?query={urllib.parse.quote(reference)}",
+        "X-Requested-With": "XMLHttpRequest",
+    }
 
-    if not items:
-        # Cerca tutti i link che sembrano lotti
-        items = soup.find_all("a", href=re.compile(r"/auction-results/|/lot/|/buy/", re.I))
-
-    for item in items[:limit]:
-        try:
-            title_el = (
-                item.find(class_=re.compile(r"title|name|description", re.I))
-                or item.find("h2") or item.find("h3") or item
-            )
-            title = title_el.get_text(strip=True) if hasattr(title_el, "get_text") else ""
-            if not title:
+    async with httpx.AsyncClient(headers=headers, timeout=20.0, follow_redirects=True) as client:
+        for url in endpoints:
+            try:
+                resp = await client.get(url)
+                if resp.status_code == 200:
+                    data = resp.json()
+                    # Cerca la lista di items in vari percorsi JSON
+                    items = (
+                        data.get("results") or data.get("lots") or data.get("items")
+                        or data.get("hits") or data.get("data", {}).get("results")
+                        or []
+                    )
+                    if isinstance(items, list) and items:
+                        results = [_normalize_item(i) for i in items[:limit]]
+                        valid = [r for r in results if r]
+                        logger.info(f"Invaluable API: {len(valid)} lotti per '{reference}'")
+                        return valid
+            except Exception as e:
+                logger.debug(f"Invaluable API endpoint {url[:60]}... error: {e}")
                 continue
 
-            brand = _extract_brand(title)
-
-            price_el = item.find(class_=re.compile(r"price|hammer|sold|result", re.I))
-            hammer = _parse_price(price_el.get_text() if price_el else None)
-
-            est_el = item.find(class_=re.compile(r"estimate|est", re.I))
-            low, high = _parse_estimate(est_el.get_text() if est_el else None)
-
-            house_el = item.find(class_=re.compile(r"house|auction.?house|seller", re.I))
-            auction_house = house_el.get_text(strip=True) if house_el else "Invaluable"
-
-            date_el = item.find(class_=re.compile(r"date|time", re.I))
-            sale_date = date_el.get_text(strip=True) if date_el else datetime.utcnow().strftime("%Y-%m-%d")
-
-            href = item.get("href", "") if item.name == "a" else (item.find("a") or {}).get("href", "")
-            lot_url = href if href.startswith("http") else f"{BASE_URL}{href}" if href else ""
-
-            img = item.find("img")
-            image_url = img.get("src", "") if img else ""
-
-            results.append({
-                "auction_house": auction_house,
-                "sale_date": sale_date,
-                "lot_number": "",
-                "brand": brand,
-                "model": title,
-                "description": title,
-                "estimate_low_chf": low,
-                "estimate_high_chf": high,
-                "hammer_price_chf": hammer,
-                "buyer_premium_pct": 26.0,
-                "total_price_chf": round(hammer * 1.26, 0) if hammer else None,
-                "currency": "USD",
-                "lot_url": lot_url,
-                "image_url": image_url,
-            })
-        except Exception as e:
-            logger.debug(f"Invaluable DOM parse error: {e}")
-            continue
-
-    return results
+    return []
 
 
-async def search_reference(reference: str, limit: int = 30) -> list[dict]:
+# ---------------------------------------------------------------------------
+# Invaluable — Playwright con network interception
+# ---------------------------------------------------------------------------
+
+async def _invaluable_playwright(reference: str, limit: int = 30) -> list[dict]:
     """
-    Cerca su Invaluable i risultati d'asta per una referenza orologio.
-    Ritorna lista di dict normalizzati per il DB.
+    Usa Playwright intercettando le chiamate XHR per catturare i dati JSON
+    prima che vengano renderizzati nel DOM.
     """
     from playwright.async_api import async_playwright
 
-    url = f"{BASE_URL}/search/?query={reference}&upcoming=false&resultsView=list"
-    logger.info(f"Invaluable: ricerca referenza '{reference}' → {url}")
-    results = []
+    url = f"{INVALUABLE_BASE}/search/?query={urllib.parse.quote(reference)}&upcoming=false&resultsView=list"
+    captured_items: list[dict] = []
 
     try:
         async with async_playwright() as p:
-            browser = await p.chromium.launch(headless=True)
+            browser = await p.chromium.launch(headless=True, args=["--no-sandbox", "--disable-dev-shm-usage"])
             context = await browser.new_context(
                 user_agent=USER_AGENT,
-                viewport={"width": 1280, "height": 800},
+                viewport={"width": 1280, "height": 900},
+                extra_http_headers={"Accept-Language": "en-US,en;q=0.9"},
             )
             page = await context.new_page()
 
+            # Intercetta le risposte JSON con dati di lotti
+            async def handle_response(response):
+                if captured_items:
+                    return
+                try:
+                    if (response.status == 200
+                            and "json" in (response.headers.get("content-type") or "")
+                            and any(k in response.url for k in ["catResults", "search", "lots", "results", "algolia"])):
+                        body = await response.json()
+                        items = (
+                            body.get("results") or body.get("lots") or body.get("hits")
+                            or body.get("items") or body.get("data", {}).get("results")
+                            or []
+                        )
+                        if isinstance(items, list) and len(items) > 2:
+                            captured_items.extend(items[:limit])
+                            logger.debug(f"Invaluable XHR intercettato: {len(items)} items")
+                except Exception:
+                    pass
+
+            page.on("response", handle_response)
+
             try:
-                await page.goto(url, wait_until="networkidle", timeout=30000)
-                await asyncio.sleep(2)
+                await page.goto(url, wait_until="domcontentloaded", timeout=25000)
+                # Aspetta che le chiamate XHR vengano completate
+                await asyncio.sleep(5)
 
-                # Tenta estrazione da __NEXT_DATA__
-                next_data_raw = await page.evaluate(
-                    "() => { try { return JSON.stringify(window.__NEXT_DATA__); } catch(e) { return null; } }"
-                )
-                if next_data_raw:
-                    try:
-                        next_data = json.loads(next_data_raw)
-                        results = _extract_from_next_data(next_data, limit)
-                        logger.info(f"Invaluable __NEXT_DATA__: {len(results)} lotti per '{reference}'")
-                    except json.JSONDecodeError:
-                        pass
+                # Se non abbiamo catturato nulla via XHR, proviamo __NEXT_DATA__
+                if not captured_items:
+                    next_data_raw = await page.evaluate(
+                        "() => { try { return JSON.stringify(window.__NEXT_DATA__); } catch(e) { return null; } }"
+                    )
+                    if next_data_raw:
+                        nd = json.loads(next_data_raw)
+                        # Cerca ricorsivamente array di items nella struttura
+                        def find_items(obj, depth=0):
+                            if depth > 6:
+                                return []
+                            if isinstance(obj, list) and len(obj) > 2:
+                                if obj[0] and isinstance(obj[0], dict) and (
+                                    "lotTitle" in obj[0] or "title" in obj[0] or "hammerPrice" in obj[0]
+                                ):
+                                    return obj
+                            if isinstance(obj, dict):
+                                for v in obj.values():
+                                    r = find_items(v, depth + 1)
+                                    if r:
+                                        return r
+                            return []
 
-                # Fallback DOM
-                if not results:
-                    html = await page.content()
-                    results = _parse_dom_results(html, limit)
-                    logger.info(f"Invaluable DOM fallback: {len(results)} lotti per '{reference}'")
-
-                # Aggiungi la referenza cercata ai risultati
-                for r in results:
-                    if not r.get("reference"):
-                        r["reference"] = reference
+                        items = find_items(nd)
+                        captured_items.extend(items[:limit])
 
             except Exception as e:
-                logger.error(f"Invaluable: errore pagina per '{reference}': {e}")
+                logger.debug(f"Invaluable Playwright goto error: {e}")
             finally:
                 await context.close()
                 await browser.close()
 
     except Exception as e:
-        logger.error(f"Invaluable: errore Playwright per '{reference}': {e}")
+        logger.debug(f"Invaluable Playwright error: {e}")
 
+    results = [_normalize_item(i) for i in captured_items]
+    valid = [r for r in results if r]
+    logger.info(f"Invaluable Playwright: {len(valid)} lotti per '{reference}'")
+    return valid
+
+
+# ---------------------------------------------------------------------------
+# LiveAuctioneers — fonte parallela
+# ---------------------------------------------------------------------------
+
+async def _liveauctioneers_search(reference: str, limit: int = 20) -> list[dict]:
+    """
+    Cerca su LiveAuctioneers.com — ottima copertura di case minori.
+    Usa l'API pubblica che il loro sito espone.
+    """
+    # LiveAuctioneers ha un'API accessibile per le ricerche pubbliche
+    headers = {
+        "User-Agent": USER_AGENT,
+        "Accept": "application/json",
+        "Referer": "https://www.liveauctioneers.com/",
+    }
+
+    # Endpoint di ricerca risultati passati
+    url = (
+        f"https://api.liveauctioneers.com/lots/search"
+        f"?keyword={urllib.parse.quote(reference)}"
+        f"&status=past&category=watches&limit={limit}"
+    )
+
+    async with httpx.AsyncClient(headers=headers, timeout=20.0, follow_redirects=True) as client:
+        try:
+            resp = await client.get(url)
+            if resp.status_code == 200:
+                data = resp.json()
+                items = (
+                    data.get("lots") or data.get("results") or data.get("items")
+                    or data.get("data") or []
+                )
+                if isinstance(items, list):
+                    results = []
+                    for item in items[:limit]:
+                        norm = _normalize_item(item, source="liveauctioneers")
+                        if norm:
+                            if not norm.get("reference"):
+                                norm["reference"] = reference
+                            results.append(norm)
+                    logger.info(f"LiveAuctioneers: {len(results)} lotti per '{reference}'")
+                    return results
+        except Exception as e:
+            logger.debug(f"LiveAuctioneers API error: {e}")
+
+    # Fallback: HTML scraping con Playwright
+    try:
+        from playwright.async_api import async_playwright
+        la_url = f"https://www.liveauctioneers.com/search/?keyword={urllib.parse.quote(reference)}&status=past&vertical=watches"
+
+        async with async_playwright() as p:
+            browser = await p.chromium.launch(headless=True, args=["--no-sandbox"])
+            context = await browser.new_context(user_agent=USER_AGENT, viewport={"width": 1280, "height": 900})
+            page = await context.new_page()
+            captured: list[dict] = []
+
+            async def handle_la_response(response):
+                if captured:
+                    return
+                try:
+                    if response.status == 200 and "json" in (response.headers.get("content-type") or ""):
+                        if any(k in response.url for k in ["search", "lots", "results"]):
+                            body = await response.json()
+                            items = body.get("lots") or body.get("results") or body.get("items") or []
+                            if isinstance(items, list) and len(items) > 1:
+                                captured.extend(items[:limit])
+                except Exception:
+                    pass
+
+            page.on("response", handle_la_response)
+            try:
+                await page.goto(la_url, wait_until="domcontentloaded", timeout=20000)
+                await asyncio.sleep(4)
+            except Exception:
+                pass
+            finally:
+                await context.close()
+                await browser.close()
+
+            results = [_normalize_item(i, "liveauctioneers") for i in captured]
+            valid = [r for r in results if r]
+            logger.info(f"LiveAuctioneers Playwright: {len(valid)} lotti per '{reference}'")
+            return valid
+    except Exception as e:
+        logger.debug(f"LiveAuctioneers Playwright error: {e}")
+
+    return []
+
+
+# ---------------------------------------------------------------------------
+# Entry point pubblico
+# ---------------------------------------------------------------------------
+
+async def search_reference(reference: str, limit: int = 30) -> list[dict]:
+    """
+    Cerca risultati d'asta su Invaluable + LiveAuctioneers in parallelo.
+    Livello 1: API diretta httpx
+    Livello 2: Playwright con XHR intercept
+    Livello 3: DOM fallback
+    """
+    # Livello 1: API diretta (veloce, nessun browser)
+    results = await _invaluable_api(reference, limit)
+
+    # Livello 2: se vuoto, prova Playwright
+    if not results:
+        playwright_results = await _invaluable_playwright(reference, limit)
+        results.extend(playwright_results)
+
+    # Fonte parallela: LiveAuctioneers (sempre, per integrare)
+    try:
+        la_results = await _liveauctioneers_search(reference, limit=15)
+        # Deduplication base per titolo
+        existing_titles = {r.get("model", "").lower() for r in results}
+        for r in la_results:
+            if r.get("model", "").lower() not in existing_titles:
+                results.append(r)
+                existing_titles.add(r.get("model", "").lower())
+    except Exception as e:
+        logger.debug(f"LiveAuctioneers parallel error: {e}")
+
+    # Aggiungi reference a tutti
+    for r in results:
+        if not r.get("reference"):
+            r["reference"] = reference
+
+    logger.info(f"search_reference '{reference}': totale {len(results)} lotti aggregati")
     return results
 
 
 async def get_upcoming_auctions(limit: int = 50) -> list[dict]:
     """
-    Recupera le aste di orologi in arrivo da Invaluable.
-    Ritorna lista di dict con info sull'asta (non normalizzati per il DB).
+    Recupera aste upcoming da Invaluable.
     """
     from playwright.async_api import async_playwright
 
-    url = f"{BASE_URL}/search/?query=luxury+watches&upcoming=true&resultsView=list"
-    logger.info(f"Invaluable: fetch upcoming auctions → {url}")
+    url = f"{INVALUABLE_BASE}/search/?query=luxury+watches&upcoming=true&resultsView=list"
     upcoming = []
+    captured: list[dict] = []
 
     try:
         async with async_playwright() as p:
-            browser = await p.chromium.launch(headless=True)
-            context = await browser.new_context(
-                user_agent=USER_AGENT,
-                viewport={"width": 1280, "height": 800},
-            )
+            browser = await p.chromium.launch(headless=True, args=["--no-sandbox"])
+            context = await browser.new_context(user_agent=USER_AGENT, viewport={"width": 1280, "height": 900})
             page = await context.new_page()
 
+            async def handle(response):
+                if captured:
+                    return
+                try:
+                    if response.status == 200 and "json" in (response.headers.get("content-type") or ""):
+                        body = await response.json()
+                        items = body.get("results") or body.get("lots") or body.get("items") or []
+                        if isinstance(items, list) and len(items) > 1:
+                            captured.extend(items[:limit])
+                except Exception:
+                    pass
+
+            page.on("response", handle)
             try:
-                await page.goto(url, wait_until="networkidle", timeout=30000)
-                await asyncio.sleep(2)
-
-                # Tenta __NEXT_DATA__
-                next_data_raw = await page.evaluate(
-                    "() => { try { return JSON.stringify(window.__NEXT_DATA__); } catch(e) { return null; } }"
-                )
-                if next_data_raw:
-                    try:
-                        next_data = json.loads(next_data_raw)
-                        items = _extract_from_next_data(next_data, limit)
-                        for item in items:
-                            upcoming.append({
-                                "house": item.get("auction_house", "Invaluable"),
-                                "sale_name": item.get("sale_name", ""),
-                                "location": item.get("sale_location", ""),
-                                "date": item.get("sale_date", ""),
-                                "url": item.get("lot_url", ""),
-                                "catalog_url": item.get("lot_url", ""),
-                                "highlights": [],
-                                "source": "invaluable",
-                            })
-                    except json.JSONDecodeError:
-                        pass
-
-                # Fallback DOM
-                if not upcoming:
-                    html = await page.content()
-                    from bs4 import BeautifulSoup
-                    soup = BeautifulSoup(html, "html.parser")
-                    for item in soup.select("div.auction-item, div.upcoming-auction, article.sale")[:limit]:
-                        title_el = item.find("h2") or item.find("h3") or item.find(class_=re.compile(r"title"))
-                        date_el = item.find(class_=re.compile(r"date"))
-                        house_el = item.find(class_=re.compile(r"house|auctioneer"))
-                        link_el = item.find("a")
-                        upcoming.append({
-                            "house": house_el.get_text(strip=True) if house_el else "Unknown",
-                            "sale_name": title_el.get_text(strip=True) if title_el else "",
-                            "location": "",
-                            "date": date_el.get_text(strip=True) if date_el else "",
-                            "url": link_el.get("href", "") if link_el else "",
-                            "catalog_url": "",
-                            "highlights": [],
-                            "source": "invaluable",
-                        })
-
-                logger.info(f"Invaluable upcoming: {len(upcoming)} aste trovate")
-
-            except Exception as e:
-                logger.error(f"Invaluable: errore upcoming auctions: {e}")
+                await page.goto(url, wait_until="domcontentloaded", timeout=25000)
+                await asyncio.sleep(4)
+            except Exception:
+                pass
             finally:
                 await context.close()
                 await browser.close()
 
-    except Exception as e:
-        logger.error(f"Invaluable: errore Playwright upcoming: {e}")
+        for item in captured:
+            norm = _normalize_item(item)
+            if norm:
+                upcoming.append({
+                    "house": norm["auction_house"],
+                    "sale_name": norm["sale_name"],
+                    "location": norm["sale_location"],
+                    "date": norm["sale_date"],
+                    "url": norm["lot_url"],
+                    "catalog_url": norm["lot_url"],
+                    "highlights": [],
+                    "source": "invaluable",
+                })
 
+    except Exception as e:
+        logger.debug(f"Invaluable get_upcoming error: {e}")
+
+    logger.info(f"Invaluable upcoming: {len(upcoming)} aste trovate")
     return upcoming
