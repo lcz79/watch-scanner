@@ -320,6 +320,59 @@ async def run_instagram_discovery(username: str, password: str) -> list[dict]:
     return unique
 
 
+async def run(cl, db: dict, max_per_hashtag: int = 30, expand_network: bool = True) -> int:
+    """
+    Entry point usato dall'orchestrator discovery.
+    Riceve un client instagrapi già loggato e il db dict condiviso.
+    Ritorna il numero di nuovi reseller aggiunti.
+    """
+    before = len(db.get("resellers", {}))
+
+    # Fase 1: hashtag crawl
+    logger.info(f"[instagram] Fase 1: hashtag crawl ({len(SEED_HASHTAGS)} hashtag, {max_per_hashtag} post/hashtag)")
+    await discover_from_hashtags(cl, SEED_HASHTAGS, per_hashtag=max_per_hashtag)
+    await asyncio.sleep(random.uniform(3, 6))
+
+    if expand_network:
+        # Fase 2: followers + following dei seed account
+        logger.info(f"[instagram] Fase 2: seed expansion ({len(SEED_ACCOUNTS)} account)")
+        for seed in SEED_ACCOUNTS:
+            try:
+                await discover_from_account_followers(cl, seed, limit=100)
+                await asyncio.sleep(random.uniform(3, 6))
+                await discover_from_account_following(cl, seed, limit=100)
+            except Exception as e:
+                logger.warning(f"[instagram] Seed @{seed} fallito: {e}")
+            await asyncio.sleep(random.uniform(4, 8))
+
+        # Fase 3: cascade sui top dealer
+        current_db = db_module.load()
+        top_dealers = sorted(
+            current_db.get("resellers", {}).values(),
+            key=lambda d: d.get("score", 0),
+            reverse=True,
+        )[:CASCADE_TOP_N]
+
+        if top_dealers:
+            logger.info(f"[instagram] Fase 3: cascade su {len(top_dealers)} top dealer")
+            for dealer in top_dealers:
+                seed = dealer.get("username", "")
+                if not seed or seed in SEED_ACCOUNTS:
+                    continue
+                try:
+                    await discover_from_account_followers(cl, seed, limit=50)
+                    await asyncio.sleep(random.uniform(3, 6))
+                    await discover_from_account_following(cl, seed, limit=50)
+                except Exception as e:
+                    logger.warning(f"[instagram] Cascade @{seed} fallito: {e}")
+                await asyncio.sleep(random.uniform(4, 8))
+
+    after = len(db_module.load().get("resellers", {}))
+    new_count = max(0, after - before)
+    logger.info(f"[instagram] run() completato — {new_count} nuovi reseller aggiunti")
+    return new_count
+
+
 # ---------------------------------------------------------------------------
 # Helpers per gestione errori instagrapi
 # ---------------------------------------------------------------------------
