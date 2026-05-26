@@ -264,11 +264,11 @@ async def trigger_scrape(
     source: 'phillips' | 'christies' | 'sothebys' | 'antiquorum'
     """
     source = source.lower().strip()
-    valid_sources = {"phillips", "christies", "sothebys", "antiquorum"}
+    valid_sources = {"phillips", "christies", "sothebys", "antiquorum", "cambi", "bolaffi"}
     if source not in valid_sources:
         raise HTTPException(
             status_code=400,
-            detail=f"Source non valida. Usa: {', '.join(valid_sources)}",
+            detail=f"Source non valida. Usa: {', '.join(sorted(valid_sources))}",
         )
 
     async def _run_scrape(src: str, lim: int):
@@ -282,6 +282,10 @@ async def trigger_scrape(
                 from .scrapers.sotherby_scraper import scrape_recent_results
             elif src == "antiquorum":
                 from .scrapers.antiquorum_scraper import scrape_recent_results
+            elif src == "cambi":
+                from .scrapers.cambi_scraper import scrape_recent_results
+            elif src == "bolaffi":
+                from .scrapers.bolaffi_scraper import scrape_recent_results
             else:
                 return
 

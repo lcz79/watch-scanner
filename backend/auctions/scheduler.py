@@ -131,7 +131,37 @@ async def run_full_refresh() -> dict:
 
     await asyncio.sleep(3)
 
-    # ── 7. Upcoming auctions live ────────────────────────────────────────
+    # ── 6. Cambi: risultati recenti ────────────────────────────────────────
+    try:
+        from .scrapers.cambi_scraper import scrape_recent_results as cambi_scrape
+
+        cambi_results = await cambi_scrape(limit=40)
+        inserted_cam = bulk_insert_results(cambi_results)
+        stats["cambi"] = {"found": len(cambi_results), "inserted": inserted_cam}
+        logger.info(f"Cambi: {len(cambi_results)} trovati, {inserted_cam} inseriti")
+
+    except Exception as e:
+        logger.error(f"Cambi scraper error: {e}")
+        stats["cambi"] = {"error": str(e)}
+
+    await asyncio.sleep(3)
+
+    # ── 7. Bolaffi: risultati recenti ──────────────────────────────────────
+    try:
+        from .scrapers.bolaffi_scraper import scrape_recent_results as bolaffi_scrape
+
+        bolaffi_results = await bolaffi_scrape(limit=40)
+        inserted_bol = bulk_insert_results(bolaffi_results)
+        stats["bolaffi"] = {"found": len(bolaffi_results), "inserted": inserted_bol}
+        logger.info(f"Bolaffi: {len(bolaffi_results)} trovati, {inserted_bol} inseriti")
+
+    except Exception as e:
+        logger.error(f"Bolaffi scraper error: {e}")
+        stats["bolaffi"] = {"error": str(e)}
+
+    await asyncio.sleep(3)
+
+    # ── 8. Upcoming auctions live ────────────────────────────────────────
     try:
         from .scrapers.upcoming_scraper import scrape_all_upcoming
 

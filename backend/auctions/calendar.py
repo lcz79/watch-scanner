@@ -444,6 +444,64 @@ UPCOMING_AUCTIONS_2025_2026 = [
         "focus": "Cartier, Patek Philippe, mercato invernale parigino",
         "highlights": [],
     },
+
+    # =========================================================================
+    # CAMBI (Genova, Italia)
+    # =========================================================================
+    {
+        "house": "Cambi",
+        "sale_name": "Gioielli, Orologi e Oggetti Preziosi",
+        "location": "Genova",
+        "date": "2026-04-15",
+        "preview_date": "2026-04-13",
+        "url": "https://www.cambi.it/aste/",
+        "catalog_url": "https://www.cambi.it/aste/",
+        "focus": "Orologi vintage, gioielli, argenti e oggetti d'arte",
+        "highlights": [
+            "Rolex e Omega vintage",
+            "Cartier e orologi da tasca storici",
+        ],
+    },
+    {
+        "house": "Cambi",
+        "sale_name": "Gioielli, Orologi e Oggetti Preziosi",
+        "location": "Genova",
+        "date": "2026-10-20",
+        "preview_date": "2026-10-18",
+        "url": "https://www.cambi.it/aste/",
+        "catalog_url": "https://www.cambi.it/aste/",
+        "focus": "Orologi da polso e da tasca, gioielleria fine",
+        "highlights": [],
+    },
+
+    # =========================================================================
+    # BOLAFFI (Torino, Italia)
+    # =========================================================================
+    {
+        "house": "Bolaffi",
+        "sale_name": "Asta di Gioielli e Orologi",
+        "location": "Torino",
+        "date": "2026-05-20",
+        "preview_date": "2026-05-18",
+        "url": "https://www.bolaffi.it/aste/orologi/",
+        "catalog_url": "https://www.bolaffi.it/aste/orologi/",
+        "focus": "Orologi da collezione, sportivi e vintage italiani",
+        "highlights": [
+            "Rolex sportivi anni '60-'80",
+            "Omega Speedmaster e Seamaster vintage",
+        ],
+    },
+    {
+        "house": "Bolaffi",
+        "sale_name": "Asta di Gioielli e Orologi",
+        "location": "Torino",
+        "date": "2026-11-18",
+        "preview_date": "2026-11-16",
+        "url": "https://www.bolaffi.it/aste/orologi/",
+        "catalog_url": "https://www.bolaffi.it/aste/orologi/",
+        "focus": "Orologi invernali, Patek Philippe, IWC, Jaeger-LeCoultre",
+        "highlights": [],
+    },
 ]
 
 
@@ -574,5 +632,25 @@ def get_auction_houses_info() -> list[dict]:
             "specialty": "Cartier vintage e mercato parigino. Spesso trova lotti a prezzi competitivi.",
             "buyer_premium_pct": 28.0,
             "main_sales": ["Paris Jun", "Paris Dec"],
+        },
+        {
+            "name": "Cambi",
+            "country": "Italy",
+            "city": "Genova",
+            "url": "https://www.cambi.it",
+            "founded": 2000,
+            "specialty": "Casa d'aste italiana leader nel nord Italia. Ottima copertura su orologi vintage e gioielleria.",
+            "buyer_premium_pct": 27.0,
+            "main_sales": ["Genova Apr", "Genova Oct"],
+        },
+        {
+            "name": "Bolaffi",
+            "country": "Italy",
+            "city": "Torino",
+            "url": "https://www.bolaffi.it",
+            "founded": 1890,
+            "specialty": "Storica casa d'aste torinese. Ottima scelta per orologi sportivi vintage e da collezione italiani.",
+            "buyer_premium_pct": 25.0,
+            "main_sales": ["Torino May", "Torino Nov"],
         },
     ]

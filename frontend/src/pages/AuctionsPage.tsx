@@ -16,13 +16,15 @@ import type { AuctionResult, UpcomingAuction } from '../types'
 // ---------------------------------------------------------------------------
 
 const HOUSES = [
-  { id: 'christies',  name: "Christie's",  url: 'https://www.christies.com/departments/watches',   loc: 'Geneva · New York · Hong Kong', status: 'active' as const,   specialty: 'Important Watches — May & Nov' },
-  { id: 'phillips',   name: 'Phillips',    url: 'https://www.phillips.com/watches',                loc: 'Geneva · New York · Hong Kong', status: 'active' as const,   specialty: 'Watches — May & Nov + Online' },
-  { id: 'sothebys',   name: "Sotheby's",   url: 'https://www.sothebys.com/en/departments/watches', loc: 'Geneva · London · New York',    status: 'active' as const,   specialty: 'Important Watches — May & Nov' },
-  { id: 'antiquorum', name: 'Antiquorum',  url: 'https://www.antiquorum.swiss',                    loc: 'Geneva · Hong Kong',            status: 'active' as const,   specialty: 'Modern & Vintage Timepieces' },
-  { id: 'artcurial',  name: 'Artcurial',   url: 'https://www.artcurial.com/fr/departements/montres', loc: 'Paris · Monaco',             status: 'active' as const,   specialty: 'Montres de Collection' },
-  { id: 'bonhams',    name: 'Bonhams',     url: 'https://www.bonhams.com/departments/WAT/',        loc: 'London · Los Angeles',          status: 'pending' as const,  specialty: 'Watches & Clocks' },
-  { id: 'dorotheum',  name: 'Dorotheum',   url: 'https://www.dorotheum.com/en/auctions/watch-auctions/', loc: 'Vienna · Prague',       status: 'pending' as const,  specialty: 'Uhren & Taschenuhren' },
+  { id: 'christies',  name: "Christie's",  url: 'https://www.christies.com/departments/watches',       loc: 'Geneva · New York · Hong Kong', status: 'active' as const,   specialty: 'Important Watches — May & Nov' },
+  { id: 'phillips',   name: 'Phillips',    url: 'https://www.phillips.com/watches',                    loc: 'Geneva · New York · Hong Kong', status: 'active' as const,   specialty: 'Watches — May & Nov + Online' },
+  { id: 'sothebys',   name: "Sotheby's",   url: 'https://www.sothebys.com/en/departments/watches',     loc: 'Geneva · London · New York',    status: 'active' as const,   specialty: 'Important Watches — May & Nov' },
+  { id: 'antiquorum', name: 'Antiquorum',  url: 'https://www.antiquorum.swiss',                        loc: 'Geneva · Hong Kong',            status: 'active' as const,   specialty: 'Modern & Vintage Timepieces' },
+  { id: 'artcurial',  name: 'Artcurial',   url: 'https://www.artcurial.com/fr/departements/montres',   loc: 'Paris · Monaco',                status: 'active' as const,   specialty: 'Montres de Collection' },
+  { id: 'cambi',      name: 'Cambi',       url: 'https://www.cambi.it/aste/',                          loc: 'Genova · Italia',               status: 'active' as const,   specialty: 'Gioielli, Orologi & Oggetti Preziosi' },
+  { id: 'bolaffi',    name: 'Bolaffi',     url: 'https://www.bolaffi.it/aste/orologi/',                loc: 'Torino · Italia',               status: 'active' as const,   specialty: 'Aste di Gioielli e Orologi' },
+  { id: 'bonhams',    name: 'Bonhams',     url: 'https://www.bonhams.com/departments/WAT/',            loc: 'London · Los Angeles',          status: 'pending' as const,  specialty: 'Watches & Clocks' },
+  { id: 'dorotheum',  name: 'Dorotheum',   url: 'https://www.dorotheum.com/en/auctions/watch-auctions/', loc: 'Vienna · Prague',             status: 'pending' as const,  specialty: 'Uhren & Taschenuhren' },
 ]
 
 // ---------------------------------------------------------------------------

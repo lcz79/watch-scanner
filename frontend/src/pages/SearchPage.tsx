@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useMutation, useQuery } from '@tanstack/react-query'
-import { scanWatch, getPriceHistory, identifyWatchFromImage } from '../lib/api'
-import type { WatchListing, ScanResult, MarketStats, InvestmentScore } from '../types'
+import { scanWatch, getPriceHistory, identifyWatchFromImage, getAuctionResults } from '../lib/api'
+import type { WatchListing, ScanResult, MarketStats, InvestmentScore, AuctionResult } from '../types'
 import MarketCard from '../components/MarketCard'
 import PriceEvolutionChart from '../components/PriceEvolutionChart'
 import { clsx } from 'clsx'
@@ -119,6 +119,190 @@ function deriveInvestment(listings: WatchListing[], stats: MarketStats): Investm
     signal,
   }
 }
+
+// ---------------------------------------------------------------------------
+// Auction Values Panel
+// ---------------------------------------------------------------------------
+
+function AuctionValuesPanel({
+  reference, results, total, lang,
+}: {
+  reference: string
+  results: AuctionResult[]
+  total: number
+  lang: string
+}) {
+  const latest = results[0]
+  const record = [...results].sort((a, b) => (b.hammer_price_chf ?? 0) - (a.hammer_price_chf ?? 0))[0]
+  const avgHammer = results.reduce((s, r) => s + (r.hammer_price_chf ?? 0), 0) / results.filter(r => r.hammer_price_chf).length || 0
+
+  const fmtChf = (n: number | null | undefined) => {
+    if (!n) return '—'
+    if (n >= 1_000_000) return `CHF ${(n / 1_000_000).toFixed(2)}M`
+    if (n >= 1_000) return `CHF ${Math.round(n / 1000)}K`
+    return `CHF ${n.toLocaleString()}`
+  }
+
+  const fmtDate = (iso: string) => {
+    try { return new Date(iso).toLocaleDateString(lang === 'it' ? 'it-IT' : 'en-GB', { month: 'short', year: 'numeric' }) }
+    catch { return iso.slice(0, 7) }
+  }
+
+  const houseColor: Record<string, string> = {
+    "Phillips":    "text-violet-400",
+    "Christie's":  "text-red-400",
+    "Sotheby's":   "text-blue-400",
+    "Antiquorum":  "text-amber-400",
+    "Artcurial":   "text-pink-400",
+    "Cambi":       "text-green-400",
+    "Bolaffi":     "text-cyan-400",
+  }
+
+  return (
+    <div className="bg-zinc-900 border border-zinc-800 mb-6 overflow-hidden">
+      {/* Header */}
+      <div className="flex items-center justify-between px-5 py-3 border-b border-zinc-800 bg-zinc-950/60">
+        <div className="flex items-center gap-2">
+          <span className="material-symbols-outlined text-sm text-yellow-400">gavel</span>
+          <span className="font-label-caps text-[10px] uppercase tracking-widest text-zinc-300">
+            {lang === 'it' ? 'Ultimo Valore d\'Asta' : 'Auction History'}
+          </span>
+          <span className="font-mono-data text-[9px] text-zinc-600 ml-1">
+            {reference.toUpperCase()} · {total} {lang === 'it' ? 'lotti in DB' : 'lots in DB'}
+          </span>
+        </div>
+        <a
+          href={`/aste`}
+          className="font-label-caps text-[9px] text-primary hover:text-yellow-300 uppercase tracking-widest flex items-center gap-0.5 transition-colors"
+        >
+          {lang === 'it' ? 'Vedi tutti' : 'See all'}
+          <span className="material-symbols-outlined text-[11px]">arrow_forward</span>
+        </a>
+      </div>
+
+      <div className="grid grid-cols-12 divide-x divide-zinc-800">
+        {/* KPIs colonna sinistra */}
+        <div className="col-span-12 lg:col-span-4 p-5 space-y-4">
+          {/* Ultimo risultato */}
+          <div>
+            <p className="font-label-caps text-[9px] text-zinc-500 uppercase tracking-widest mb-1">
+              {lang === 'it' ? 'Ultima Vendita' : 'Most Recent Sale'}
+            </p>
+            <p className="font-display-price text-2xl text-zinc-100 leading-none">{fmtChf(latest.hammer_price_chf)}</p>
+            <div className="flex items-center gap-2 mt-1">
+              <span className={`font-label-caps text-[9px] uppercase ${houseColor[latest.auction_house] ?? 'text-zinc-400'}`}>
+                {latest.auction_house}
+              </span>
+              <span className="text-zinc-600 text-[9px]">·</span>
+              <span className="font-mono-data text-[9px] text-zinc-500">{fmtDate(latest.sale_date)}</span>
+              {latest.lot_url && (
+                <a href={latest.lot_url} target="_blank" rel="noopener noreferrer"
+                  className="text-zinc-600 hover:text-yellow-400 transition-colors ml-auto">
+                  <span className="material-symbols-outlined text-[12px]">open_in_new</span>
+                </a>
+              )}
+            </div>
+            {latest.estimate_low_chf && (
+              <p className="font-mono-data text-[10px] text-zinc-600 mt-1">
+                Est. {fmtChf(latest.estimate_low_chf)}–{fmtChf(latest.estimate_high_chf)}
+                {latest.hammer_to_estimate_ratio && latest.hammer_to_estimate_ratio > 1 && (
+                  <span className="text-green-400 ml-1">+{((latest.hammer_to_estimate_ratio - 1) * 100).toFixed(0)}% vs est.</span>
+                )}
+              </p>
+            )}
+          </div>
+
+          {/* Record assoluto */}
+          {record !== latest && (
+            <div className="border-t border-zinc-800 pt-4">
+              <p className="font-label-caps text-[9px] text-zinc-500 uppercase tracking-widest mb-1">
+                {lang === 'it' ? 'Record in DB' : 'DB Record'}
+              </p>
+              <p className="font-display-price text-xl text-primary leading-none">{fmtChf(record.hammer_price_chf)}</p>
+              <div className="flex items-center gap-2 mt-1">
+                <span className={`font-label-caps text-[9px] uppercase ${houseColor[record.auction_house] ?? 'text-zinc-400'}`}>
+                  {record.auction_house}
+                </span>
+                <span className="font-mono-data text-[9px] text-zinc-500">· {fmtDate(record.sale_date)}</span>
+              </div>
+            </div>
+          )}
+
+          {/* Media */}
+          {avgHammer > 0 && (
+            <div className="border-t border-zinc-800 pt-4">
+              <p className="font-label-caps text-[9px] text-zinc-500 uppercase tracking-widest mb-1">
+                {lang === 'it' ? `Media (${results.filter(r => r.hammer_price_chf).length} aste)` : `Avg (${results.filter(r => r.hammer_price_chf).length} sales)`}
+              </p>
+              <p className="font-mono-data text-sm text-zinc-300">{fmtChf(avgHammer)}</p>
+            </div>
+          )}
+        </div>
+
+        {/* Timeline delle aste — colonna destra */}
+        <div className="col-span-12 lg:col-span-8 p-5">
+          <p className="font-label-caps text-[9px] text-zinc-500 uppercase tracking-widest mb-3">
+            {lang === 'it' ? 'Storico Aste' : 'Auction Log'}
+          </p>
+          <div className="space-y-2">
+            {results.slice(0, 5).map((r, i) => {
+              const pct = r.hammer_to_estimate_ratio
+                ? ((r.hammer_to_estimate_ratio - 1) * 100)
+                : null
+              return (
+                <a
+                  key={r.id ?? i}
+                  href={r.lot_url || `https://www.google.com/search?q=${encodeURIComponent(`${r.auction_house} ${reference} ${r.sale_date?.slice(0,4)}`)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-3 p-2.5 bg-zinc-800/30 hover:bg-zinc-800/70 border border-zinc-800 hover:border-zinc-700 transition-colors group rounded"
+                >
+                  {/* House dot */}
+                  <div className="w-1.5 h-1.5 rounded-full flex-shrink-0 bg-zinc-600 group-hover:bg-yellow-400 transition-colors" />
+
+                  {/* House + date */}
+                  <div className="w-28 flex-shrink-0">
+                    <p className={`font-label-caps text-[9px] uppercase leading-none ${houseColor[r.auction_house] ?? 'text-zinc-400'}`}>
+                      {r.auction_house}
+                    </p>
+                    <p className="font-mono-data text-[9px] text-zinc-600 mt-0.5">{fmtDate(r.sale_date)}</p>
+                  </div>
+
+                  {/* Sale name */}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[10px] text-zinc-500 truncate">
+                      {r.sale_name || r.description || reference}
+                    </p>
+                  </div>
+
+                  {/* Hammer */}
+                  <div className="text-right flex-shrink-0">
+                    <p className="font-mono-data text-sm text-zinc-100 font-bold leading-none">
+                      {fmtChf(r.hammer_price_chf)}
+                    </p>
+                    {pct !== null && (
+                      <p className={`font-mono-data text-[9px] mt-0.5 ${pct > 0 ? 'text-green-400' : 'text-red-400'}`}>
+                        {pct > 0 ? '+' : ''}{pct.toFixed(0)}%
+                      </p>
+                    )}
+                  </div>
+
+                  <span className="material-symbols-outlined text-[11px] text-zinc-700 group-hover:text-zinc-400 transition-colors flex-shrink-0">
+                    open_in_new
+                  </span>
+                </a>
+              )
+            })}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Listing card
+// ---------------------------------------------------------------------------
 
 function ListingCard({ listing, isBest, isBestDeal = false }: {
   listing: WatchListing; isBest: boolean; isBestDeal?: boolean
@@ -354,6 +538,13 @@ export default function SearchPage() {
   const { data: priceHistory = [] } = useQuery({
     queryKey: ['price-history', result?.query.reference],
     queryFn: () => getPriceHistory(result!.query.reference, 365 * 20),
+    enabled: !!result?.query.reference,
+    staleTime: 5 * 60 * 1000,
+  })
+
+  const { data: auctionData } = useQuery({
+    queryKey: ['auction-results-search', result?.query.reference],
+    queryFn: () => getAuctionResults(result!.query.reference, { limit: 5 }),
     enabled: !!result?.query.reference,
     staleTime: 5 * 60 * 1000,
   })
@@ -739,6 +930,16 @@ export default function SearchPage() {
               history={priceHistory}
               fairPrice={clientStats.fair_price}
               reference={result.query.reference}
+            />
+          )}
+
+          {/* ── Auction Values Panel ── */}
+          {auctionData && auctionData.results.length > 0 && (
+            <AuctionValuesPanel
+              reference={result.query.reference}
+              results={auctionData.results}
+              total={auctionData.total}
+              lang={lang}
             />
           )}
 
