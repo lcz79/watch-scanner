@@ -165,5 +165,17 @@ export const getKnownFakes = (brand: string, model?: string) =>
   ).then(r => r.data)
 
 export const getAuctionStats = () =>
-  api.get<{ total_lots_in_db: number; auction_houses: number; houses_breakdown: unknown[] }>('/auctions/stats')
+  api.get<{ total_lots_in_db: number; auction_houses: number; houses_breakdown: { house: string; lots: number }[]; top_records: AuctionResult[]; most_recent_sale: string | null }>('/auctions/stats')
+    .then(r => r.data)
+
+export const getRecentAuctionResults = (limit = 20) =>
+  api.get<{ total_in_db: number; shown: number; results: AuctionResult[] }>('/auctions/recent', { params: { limit } })
+    .then(r => r.data)
+
+export const getAuctionRefreshStatus = () =>
+  api.get<{ last_run: string | null; last_run_status: string; last_run_sources: Record<string, unknown>; next_run: string | null; is_running: boolean; total_in_db?: number }>('/auctions/refresh/status')
+    .then(r => r.data)
+
+export const triggerAuctionRefresh = () =>
+  api.post<{ status: string; message: string }>('/auctions/refresh')
     .then(r => r.data)

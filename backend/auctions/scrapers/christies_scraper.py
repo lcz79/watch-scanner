@@ -17,7 +17,13 @@ from utils.logger import get_logger
 logger = get_logger("auctions")
 
 BASE_URL = "https://www.christies.com"
-SEARCH_API = f"{BASE_URL}/api/discoverywebsite/LotFinder/lot_results"
+
+# Christie's ha diverse versioni dell'API nel tempo — le proviamo tutte
+SEARCH_APIS = [
+    f"{BASE_URL}/api/discoverywebsite/LotFinder/lot_results",
+    f"{BASE_URL}/api/discoverywebsite/LotFinder/GetResults",
+    f"{BASE_URL}/en/results",
+]
 
 HEADERS = {
     "User-Agent": (
@@ -28,6 +34,7 @@ HEADERS = {
     "Accept": "application/json, text/html, */*",
     "Accept-Language": "en-US,en;q=0.9",
     "Referer": f"{BASE_URL}/watches",
+    "X-Requested-With": "XMLHttpRequest",
 }
 
 
@@ -114,6 +121,7 @@ def _normalize_lot(lot: dict) -> dict:
 async def scrape_recent_results(limit: int = 50) -> list[dict]:
     """
     Scarica i risultati recenti di orologi da Christie's via API JSON.
+    Prova diversi endpoint — Christie's cambia le API nel tempo.
     """
     logger.info(f"Christie's scraper: fetch risultati recenti (limit={limit})")
     results = []
@@ -132,31 +140,46 @@ async def scrape_recent_results(limit: int = 50) -> list[dict]:
         timeout=30.0,
         follow_redirects=True,
     ) as client:
-        try:
-            resp = await client.get(SEARCH_API, params=params)
-            resp.raise_for_status()
-            data = resp.json()
+        api_success = False
+        for api_url in SEARCH_APIS:
+            try:
+                resp = await client.get(api_url, params=params)
+                if resp.status_code != 200:
+                    continue
 
-            lots = (
-                data.get("lots", [])
-                or data.get("LotResults", [])
-                or data.get("results", [])
-            )
-            logger.info(f"Christie's API: {len(lots)} lotti ricevuti")
+                content_type = resp.headers.get("content-type", "")
+                if "application/json" not in content_type:
+                    continue
 
-            for lot in lots[:limit]:
-                try:
-                    normalized = _normalize_lot(lot)
-                    if normalized.get("brand") != "Unknown":
-                        results.append(normalized)
-                except Exception as e:
-                    logger.debug(f"Christie's: errore normalizzazione lotto: {e}")
+                data = resp.json()
+                lots = (
+                    data.get("lots", [])
+                    or data.get("LotResults", [])
+                    or data.get("results", [])
+                    or data.get("data", {}).get("lots", [])
+                )
+                if not lots:
+                    continue
 
-        except httpx.HTTPError as e:
-            logger.warning(f"Christie's API non disponibile: {e} — fallback HTML")
+                logger.info(f"Christie's API ({api_url}): {len(lots)} lotti ricevuti")
+                for lot in lots[:limit]:
+                    try:
+                        normalized = _normalize_lot(lot)
+                        if normalized.get("brand") != "Unknown":
+                            results.append(normalized)
+                    except Exception as e:
+                        logger.debug(f"Christie's: errore normalizzazione lotto: {e}")
+
+                api_success = True
+                break
+
+            except Exception as e:
+                logger.debug(f"Christie's API {api_url}: {e}")
+                continue
+
+        if not api_success:
+            logger.warning("Christie's API non disponibile — fallback HTML")
             results = await _scrape_html_fallback(client, limit)
-        except Exception as e:
-            logger.error(f"Christie's scraper errore: {e}")
 
     logger.info(f"Christie's scraper: estratti {len(results)} risultati")
     return results

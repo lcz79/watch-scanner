@@ -239,6 +239,7 @@ export interface UpcomingAuction {
   date: string
   preview_date: string | null
   url: string | null
+  catalog_url: string | null
   focus: string | null
   highlights: string[] | null
 }

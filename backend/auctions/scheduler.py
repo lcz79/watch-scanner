@@ -73,9 +73,9 @@ async def run_full_refresh() -> dict:
 
     # ── 2. Phillips: risultati recenti ────────────────────────────────────
     try:
-        from .scrapers.phillips_scraper import scrape_recent_results
+        from .scrapers.phillips_scraper import scrape_recent_results as phillips_scrape
 
-        phillips_results = await scrape_recent_results(limit=50)
+        phillips_results = await phillips_scrape(limit=50)
         inserted_phi = bulk_insert_results(phillips_results)
         stats["phillips"] = {"found": len(phillips_results), "inserted": inserted_phi}
         logger.info(f"Phillips: {len(phillips_results)} trovati, {inserted_phi} inseriti")
@@ -84,9 +84,54 @@ async def run_full_refresh() -> dict:
         logger.error(f"Phillips scraper error: {e}")
         stats["phillips"] = {"error": str(e)}
 
-    await asyncio.sleep(2)
+    await asyncio.sleep(3)
 
-    # ── 3. Upcoming auctions live ────────────────────────────────────────
+    # ── 3. Christie's: risultati recenti ─────────────────────────────────
+    try:
+        from .scrapers.christies_scraper import scrape_recent_results as christies_scrape
+
+        christies_results = await christies_scrape(limit=50)
+        inserted_chr = bulk_insert_results(christies_results)
+        stats["christies"] = {"found": len(christies_results), "inserted": inserted_chr}
+        logger.info(f"Christie's: {len(christies_results)} trovati, {inserted_chr} inseriti")
+
+    except Exception as e:
+        logger.error(f"Christie's scraper error: {e}")
+        stats["christies"] = {"error": str(e)}
+
+    await asyncio.sleep(3)
+
+    # ── 4. Sotheby's: risultati recenti ───────────────────────────────────
+    try:
+        from .scrapers.sotherby_scraper import scrape_recent_results as sothebys_scrape
+
+        sothebys_results = await sothebys_scrape(limit=50)
+        inserted_sot = bulk_insert_results(sothebys_results)
+        stats["sothebys"] = {"found": len(sothebys_results), "inserted": inserted_sot}
+        logger.info(f"Sotheby's: {len(sothebys_results)} trovati, {inserted_sot} inseriti")
+
+    except Exception as e:
+        logger.error(f"Sotheby's scraper error: {e}")
+        stats["sothebys"] = {"error": str(e)}
+
+    await asyncio.sleep(3)
+
+    # ── 5. Antiquorum: risultati recenti ──────────────────────────────────
+    try:
+        from .scrapers.antiquorum_scraper import scrape_recent_results as antiquorum_scrape
+
+        antiquorum_results = await antiquorum_scrape(limit=40)
+        inserted_ant = bulk_insert_results(antiquorum_results)
+        stats["antiquorum"] = {"found": len(antiquorum_results), "inserted": inserted_ant}
+        logger.info(f"Antiquorum: {len(antiquorum_results)} trovati, {inserted_ant} inseriti")
+
+    except Exception as e:
+        logger.error(f"Antiquorum scraper error: {e}")
+        stats["antiquorum"] = {"error": str(e)}
+
+    await asyncio.sleep(3)
+
+    # ── 7. Upcoming auctions live ────────────────────────────────────────
     try:
         from .scrapers.upcoming_scraper import scrape_all_upcoming
 
