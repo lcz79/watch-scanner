@@ -19,6 +19,7 @@ from .database import (
 )
 from .sentiment import compute_sentiment, enrich_results
 from .calendar import get_upcoming_auctions, get_auction_houses_info
+from .scheduler import run_full_refresh, get_refresh_status
 
 logger = get_logger("auctions")
 
@@ -139,9 +140,65 @@ async def get_upcoming_auctions_endpoint(
 ) -> list:
     """
     Prossime aste in calendario.
-    Dati aggiornati a conoscenza maggio 2025.
+    Mergia dati statici 2025-2026 con dati live scrappati dallo scheduler.
     """
     return get_upcoming_auctions(from_date=from_date)
+
+
+@router.get("/upcoming")
+async def get_upcoming_endpoint(
+    from_date: str | None = Query(default=None, description="Data ISO YYYY-MM-DD"),
+) -> dict:
+    """
+    Prossime aste con catalog_url reali (quando disponibili dallo scraping live).
+    Include conteggio dati live vs statici.
+    """
+    from .calendar import _LIVE_UPCOMING_CACHE
+
+    auctions = get_upcoming_auctions(from_date=from_date)
+    return {
+        "total": len(auctions),
+        "has_live_data": len(_LIVE_UPCOMING_CACHE) > 0,
+        "live_sources_count": len(_LIVE_UPCOMING_CACHE),
+        "auctions": auctions,
+    }
+
+
+# ---------------------------------------------------------------------------
+# Refresh manuale scraping
+# ---------------------------------------------------------------------------
+
+@router.post("/refresh")
+async def trigger_refresh(background_tasks: BackgroundTasks) -> dict:
+    """
+    Avvia manualmente lo scraping completo di tutte le fonti aste (background).
+    Invaluable → Phillips → Upcoming calendar di tutte le case.
+    """
+    from .scheduler import _refresh_status
+
+    if _refresh_status.get("is_running"):
+        return {
+            "status": "already_running",
+            "message": "Refresh già in corso. Controlla /auctions/refresh/status per lo stato.",
+        }
+
+    background_tasks.add_task(run_full_refresh)
+    return {
+        "status": "avviato",
+        "message": (
+            "Refresh completo avviato in background. "
+            "Controlla /auctions/refresh/status per i progressi."
+        ),
+    }
+
+
+@router.get("/refresh/status")
+async def get_refresh_status_endpoint() -> dict:
+    """
+    Stato dell'ultimo refresh scraping aste.
+    Mostra data ultimo run, sorgenti, numero lotti inseriti.
+    """
+    return get_refresh_status()
 
 
 # ---------------------------------------------------------------------------

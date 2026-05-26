@@ -85,6 +85,11 @@ async def lifespan(app: FastAPI):
     tasks.append(asyncio.create_task(start_news_scheduler()))
     logger.info("News scheduler avviato (ogni 12h)")
 
+    # Avvia scheduler aste (prima run dopo 2min, poi ogni 7 giorni)
+    from auctions.scheduler import start_auction_scheduler
+    tasks.append(asyncio.create_task(start_auction_scheduler()))
+    logger.info("Auction scheduler avviato (prima run tra 2min, poi ogni 7 giorni)")
+
     yield
 
     for t in tasks:
