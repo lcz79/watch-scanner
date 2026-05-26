@@ -70,6 +70,7 @@ def init_db():
                 post_count      INTEGER,
                 cms_type        TEXT,
                 last_crawled    TIMESTAMP,
+                followed_at     TIMESTAMP,
                 created_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
                 updated_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
             );

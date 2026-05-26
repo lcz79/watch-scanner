@@ -48,6 +48,7 @@ async def lifespan(app: FastAPI):
         from agents.discovery.orchestrator import start_nightly_scheduler
         from scrapers.instagram_stories import start_stories_scheduler
         from agents.stories_intelligence_agent import start_stories_intelligence_scheduler
+        from agents.follow_agent import start_follow_scheduler
         tasks.append(asyncio.create_task(
             start_nightly_scheduler(settings.instagram_username, settings.instagram_password)
         ))
@@ -57,7 +58,10 @@ async def lifespan(app: FastAPI):
         tasks.append(asyncio.create_task(
             start_stories_intelligence_scheduler(settings.instagram_username, settings.instagram_password)
         ))
-        logger.info("Scheduler discovery notturno + stories OCR + stories AI (GPT-4o) avviati")
+        tasks.append(asyncio.create_task(
+            start_follow_scheduler(settings.instagram_username, settings.instagram_password)
+        ))
+        logger.info("Scheduler discovery notturno + stories OCR + stories AI (GPT-4o) + follow avviati")
     else:
         logger.info("Scheduler disabilitato (configura INSTAGRAM_USERNAME/PASSWORD)")
 
@@ -208,6 +212,31 @@ async def start_discovery(background_tasks: BackgroundTasks):
         settings.instagram_password,
     )
     return {"status": "avviata", "check_status": "/discovery/status"}
+
+
+@app.get("/follow/stats")
+async def follow_stats():
+    """Statistiche follow: quanti oggi, quanti totali, ultimi seguiti."""
+    from agents.discovery.resellers_db import _connect
+    from datetime import date
+    conn = _connect()
+    today = date.today().isoformat()
+    total_followed = conn.execute("SELECT COUNT(*) FROM dealers WHERE followed_at IS NOT NULL").fetchone()[0]
+    today_followed = conn.execute("SELECT COUNT(*) FROM dealers WHERE followed_at >= ?", (today,)).fetchone()[0]
+    pending = conn.execute(
+        "SELECT COUNT(*) FROM dealers WHERE followed_at IS NULL AND score >= 4 AND platform = 'instagram'"
+    ).fetchone()[0]
+    recent = conn.execute(
+        "SELECT username, score, followed_at FROM dealers WHERE followed_at IS NOT NULL ORDER BY followed_at DESC LIMIT 10"
+    ).fetchall()
+    conn.close()
+    return {
+        "today": today_followed,
+        "total": total_followed,
+        "pending_to_follow": pending,
+        "daily_cap": 15,
+        "recent": [dict(r) for r in recent],
+    }
 
 
 @app.get("/resellers")
