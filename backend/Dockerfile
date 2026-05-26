@@ -3,6 +3,9 @@ FROM mcr.microsoft.com/playwright/python:v1.47.0-jammy
 
 WORKDIR /app
 
+# Tesseract OCR (per stories)
+RUN apt-get update -qq && apt-get install -y -qq tesseract-ocr tesseract-ocr-ita && rm -rf /var/lib/apt/lists/*
+
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
