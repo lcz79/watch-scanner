@@ -1,588 +1,492 @@
+import { useRef, useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { useLang } from '../lib/lang'
 import { motion } from 'framer-motion'
 import CountUp from 'react-countup'
-import { fmtEur, fmtEurCompact, toEur } from '../lib/currency'
+import { fmtEur, toEur } from '../lib/currency'
 
-// ── Mock data ────────────────────────────────────────────────────────────────
+// ── Design tokens ─────────────────────────────────────────────────────────────
+const C = {
+  navy:    '#07080f',
+  navy2:   '#0c0e1a',
+  navy3:   '#111425',
+  gold:    '#B8975A',
+  goldDim: 'rgba(184,151,90,0.14)',
+  goldGlow:'rgba(184,151,90,0.22)',
+  border:  'rgba(184,151,90,0.12)',
+  border2: 'rgba(255,255,255,0.05)',
+  green:   '#4EB87A',
+  red:     '#E05A5A',
+  blue:    '#8899ff',
+  t1:      '#e8e2d4',
+  t2:      '#8a8070',
+  t3:      '#3d3a30',
+}
+const F = {
+  serif:    '"Playfair Display", Georgia, serif',
+  cormorant:'"Cormorant Garamond", Georgia, serif',
+  mono:     '"IBM Plex Mono", Menlo, monospace',
+  sans:     '"Space Grotesk", system-ui, sans-serif',
+}
 
-// Market models to query from the real API
-const MARKET_MODELS = [
-  {
-    ref: '116610LN',
-    icon: 'trending_up',
-    label: { en: 'Rolex Submariner', it: 'Rolex Submariner' },
-    fallbackTag: { en: 'Trending', it: 'In Rialzo' },
-    fallbackTagColor: 'bg-green-400/10 text-green-400 border-green-400/20',
-  },
-  {
-    ref: '15500ST',
-    icon: 'query_stats',
-    label: { en: 'AP Royal Oak 15500ST', it: 'AP Royal Oak 15500ST' },
-    fallbackTag: { en: 'Accumulate', it: 'Accumulo' },
-    fallbackTagColor: 'bg-yellow-400/10 text-yellow-400 border-yellow-400/20',
-  },
-  {
-    ref: '5711/1A',
-    icon: 'new_releases',
-    label: { en: 'Patek Nautilus 5711/1A', it: 'Patek Nautilus 5711/1A' },
-    fallbackTag: { en: 'High Demand', it: 'Alta Domanda' },
-    fallbackTagColor: 'bg-blue-400/10 text-blue-400 border-blue-400/20',
-  },
-]
-
+// ── Static fallback data ───────────────────────────────────────────────────────
 const AUCTION_CALENDAR = [
-  {
-    house: "Christie's",
-    event: { en: 'Important Watches — Kronos: Titans of Time', it: 'Important Watches — Kronos: Titans of Time' },
-    date: '29 mag 2026',
-    location: 'Hong Kong',
-    lots: 0,
-    flag: '🇭🇰',
-  },
-  {
-    house: 'Bonhams',
-    event: { en: 'Hong Kong Watches: Rare & Iconic', it: 'Hong Kong Watches: Rare & Iconic' },
-    date: '30 mag 2026',
-    location: 'Hong Kong',
-    lots: 0,
-    flag: '🇭🇰',
-  },
-  {
-    house: 'Antiquorum',
-    event: { en: 'Important Modern & Vintage Timepieces', it: 'Orologi Moderni e Vintage Importanti' },
-    date: '31 mag 2026',
-    location: 'Hong Kong',
-    lots: 0,
-    flag: '🇭🇰',
-  },
-  {
-    house: 'Phillips',
-    event: { en: 'Hong Kong Watch Auction: XXII', it: 'Hong Kong Watch Auction: XXII' },
-    date: '1 giu 2026',
-    location: 'Hong Kong',
-    lots: 0,
-    flag: '🇭🇰',
-  },
+  { house: "Christie's",  event: { en: 'Important Watches — Kronos: Titans of Time', it: 'Important Watches — Kronos: Titans of Time' }, date: '29 mag 2026', location: 'Hong Kong', lots: 0, flag: '🇭🇰' },
+  { house: 'Bonhams',     event: { en: 'Hong Kong Watches: Rare & Iconic', it: 'Hong Kong Watches: Rare & Iconic' },                   date: '30 mag 2026', location: 'Hong Kong', lots: 0, flag: '🇭🇰' },
+  { house: 'Antiquorum',  event: { en: 'Important Modern & Vintage Timepieces', it: 'Orologi Moderni e Vintage Importanti' },          date: '31 mag 2026', location: 'Hong Kong', lots: 0, flag: '🇭🇰' },
+  { house: 'Phillips',    event: { en: 'Hong Kong Watch Auction: XXII', it: 'Hong Kong Watch Auction: XXII' },                        date: '1 giu 2026',  location: 'Hong Kong', lots: 0, flag: '🇭🇰' },
 ]
-
 const AUCTION_RESULTS = [
-  {
-    watch: 'Rolex "Paul Newman" Daytona 6241',
-    house: "Christie's Geneva",
-    date: 'May 2026',
-    hammer: '€1.240.000',
-    estimate: '€800.000–1.200.000',
-    over: true,
-  },
-  {
-    watch: 'Patek Philippe 5711/1A Nautilus (Final Series)',
-    house: "Sotheby's NY",
-    date: 'Apr 2026',
-    hammer: '€340.000',
-    estimate: '€200.000–280.000',
-    over: true,
-  },
-  {
-    watch: 'AP Royal Oak "Jumbo" 5402ST (1972)',
-    house: 'Phillips Geneva',
-    date: 'Apr 2026',
-    hammer: '€285.000',
-    estimate: '€220.000–300.000',
-    over: false,
-  },
-  {
-    watch: 'Rolex Submariner 6538 "James Bond"',
-    house: "Christie's",
-    date: 'Mar 2026',
-    hammer: '€195.000',
-    estimate: '€150.000–200.000',
-    over: false,
-  },
-  {
-    watch: 'Omega Speedmaster CK2998 Pre-Professional',
-    house: 'Antiquorum',
-    date: 'Mar 2026',
-    hammer: '€62.000',
-    estimate: '€45.000–70.000',
-    over: false,
-  },
+  { watch: 'Rolex "Paul Newman" Daytona 6241',         house: "Christie's Geneva", date: 'May 2026', hammer: '€ 1.240.000', over: true  },
+  { watch: 'Patek Philippe 5711/1A Nautilus (Final Series)', house: "Sotheby's NY",    date: 'Apr 2026', hammer: '€ 340.000',   over: true  },
+  { watch: 'AP Royal Oak "Jumbo" 5402ST (1972)',        house: 'Phillips Geneva',   date: 'Apr 2026', hammer: '€ 285.000',   over: false },
+  { watch: 'Rolex Submariner 6538 "James Bond"',        house: "Christie's",        date: 'Mar 2026', hammer: '€ 195.000',   over: false },
+  { watch: 'Omega Speedmaster CK2998 Pre-Professional', house: 'Antiquorum',        date: 'Mar 2026', hammer: '€ 62.000',    over: false },
 ]
 
-const TOP_INVESTMENT = {
-  brand: 'Patek Philippe',
-  model: 'Nautilus 5711/1A',
-  ref: '5711/1A',
-  score: 91,
-  return12m: '+18.4%',
-  volume: '€12.3M/month',
-  liquidity: { en: 'Very High', it: 'Molto Alta' },
-  img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBp7dzlBZ8vMf5MXzjB9qO7znaZSe9eQ-tgvMyk-dnzitnte4kd7lOFWyez-dbfh9nmGjMZqrzMnOYpBKC9dLiAu6bKBFWVHwcMhywGDNpbbzblf6ucRt1rGaYa9NkuyiikrcwQAceKZY65PJy24XEBQAhWE6nf2wBsQN9lkSlXtl0-pw4OLhJml0wPp1bOub0mN-aXRz7VBOYieKFtWjzfRHHTyj2Spe7y3AIM_gLuMEvzRyZkbifH422LWp_uij3XO41Hg2admIg',
-  trend: [180, 172, 178, 185, 190, 183, 195, 202, 208, 215, 218, 225],
-  signal: { en: 'Strong Buy', it: 'Forte Acquisto' },
-  analysis: {
-    en: 'The 5711/1A remains the most liquid steel sport watch in the secondary market. Discontinuation in 2022 created structural scarcity — production ceased at ~1,600 units/year. Institutional demand from family offices and US collectors continues to absorb supply at elevated premiums.',
-    it: 'Il 5711/1A rimane l\'orologio sportivo in acciaio più liquido nel mercato secondario. L\'interruzione nel 2022 ha creato una scarsità strutturale — produzione cessata a ~1.600 pezzi/anno. La domanda istituzionale da family office e collezionisti USA continua ad assorbire l\'offerta a premi elevati.',
-  },
-}
-
-// Recent searches stored in sessionStorage
+// ── Helpers ───────────────────────────────────────────────────────────────────
 function getRecentSearches(): { ref: string; ts: number }[] {
-  try {
-    return JSON.parse(sessionStorage.getItem('recentSearches') || '[]')
-  } catch { return [] }
+  try { return JSON.parse(sessionStorage.getItem('recentSearches') || '[]') } catch { return [] }
 }
 
-// ── Trend sparkline ───────────────────────────────────────────────────────────
-function Sparkline({ values, color = '#f2c345' }: { values: number[]; color?: string }) {
+// ── SVG Sparkline ─────────────────────────────────────────────────────────────
+function Sparkline({ values, color = C.gold }: { values: number[]; color?: string }) {
+  if (!values || values.length < 2) return null
   const min = Math.min(...values)
   const max = Math.max(...values)
   const range = max - min || 1
-  const w = 280
-  const h = 60
+  const W = 280, H = 60
   const pts = values.map((v, i) => {
-    const x = (i / (values.length - 1)) * w
-    const y = h - ((v - min) / range) * (h - 8) - 4
+    const x = (i / (values.length - 1)) * W
+    const y = H - ((v - min) / range) * (H - 8) - 4
     return `${x},${y}`
   }).join(' ')
+  const gradId = `sg-${color.replace(/[^a-z0-9]/gi, '')}`
   return (
-    <svg viewBox={`0 0 ${w} ${h}`} className="w-full h-full" preserveAspectRatio="none">
+    <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', height: '100%' }} preserveAspectRatio="none">
       <defs>
-        <linearGradient id="spGrad" x1="0" x2="0" y1="0" y2="1">
-          <stop offset="0%" stopColor={color} stopOpacity="0.25" />
-          <stop offset="100%" stopColor={color} stopOpacity="0" />
+        <linearGradient id={gradId} x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0%"   stopColor={color} stopOpacity="0.3" />
+          <stop offset="100%" stopColor={color} stopOpacity="0.02" />
         </linearGradient>
       </defs>
-      <polyline points={pts} fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-      <polygon points={`0,${h} ${pts} ${w},${h}`} fill="url(#spGrad)" />
+      <polyline points={pts} fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
+        style={{ filter: `drop-shadow(0 0 4px ${color}66)` }} />
+      <polygon points={`0,${H} ${pts} ${W},${H}`} fill={`url(#${gradId})`} />
     </svg>
   )
 }
 
-// ── Market Intelligence types ─────────────────────────────────────────────────
+// ── 3D Tilt Card ──────────────────────────────────────────────────────────────
+function TiltCard({
+  children, onClick, accentColor = C.gold,
+  style, className,
+}: {
+  children: React.ReactNode
+  onClick?: () => void
+  accentColor?: string
+  style?: React.CSSProperties
+  className?: string
+}) {
+  const ref = useRef<HTMLDivElement>(null)
+  const [tilt, setTilt]     = useState({ x: 0, y: 0 })
+  const [glow, setGlow]     = useState({ x: 50, y: 50 })
+  const [hovered, setHov]   = useState(false)
+
+  const onMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    if (!ref.current) return
+    const r  = ref.current.getBoundingClientRect()
+    const dx = (e.clientX - r.left  - r.width  / 2) / (r.width  / 2)
+    const dy = (e.clientY - r.top   - r.height / 2) / (r.height / 2)
+    setTilt({ x: dy * -6, y: dx * 8 })
+    setGlow({ x: ((e.clientX - r.left) / r.width) * 100, y: ((e.clientY - r.top) / r.height) * 100 })
+  }, [])
+
+  const transform = hovered
+    ? `perspective(700px) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg) scale3d(1.025,1.025,1.025)`
+    : 'perspective(700px) rotateX(0) rotateY(0) scale3d(1,1,1)'
+  const shadow = hovered
+    ? `${-tilt.y * 2}px ${tilt.x * 2}px 32px rgba(184,151,90,0.18), 0 0 60px rgba(184,151,90,0.06)`
+    : '0 2px 16px rgba(0,0,0,0.35)'
+
+  return (
+    <div
+      ref={ref}
+      onMouseMove={onMove}
+      onMouseEnter={() => setHov(true)}
+      onMouseLeave={() => { setHov(false); setTilt({ x: 0, y: 0 }) }}
+      onClick={onClick}
+      className={className}
+      style={{
+        position: 'relative', overflow: 'hidden', cursor: 'pointer',
+        background: C.navy2,
+        border: `1px solid ${hovered ? accentColor + '44' : C.border}`,
+        transformStyle: 'preserve-3d',
+        transform, transition: hovered ? 'transform 0.08s ease, box-shadow 0.08s ease, border-color 0.2s' : 'transform 0.5s cubic-bezier(0.16,1,0.3,1), box-shadow 0.5s, border-color 0.2s',
+        boxShadow: shadow,
+        display: 'flex', flexDirection: 'column',
+        ...style,
+      }}
+    >
+      {/* Radial glow following cursor */}
+      <div style={{
+        position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 1,
+        background: hovered ? `radial-gradient(circle at ${glow.x}% ${glow.y}%, ${accentColor}22 0%, transparent 55%)` : 'none',
+        transition: 'opacity 0.2s',
+      }} />
+      {/* Top edge shimmer on hover */}
+      <div style={{
+        position: 'absolute', top: 0, left: 0, right: 0, height: 1, zIndex: 2,
+        background: `linear-gradient(90deg, transparent, ${accentColor}${hovered ? 'aa' : '00'}, transparent)`,
+        transition: 'background 0.3s',
+      }} />
+      {children}
+    </div>
+  )
+}
+
+// ── Section header ────────────────────────────────────────────────────────────
+function SectionHeader({ title, meta, cta, onCta }: { title: string; meta?: string; cta?: string; onCta?: () => void }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+      <span style={{ fontFamily: F.serif, fontSize: 16, fontWeight: 700, color: C.gold, whiteSpace: 'nowrap' }}>
+        {title}
+      </span>
+      <div style={{ flex: 1, height: 1, background: C.border }} />
+      {meta && <span style={{ fontFamily: F.mono, fontSize: 8, color: C.t3, letterSpacing: '0.1em', whiteSpace: 'nowrap' }}>{meta}</span>}
+      {cta && (
+        <button onClick={onCta} style={{ fontFamily: F.mono, fontSize: 8, color: C.gold, letterSpacing: '0.12em', textTransform: 'uppercase', background: 'none', border: 'none', cursor: 'pointer' }}>
+          {cta} →
+        </button>
+      )}
+    </div>
+  )
+}
+
+// ── Supply bar ────────────────────────────────────────────────────────────────
+function SupplyBar({ pct, color }: { pct: number; color: string }) {
+  const [width, setW] = useState(0)
+  useEffect(() => { const id = setTimeout(() => setW(pct), 300); return () => clearTimeout(id) }, [pct])
+  return (
+    <div style={{ marginTop: 10 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: F.mono, fontSize: 8, color: C.t3, letterSpacing: '0.08em', marginBottom: 5 }}>
+        <span>Supply index</span><span>{pct} / 100</span>
+      </div>
+      <div style={{ height: 3, background: 'rgba(255,255,255,0.04)', position: 'relative' }}>
+        <div style={{
+          height: '100%', width: `${width}%`,
+          background: `linear-gradient(90deg, ${color}, ${color}cc)`,
+          transition: 'width 1.2s cubic-bezier(0.16,1,0.3,1)',
+          position: 'relative',
+        }}>
+          <div style={{
+            position: 'absolute', right: 0, top: '50%', transform: 'translate(50%, -50%)',
+            width: 8, height: 8, borderRadius: '50%', background: color,
+            boxShadow: `0 0 8px ${color}`,
+          }} />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ── Watch image overlay ───────────────────────────────────────────────────────
+function WatchImageOverlay({ url }: { url?: string }) {
+  if (!url) return null
+  return (
+    <div style={{
+      position: 'absolute', right: -16, bottom: -8,
+      width: 160, height: 160,
+      pointerEvents: 'none', zIndex: 0,
+      maskImage: 'radial-gradient(ellipse 80% 80% at 60% 60%, black 20%, transparent 75%)',
+      WebkitMaskImage: 'radial-gradient(ellipse 80% 80% at 60% 60%, black 20%, transparent 75%)',
+    }}>
+      <img
+        src={url}
+        alt=""
+        onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none' }}
+        style={{
+          width: '100%', height: '100%', objectFit: 'contain',
+          opacity: 0.13,
+          filter: 'grayscale(20%) saturate(0.9)',
+          mixBlendMode: 'luminosity',
+        }}
+      />
+    </div>
+  )
+}
+
+// ── Ornament numeral ──────────────────────────────────────────────────────────
+function Ornament({ n }: { n: string }) {
+  return (
+    <div style={{
+      position: 'absolute', top: 8, right: 12,
+      fontFamily: F.serif, fontSize: 56, fontWeight: 900, lineHeight: 1,
+      color: 'rgba(184,151,90,0.07)', pointerEvents: 'none', zIndex: 0,
+      userSelect: 'none',
+    }}>{n}</div>
+  )
+}
+
+// ── Types ─────────────────────────────────────────────────────────────────────
 interface IntelCard {
-  reference: string
-  brand: string
-  model: string
-  has_data?: boolean
+  reference: string; brand: string; model: string; has_data?: boolean; image_url?: string
 }
 interface AppreciationCard extends IntelCard {
-  current_price_chf: number
-  price_6m_ago_chf: number
-  change_pct: number
-  period_days: number
-  listings_count: number
-  sparkline: number[]
+  current_price_chf: number; price_6m_ago_chf: number; change_pct: number
+  period_days: number; listings_count: number; sparkline: number[]
 }
 interface OfferedCard extends IntelCard {
-  listings_count: number
-  current_price_chf: number
-  change_pct_6m?: number
-  supply_note: string       // Italian
-  supply_note_en?: string   // English
+  listings_count: number; current_price_chf: number; change_pct_6m?: number
+  supply_note: string; supply_note_en?: string
 }
 interface RarestCard extends IntelCard {
-  listings_count: number
-  current_price_chf: number
-  change_pct_6m?: number
-  scarcity_note: string       // Italian
-  scarcity_note_en?: string   // English
+  listings_count: number; current_price_chf: number; change_pct_6m?: number
+  scarcity_note: string; scarcity_note_en?: string
 }
 interface MarketIntelligence {
-  most_appreciated: AppreciationCard
-  most_offered: OfferedCard
-  rarest: RarestCard
-  computed_at: string
+  most_appreciated: AppreciationCard; most_offered: OfferedCard; rarest: RarestCard; computed_at: string
 }
 
 function useMarketIntelligence() {
   return useQuery<MarketIntelligence>({
     queryKey: ['market-intelligence'],
-    queryFn: () =>
-      fetch('/api/market/intelligence')
-        .then(r => { if (!r.ok) throw new Error('api error'); return r.json() }),
-    retry: false,
-    staleTime: 15 * 60 * 1000,
+    queryFn: () => fetch('/api/market/intelligence').then(r => { if (!r.ok) throw new Error('err'); return r.json() }),
+    retry: false, staleTime: 15 * 60 * 1000,
   })
 }
 
-// ── Component ─────────────────────────────────────────────────────────────────
+// ── HomePage ──────────────────────────────────────────────────────────────────
 export default function HomePage() {
   const navigate = useNavigate()
   const { t, lang } = useLang()
   const recentSearches = getRecentSearches()
 
-  const months = lang === 'it'
-    ? ['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic']
-    : ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
-
-  // ── Market Intelligence (single endpoint, 3 dynamic cards) ──────────────
   const { data: intel, isLoading: intelLoading } = useMarketIntelligence()
 
-  // ── News query ────────────────────────────────────────────────────────────
   const { data: newsData } = useQuery({
     queryKey: ['news'],
-    queryFn: () =>
-      fetch('/api/news?limit=6')
-        .then(r => { if (!r.ok) throw new Error('api error'); return r.json() }),
-    retry: false,
-    staleTime: 10 * 60 * 1000,
+    queryFn: () => fetch('/api/news?limit=6').then(r => r.ok ? r.json() : Promise.reject()),
+    retry: false, staleTime: 10 * 60 * 1000,
   })
 
-  // ── Auction upcoming query (with mock fallback) ───────────────────────────
   const { data: upcomingData } = useQuery({
     queryKey: ['auctions-upcoming'],
-    queryFn: () =>
-      fetch('/api/auctions/upcoming')
-        .then(r => { if (!r.ok) throw new Error('api error'); return r.json() }),
-    retry: false,
-    staleTime: 30 * 60 * 1000,
+    queryFn: () => fetch('/api/auctions/upcoming').then(r => r.ok ? r.json() : Promise.reject()),
+    retry: false, staleTime: 30 * 60 * 1000,
   })
 
-  // Normalize API auctions (sale_name:string) → template format (event:{en,it})
   const auctionCalendar: typeof AUCTION_CALENDAR =
     upcomingData?.auctions?.length
       ? upcomingData.auctions.map((a: Record<string, unknown>) => ({
           house: a.house as string,
-          event: a.event ?? { en: a.sale_name as string, it: a.sale_name as string },
+          event: (a.event as Record<string,string>) ?? { en: a.sale_name as string, it: a.sale_name as string },
           date: (() => {
             const raw = a.date as string | undefined
             if (!raw) return '—'
             try {
-              // Parse YYYY-MM-DD as LOCAL date to avoid UTC midnight timezone shift
               const [y, m, d] = raw.slice(0, 10).split('-').map(Number)
-              const localDate = new Date(y, m - 1, d)
-              return localDate.toLocaleDateString(lang === 'it' ? 'it-IT' : 'en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+              return new Date(y, m - 1, d).toLocaleDateString(lang === 'it' ? 'it-IT' : 'en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
             } catch { return raw }
           })(),
-          location: a.location as string ?? '—',
+          location: (a.location as string) ?? '—',
           lots: (a.lots as number) ?? 0,
-          flag: a.flag as string ?? (
-            (a.location as string)?.toLowerCase().includes('hong kong') ? '🇭🇰' :
-            (a.location as string)?.toLowerCase().includes('geneva') || (a.location as string)?.toLowerCase().includes('ginevra') ? '🇨🇭' :
-            (a.location as string)?.toLowerCase().includes('new york') ? '🇺🇸' :
-            (a.location as string)?.toLowerCase().includes('london') || (a.location as string)?.toLowerCase().includes('londra') ? '🇬🇧' :
-            (a.location as string)?.toLowerCase().includes('paris') || (a.location as string)?.toLowerCase().includes('parigi') ? '🇫🇷' :
-            (a.location as string)?.toLowerCase().includes('monaco') ? '🇲🇨' :
-            (a.location as string)?.toLowerCase().includes('milan') || (a.location as string)?.toLowerCase().includes('milano') ? '🇮🇹' :
-            (a.location as string)?.toLowerCase().includes('torino') ? '🇮🇹' : '🌍'
-          ),
+          flag: (a.flag as string) ?? (['hong kong','hk'].some(k => ((a.location as string)?.toLowerCase() ?? '').includes(k)) ? '🇭🇰'
+            : ((a.location as string)?.toLowerCase() ?? '').includes('genev') ? '🇨🇭'
+            : ((a.location as string)?.toLowerCase() ?? '').includes('new york') ? '🇺🇸'
+            : ((a.location as string)?.toLowerCase() ?? '').includes('london') ? '🇬🇧' : '🌍'),
         }))
       : AUCTION_CALENDAR
 
-  const newsItems: Array<{
-    title: string
-    summary?: string
-    url: string
-    image_url?: string
-    source?: string
-    published_at?: string
-    tags?: string[]
-  }> = newsData?.news ?? []
+  const newsItems: Array<{ title: string; summary?: string; url: string; image_url?: string; source?: string; published_at?: string }> = newsData?.news ?? []
 
+  /* ---------- shared card style helpers ---------- */
+  const cardTag = (label: string, color: string) => (
+    <span style={{ fontFamily: F.mono, fontSize: 8, letterSpacing: '0.18em', color, textTransform: 'uppercase', fontWeight: 700 }}>
+      {label}
+    </span>
+  )
+  const badge = (content: React.ReactNode, color: string) => (
+    <span style={{
+      display: 'inline-flex', alignItems: 'center', gap: 4, padding: '3px 10px',
+      background: `${color}18`, color, fontFamily: F.mono, fontSize: 11, fontWeight: 700,
+    }}>
+      {content}
+    </span>
+  )
+  const cardRef = (ref: string) => (
+    <div style={{ fontFamily: F.serif, fontSize: 22, fontWeight: 700, color: '#fff', marginBottom: 2, position: 'relative', zIndex: 2 }}>
+      {ref}
+    </div>
+  )
+  const cardBrand = (brand: string) => (
+    <div style={{ fontFamily: F.mono, fontSize: 9, color: C.t3, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 14, position: 'relative', zIndex: 2 }}>
+      {brand}
+    </div>
+  )
+  const cardPrice = (chf: number, color: string) => (
+    <div style={{ fontFamily: F.cormorant, fontSize: 36, fontWeight: 600, color, lineHeight: 1, position: 'relative', zIndex: 2 }}>
+      € <CountUp end={toEur(chf)} separator="." duration={1.2} />
+    </div>
+  )
+  const divider = () => <div style={{ height: 1, background: C.border, margin: '12px 0' }} />
+
+  // ── Render ─────────────────────────────────────────────────────────────────
   return (
-    <main className="p-8 max-w-[1600px] mx-auto space-y-[32px]">
+    <div style={{ padding: '20px 24px', maxWidth: 1600, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 24 }}>
 
-      {/* ── 1. Market Intelligence ────────────────────────────────────────── */}
-      <motion.section
-        initial={{ opacity: 0, y: 28 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.55, ease: 'easeOut' }}
-      >
-        <div className="flex justify-between items-baseline mb-6">
-          <div>
-            <h2 className="font-h1 text-h1 text-zinc-100">
-              {lang === 'it' ? 'Segnali di Mercato' : 'Market Signals'}
-            </h2>
-            <p className="text-zinc-500 text-sm mt-1">
-              {lang === 'it'
-                ? 'Dati live: apprezzamento, liquidità e scarsità nel mercato secondario'
-                : 'Live data: appreciation, liquidity and scarcity in the secondary market'}
-            </p>
-          </div>
-          {intel?.computed_at && (
-            <span className="text-zinc-600 text-[10px] font-mono-data hidden md:block">
-              {lang === 'it' ? 'Aggiornato' : 'Updated'}{' '}
-              {new Date(intel.computed_at).toLocaleTimeString(lang === 'it' ? 'it-IT' : 'en-GB', { hour: '2-digit', minute: '2-digit' })}
-            </span>
-          )}
-        </div>
+      {/* ── 1. MARKET INTELLIGENCE ─────────────────────────────────────── */}
+      <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+        <SectionHeader
+          title={lang === 'it' ? 'Segnali di Mercato' : 'Market Signals'}
+          meta={intel?.computed_at ? `AGG · ${new Date(intel.computed_at).toLocaleTimeString(lang === 'it' ? 'it-IT' : 'en-GB', { hour: '2-digit', minute: '2-digit' })}` : undefined}
+        />
 
         {intelLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-[12px]">
-            {[0, 1, 2].map(i => (
-              <div key={i} className="bg-zinc-900 border border-zinc-800 p-6 h-52 animate-pulse">
-                <div className="h-3 bg-zinc-800 rounded w-1/3 mb-4" />
-                <div className="h-5 bg-zinc-800 rounded w-2/3 mb-2" />
-                <div className="h-8 bg-zinc-800 rounded w-1/2 mb-3" />
-                <div className="h-3 bg-zinc-800 rounded w-full mb-1" />
-                <div className="h-3 bg-zinc-800 rounded w-3/4" />
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 12 }}>
+            {[0,1,2].map(i => (
+              <div key={i} style={{ background: C.navy2, border: `1px solid ${C.border}`, height: 200, padding: 20 }}>
+                <div className="animate-pulse">
+                  <div style={{ height: 8, background: C.navy3, width: '40%', marginBottom: 16 }} />
+                  <div style={{ height: 20, background: C.navy3, width: '65%', marginBottom: 8 }} />
+                  <div style={{ height: 36, background: C.navy3, width: '50%', marginBottom: 8 }} />
+                </div>
               </div>
             ))}
           </div>
         ) : intel ? (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-[12px]">
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 12 }}>
 
-            {/* ── Card 1: Maggior Apprezzamento ─────────────────────────── */}
-            <motion.div
-              initial={{ opacity: 0, y: 32 }}
-              animate={{ opacity: 1, y: 0 }}
-              whileHover={{ scale: 1.015, transition: { duration: 0.18 } }}
-              transition={{ duration: 0.45, ease: 'easeOut', delay: 0.1 }}
-              className="bg-zinc-900 border border-zinc-800 hover:border-green-500/40 transition-colors cursor-pointer group flex flex-col"
-              onClick={() => navigate(`/search?ref=${encodeURIComponent(intel.most_appreciated.reference)}`)}
-            >
-              {/* Header */}
-              <div className="px-5 pt-5 pb-4 border-b border-zinc-800">
-                <div className="flex items-center justify-between mb-1">
-                  <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-green-400">
-                    <span className="material-symbols-outlined text-sm leading-none" style={{ fontVariationSettings: "'FILL' 1" }}>trending_up</span>
-                    {lang === 'it' ? 'Maggior Apprezzamento' : 'Best Appreciation'}
-                  </span>
-                  <span className="bg-green-400/10 border border-green-400/20 text-green-400 text-[11px] font-bold px-2 py-0.5 font-mono-data">
-                    +{intel.most_appreciated.change_pct.toFixed(1)}%
-                  </span>
+            {/* ── Card 1: Apprezzamento ─────────────────────────────── */}
+            <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
+              <TiltCard accentColor={C.green} onClick={() => navigate(`/search?ref=${encodeURIComponent(intel.most_appreciated.reference)}`)}>
+                <Ornament n="I" />
+                <WatchImageOverlay url={intel.most_appreciated.image_url} />
+                <div style={{ padding: '16px 18px 0', position: 'relative', zIndex: 2 }}>
+                  {cardTag('▲ ' + (lang === 'it' ? 'Maggior Apprezzamento' : 'Best Appreciation'), C.green)}
                 </div>
-                <p className="text-[10px] text-zinc-500 font-mono-data">
-                  {lang === 'it' ? `Ultimi ${Math.round(intel.most_appreciated.period_days / 30)} mesi` : `Last ${Math.round(intel.most_appreciated.period_days / 30)} months`}
-                </p>
-              </div>
-
-              {/* Body */}
-              <div className="px-5 py-4 flex-1">
-                <p className="text-[10px] font-label-caps text-zinc-500 uppercase mb-0.5">{intel.most_appreciated.brand}</p>
-                <h3 className="font-['Space_Grotesk'] font-bold text-zinc-100 text-lg leading-tight mb-3">
-                  {intel.most_appreciated.model}
-                  <span className="ml-2 text-zinc-500 text-xs font-mono-data font-normal">{intel.most_appreciated.reference}</span>
-                </h3>
-
-                {/* Price evolution */}
-                <div className="flex items-end gap-3 mb-3">
-                  <div>
-                    <p className="text-[10px] text-zinc-600 uppercase tracking-widest mb-0.5">{lang === 'it' ? '6 mesi fa' : '6 months ago'}</p>
-                    <p className="font-mono-data text-zinc-400 text-sm line-through">
-                      {fmtEur(intel.most_appreciated.price_6m_ago_chf)}
-                    </p>
+                <div style={{ padding: '10px 18px', position: 'relative', zIndex: 2, flex: 1 }}>
+                  {cardRef(intel.most_appreciated.reference)}
+                  {cardBrand(`${intel.most_appreciated.brand} · ${intel.most_appreciated.model}`)}
+                  {cardPrice(intel.most_appreciated.current_price_chf, C.green)}
+                  <div style={{ fontFamily: F.mono, fontSize: 9, color: C.t3, marginTop: 3 }}>
+                    {lang === 'it' ? 'da' : 'from'} {fmtEur(intel.most_appreciated.price_6m_ago_chf)} · {lang === 'it' ? 'gen' : 'jan'} {new Date().getFullYear()}
                   </div>
-                  <span className="material-symbols-outlined text-green-400 text-base mb-0.5">arrow_forward</span>
-                  <div>
-                    <p className="text-[10px] text-zinc-600 uppercase tracking-widest mb-0.5">{lang === 'it' ? 'Ora' : 'Now'}</p>
-                    <p className="font-mono-data text-green-400 font-bold text-lg">
-                      € <CountUp end={toEur(intel.most_appreciated.current_price_chf)} separator="." duration={1.2} />
-                    </p>
+                  {divider()}
+                  {badge(`▲ +${intel.most_appreciated.change_pct.toFixed(1)}%`, C.green)}
+                  <div style={{ fontFamily: F.mono, fontSize: 9, color: C.t3, marginTop: 6 }}>
+                    {intel.most_appreciated.listings_count} {lang === 'it' ? 'annunci attivi' : 'active listings'}
                   </div>
                 </div>
-
-                <p className="text-zinc-500 text-xs">
-                  {intel.most_appreciated.listings_count} {lang === 'it' ? 'annunci attivi' : 'active listings'}
-                </p>
-              </div>
-
-              {/* Sparkline footer */}
-              {intel.most_appreciated.sparkline.length > 2 && (
-                <div className="h-[48px] px-0 pb-0 mt-auto border-t border-zinc-800/50">
-                  <Sparkline values={intel.most_appreciated.sparkline} color="#4ade80" />
-                </div>
-              )}
+                {intel.most_appreciated.sparkline.length > 2 && (
+                  <div style={{ height: 48, borderTop: `1px solid ${C.border2}`, flexShrink: 0 }}>
+                    <Sparkline values={intel.most_appreciated.sparkline} color={C.green} />
+                  </div>
+                )}
+              </TiltCard>
             </motion.div>
 
-            {/* ── Card 2: Più Offerto ────────────────────────────────────── */}
-            <motion.div
-              initial={{ opacity: 0, y: 32 }}
-              animate={{ opacity: 1, y: 0 }}
-              whileHover={{ scale: 1.015, transition: { duration: 0.18 } }}
-              transition={{ duration: 0.45, ease: 'easeOut', delay: 0.2 }}
-              className="bg-zinc-900 border border-zinc-800 hover:border-orange-500/40 transition-colors cursor-pointer group flex flex-col"
-              onClick={() => navigate(`/search?ref=${encodeURIComponent(intel.most_offered.reference)}`)}
-            >
-              {/* Header */}
-              <div className="px-5 pt-5 pb-4 border-b border-zinc-800">
-                <div className="flex items-center justify-between mb-1">
-                  <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-orange-400">
-                    <span className="material-symbols-outlined text-sm leading-none" style={{ fontVariationSettings: "'FILL' 1" }}>inventory_2</span>
-                    {lang === 'it' ? 'Più Offerto' : 'Highest Supply'}
-                  </span>
-                  <span className="bg-orange-400/10 border border-orange-400/20 text-orange-400 text-[11px] font-bold px-2 py-0.5 font-mono-data">
-                    {intel.most_offered.listings_count} {lang === 'it' ? 'annunci' : 'listings'}
-                  </span>
+            {/* ── Card 2: Più Offerto ───────────────────────────────── */}
+            <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.12 }}>
+              <TiltCard accentColor={C.gold} onClick={() => navigate(`/search?ref=${encodeURIComponent(intel.most_offered.reference)}`)}>
+                <Ornament n="II" />
+                <WatchImageOverlay url={intel.most_offered.image_url} />
+                <div style={{ padding: '16px 18px 0', position: 'relative', zIndex: 2 }}>
+                  {cardTag('◈ ' + (lang === 'it' ? 'Offerta Più Alta' : 'Highest Supply'), C.gold)}
                 </div>
-                <p className="text-[10px] text-zinc-500 font-mono-data">
-                  {lang === 'it' ? 'Mercato secondario globale' : 'Global secondary market'}
-                </p>
-              </div>
-
-              {/* Body */}
-              <div className="px-5 py-4 flex-1">
-                <p className="text-[10px] font-label-caps text-zinc-500 uppercase mb-0.5">{intel.most_offered.brand}</p>
-                <h3 className="font-['Space_Grotesk'] font-bold text-zinc-100 text-lg leading-tight mb-3">
-                  {intel.most_offered.model}
-                  <span className="ml-2 text-zinc-500 text-xs font-mono-data font-normal">{intel.most_offered.reference}</span>
-                </h3>
-
-                {/* Price + trend */}
-                <div className="mb-3">
-                  <p className="text-[10px] text-zinc-600 uppercase tracking-widest mb-0.5">{lang === 'it' ? 'Prezzo mediana' : 'Median price'}</p>
-                  <p className="font-mono-data text-orange-400 font-bold text-lg">
-                    € <CountUp end={toEur(intel.most_offered.current_price_chf)} separator="." duration={1.2} />
-                  </p>
-                  {intel.most_offered.change_pct_6m != null && (
-                    <p className={`text-xs font-mono-data mt-0.5 ${intel.most_offered.change_pct_6m >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                      {intel.most_offered.change_pct_6m >= 0 ? '+' : ''}{intel.most_offered.change_pct_6m.toFixed(1)}%{' '}
-                      <span className="text-zinc-500 font-normal">6M</span>
-                    </p>
-                  )}
+                <div style={{ padding: '10px 18px', position: 'relative', zIndex: 2, flex: 1 }}>
+                  {cardRef(intel.most_offered.reference)}
+                  {cardBrand(`${intel.most_offered.brand} · ${intel.most_offered.model}`)}
+                  {cardPrice(intel.most_offered.current_price_chf, C.gold)}
+                  <div style={{ fontFamily: F.mono, fontSize: 9, color: C.t3, marginTop: 3 }}>
+                    {intel.most_offered.listings_count} {lang === 'it' ? 'annunci attivi ora' : 'active listings now'}
+                  </div>
+                  {divider()}
+                  {badge(`◈ ${intel.most_offered.listings_count} ${lang === 'it' ? 'ANNUNCI' : 'LISTINGS'}`, C.gold)}
+                  <div style={{ fontFamily: F.mono, fontSize: 9, color: C.t3, marginTop: 8, lineHeight: 1.5 }}>
+                    {lang === 'it' ? intel.most_offered.supply_note : (intel.most_offered.supply_note_en ?? intel.most_offered.supply_note)}
+                  </div>
                 </div>
-
-                {/* Supply note */}
-                <p className="text-zinc-400 text-xs leading-relaxed">
-                  {lang === 'it' ? intel.most_offered.supply_note : (intel.most_offered.supply_note_en ?? intel.most_offered.supply_note)}
-                </p>
-              </div>
-
-              {/* Supply bar */}
-              <div className="px-5 py-4 border-t border-zinc-800/50 mt-auto">
-                <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-[10px] text-zinc-600 uppercase tracking-widest">{lang === 'it' ? 'Offerta' : 'Supply'}</span>
-                  <span className="text-[10px] text-orange-400 font-bold font-mono-data">
-                    {Math.min(100, Math.round((intel.most_offered.listings_count / 150) * 100))}%
-                  </span>
-                </div>
-                <div className="h-1 bg-zinc-800 w-full">
-                  <div
-                    className="h-full bg-orange-400 transition-all duration-700"
-                    style={{ width: `${Math.min(100, Math.max(5, Math.round((intel.most_offered.listings_count / 150) * 100)))}%` }}
+                <div style={{ padding: '10px 18px 14px', borderTop: `1px solid ${C.border2}` }}>
+                  <SupplyBar
+                    pct={Math.min(100, Math.round((intel.most_offered.listings_count / 150) * 100))}
+                    color={C.gold}
                   />
                 </div>
-              </div>
+              </TiltCard>
             </motion.div>
 
-            {/* ── Card 3: Più Raro ──────────────────────────────────────── */}
-            <motion.div
-              initial={{ opacity: 0, y: 32 }}
-              animate={{ opacity: 1, y: 0 }}
-              whileHover={{ scale: 1.015, transition: { duration: 0.18 } }}
-              transition={{ duration: 0.45, ease: 'easeOut', delay: 0.3 }}
-              className="bg-zinc-900 border border-zinc-800 hover:border-blue-500/40 transition-colors cursor-pointer group flex flex-col"
-              onClick={() => navigate(`/search?ref=${encodeURIComponent(intel.rarest.reference)}`)}
-            >
-              {/* Header */}
-              <div className="px-5 pt-5 pb-4 border-b border-zinc-800">
-                <div className="flex items-center justify-between mb-1">
-                  <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-blue-400">
-                    <span className="material-symbols-outlined text-sm leading-none" style={{ fontVariationSettings: "'FILL' 1" }}>diamond</span>
-                    {lang === 'it' ? 'Più Raro' : 'Rarest'}
-                  </span>
-                  <span className="bg-blue-400/10 border border-blue-400/20 text-blue-400 text-[11px] font-bold px-2 py-0.5 font-mono-data">
-                    {intel.rarest.listings_count} {lang === 'it' ? 'annunci' : 'listings'}
-                  </span>
+            {/* ── Card 3: Più Raro ──────────────────────────────────── */}
+            <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.19 }}>
+              <TiltCard accentColor={C.blue} onClick={() => navigate(`/search?ref=${encodeURIComponent(intel.rarest.reference)}`)}>
+                <Ornament n="III" />
+                <WatchImageOverlay url={intel.rarest.image_url} />
+                <div style={{ padding: '16px 18px 0', position: 'relative', zIndex: 2 }}>
+                  {cardTag('◆ ' + (lang === 'it' ? 'Più Raro' : 'Rarest'), C.blue)}
                 </div>
-                <p className="text-[10px] text-zinc-500 font-mono-data">
-                  {lang === 'it' ? 'Mercato secondario globale' : 'Global secondary market'}
-                </p>
-              </div>
-
-              {/* Body */}
-              <div className="px-5 py-4 flex-1">
-                <p className="text-[10px] font-label-caps text-zinc-500 uppercase mb-0.5">{intel.rarest.brand}</p>
-                <h3 className="font-['Space_Grotesk'] font-bold text-zinc-100 text-lg leading-tight mb-3">
-                  {intel.rarest.model}
-                  <span className="ml-2 text-zinc-500 text-xs font-mono-data font-normal">{intel.rarest.reference}</span>
-                </h3>
-
-                {/* Price */}
-                <div className="mb-3">
-                  <p className="text-[10px] text-zinc-600 uppercase tracking-widest mb-0.5">{lang === 'it' ? 'Prezzo mediana' : 'Median price'}</p>
-                  <p className="font-mono-data text-blue-400 font-bold text-lg">
-                    € <CountUp end={toEur(intel.rarest.current_price_chf)} separator="." duration={1.2} />
-                  </p>
-                  {intel.rarest.change_pct_6m != null && (
-                    <p className={`text-xs font-mono-data mt-0.5 ${intel.rarest.change_pct_6m >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                      {intel.rarest.change_pct_6m >= 0 ? '+' : ''}{intel.rarest.change_pct_6m.toFixed(1)}%{' '}
-                      <span className="text-zinc-500 font-normal">6M</span>
-                    </p>
-                  )}
+                <div style={{ padding: '10px 18px', position: 'relative', zIndex: 2, flex: 1 }}>
+                  {cardRef(intel.rarest.reference)}
+                  {cardBrand(`${intel.rarest.brand} · ${intel.rarest.model}`)}
+                  {cardPrice(intel.rarest.current_price_chf, C.blue)}
+                  <div style={{ fontFamily: F.mono, fontSize: 9, color: C.t3, marginTop: 3 }}>
+                    {lang === 'it' ? 'solo' : 'only'} {intel.rarest.listings_count} {lang === 'it' ? 'annunci nel mercato' : 'listings on market'}
+                  </div>
+                  {divider()}
+                  {badge(`◆ ${intel.rarest.listings_count} ${lang === 'it' ? 'ANNUNCI' : 'LISTINGS'}`, C.blue)}
+                  <div style={{ fontFamily: F.mono, fontSize: 9, color: C.t3, marginTop: 8, lineHeight: 1.5 }}>
+                    {lang === 'it' ? intel.rarest.scarcity_note : (intel.rarest.scarcity_note_en ?? intel.rarest.scarcity_note)}
+                  </div>
                 </div>
-
-                {/* Scarcity note */}
-                <p className="text-zinc-400 text-xs leading-relaxed">
-                  {lang === 'it' ? intel.rarest.scarcity_note : (intel.rarest.scarcity_note_en ?? intel.rarest.scarcity_note)}
-                </p>
-              </div>
-
-              {/* Scarcity bar */}
-              <div className="px-5 py-4 border-t border-zinc-800/50 mt-auto">
-                <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-[10px] text-zinc-600 uppercase tracking-widest">{lang === 'it' ? 'Scarsità' : 'Scarcity'}</span>
-                  <span className="text-[10px] text-blue-400 font-bold font-mono-data">
-                    {Math.max(0, Math.min(100, Math.round(100 - (intel.rarest.listings_count / 150) * 100)))}%
-                  </span>
-                </div>
-                <div className="h-1 bg-zinc-800 w-full">
-                  <div
-                    className="h-full bg-blue-400 transition-all duration-700"
-                    style={{ width: `${Math.max(5, Math.min(100, Math.round(100 - (intel.rarest.listings_count / 150) * 100)))}%` }}
+                <div style={{ padding: '10px 18px 14px', borderTop: `1px solid ${C.border2}` }}>
+                  <SupplyBar
+                    pct={Math.max(5, Math.min(100, Math.round(100 - (intel.rarest.listings_count / 150) * 100)))}
+                    color={C.blue}
                   />
                 </div>
-              </div>
+              </TiltCard>
             </motion.div>
 
           </div>
         ) : (
-          /* Fallback se API non disponibile */
-          <div className="bg-zinc-900 border border-zinc-800 p-6 text-center">
-            <span className="material-symbols-outlined text-zinc-600 text-3xl mb-2 block">bar_chart</span>
-            <p className="text-zinc-500 text-sm">
-              {lang === 'it' ? 'Dati di mercato in aggiornamento…' : 'Market data updating…'}
-            </p>
+          <div style={{ background: C.navy2, border: `1px solid ${C.border}`, padding: 24, textAlign: 'center' }}>
+            <span className="material-symbols-outlined" style={{ fontSize: 28, color: C.t3, display: 'block', marginBottom: 8 }}>bar_chart</span>
+            <p style={{ fontFamily: F.mono, fontSize: 10, color: C.t2 }}>{lang === 'it' ? 'Dati in aggiornamento…' : 'Market data updating…'}</p>
           </div>
         )}
       </motion.section>
 
-      {/* ── 2. Auction Calendar ──────────────────────────────────────────── */}
-      <motion.section
-        initial={{ opacity: 0, y: 24 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, ease: 'easeOut', delay: 0.15 }}
-      >
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="font-h2 text-h2 text-zinc-100">{t.auctionCalendarTitle}</h2>
-        </div>
-        <div className="bg-zinc-900 border border-zinc-800 overflow-hidden">
-          <table className="w-full text-sm">
+      {/* ── 2. AUCTION CALENDAR ────────────────────────────────────────── */}
+      <motion.section initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45, delay: 0.15 }}>
+        <SectionHeader
+          title={t.auctionCalendarTitle}
+          cta={lang === 'it' ? 'Tutte le aste' : 'All auctions'}
+          onCta={() => navigate('/auctions')}
+        />
+        <div style={{ background: C.navy2, border: `1px solid ${C.border}` }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
-              <tr className="border-b border-zinc-800">
-                <th className="text-left text-[10px] font-label-caps text-zinc-500 uppercase px-6 py-3">{t.auction_house}</th>
-                <th className="text-left text-[10px] font-label-caps text-zinc-500 uppercase px-6 py-3 hidden md:table-cell">Event</th>
-                <th className="text-left text-[10px] font-label-caps text-zinc-500 uppercase px-6 py-3">{t.auction_date}</th>
-                <th className="text-left text-[10px] font-label-caps text-zinc-500 uppercase px-6 py-3 hidden sm:table-cell">{t.auction_location}</th>
-                <th className="text-right text-[10px] font-label-caps text-zinc-500 uppercase px-6 py-3">{t.auction_lots}</th>
+              <tr style={{ borderBottom: `1px solid ${C.border}` }}>
+                {[t.auction_house, 'Event', t.auction_date, t.auction_location, t.auction_lots].map((h, i) => (
+                  <th key={i} style={{ padding: '8px 16px', textAlign: i === 4 ? 'right' : 'left', fontFamily: F.mono, fontSize: 8, color: C.t3, letterSpacing: '0.16em', textTransform: 'uppercase', fontWeight: 400 }}>
+                    {h}
+                  </th>
+                ))}
               </tr>
             </thead>
             <tbody>
               {auctionCalendar.map((a, i) => (
                 <tr
                   key={i}
-                  className="border-b border-zinc-800/50 last:border-0 hover:bg-zinc-800/30 transition-colors cursor-pointer"
+                  style={{ borderBottom: i < auctionCalendar.length - 1 ? `1px solid ${C.border2}` : 'none', cursor: 'pointer', transition: 'background 0.12s' }}
+                  onMouseEnter={e => (e.currentTarget.style.background = C.goldDim)}
+                  onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
                 >
-                  <td className="px-6 py-4">
-                    <span className="font-['Space_Grotesk'] font-semibold text-zinc-100 text-sm">{a.house}</span>
-                  </td>
-                  <td className="px-6 py-4 hidden md:table-cell">
-                    <span className="text-zinc-400 text-xs">{a.event[lang]}</span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className="font-mono-data text-yellow-400 text-xs">{a.date}</span>
-                  </td>
-                  <td className="px-6 py-4 hidden sm:table-cell">
-                    <span className="text-zinc-400 text-xs flex items-center gap-1.5">
-                      <span>{a.flag}</span>
-                      {a.location}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <span className="font-mono-data text-zinc-300 text-xs">{a.lots} lots</span>
-                  </td>
+                  <td style={{ padding: '12px 16px', fontFamily: F.serif, fontSize: 13, fontWeight: 700, color: '#fff' }}>{a.house}</td>
+                  <td style={{ padding: '12px 16px', fontFamily: F.sans, fontSize: 11, color: C.t2 }}>{a.event[lang]}</td>
+                  <td style={{ padding: '12px 16px', fontFamily: F.mono, fontSize: 10, color: C.gold }}>{a.date}</td>
+                  <td style={{ padding: '12px 16px', fontFamily: F.mono, fontSize: 10, color: C.t2 }}>{a.flag} {a.location}</td>
+                  <td style={{ padding: '12px 16px', textAlign: 'right', fontFamily: F.mono, fontSize: 10, color: C.t3 }}>{a.lots > 0 ? `${a.lots} lots` : '—'}</td>
                 </tr>
               ))}
             </tbody>
@@ -590,57 +494,43 @@ export default function HomePage() {
         </div>
       </motion.section>
 
-      {/* ── 3. Latest Auction Results ────────────────────────────────────── */}
-      <section>
-        <div className="flex justify-between items-baseline mb-6">
-          <div>
-            <h2 className="font-h2 text-h2 text-zinc-100">{t.auctionResultsTitle}</h2>
-            <p className="text-zinc-500 text-sm mt-1">{t.auctionResultsSub}</p>
-          </div>
-        </div>
-        <div className="bg-zinc-900 border border-zinc-800 overflow-hidden">
-          <table className="w-full text-sm">
+      {/* ── 3. AUCTION RESULTS ─────────────────────────────────────────── */}
+      <motion.section initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45, delay: 0.2 }}>
+        <SectionHeader title={t.auctionResultsTitle} meta={lang === 'it' ? 'RISULTATI RECENTI' : 'RECENT RESULTS'} />
+        <div style={{ background: C.navy2, border: `1px solid ${C.border}` }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
-              <tr className="border-b border-zinc-800">
-                <th className="text-left text-[10px] font-label-caps text-zinc-500 uppercase px-6 py-3">Watch</th>
-                <th className="text-left text-[10px] font-label-caps text-zinc-500 uppercase px-6 py-3 hidden md:table-cell">{t.auction_house}</th>
-                <th className="text-left text-[10px] font-label-caps text-zinc-500 uppercase px-6 py-3 hidden sm:table-cell">{t.auction_date}</th>
-                <th className="text-right text-[10px] font-label-caps text-zinc-500 uppercase px-6 py-3">{t.auction_hammer}</th>
-                <th className="text-right text-[10px] font-label-caps text-zinc-500 uppercase px-6 py-3 hidden lg:table-cell">{t.auction_estimate}</th>
-                <th className="text-right text-[10px] font-label-caps text-zinc-500 uppercase px-6 py-3">{t.auction_result}</th>
+              <tr style={{ borderBottom: `1px solid ${C.border}` }}>
+                {['Watch', t.auction_house, t.auction_date, t.auction_hammer, t.auction_result].map((h, i) => (
+                  <th key={i} style={{ padding: '8px 16px', textAlign: i >= 3 ? 'right' : 'left', fontFamily: F.mono, fontSize: 8, color: C.t3, letterSpacing: '0.16em', textTransform: 'uppercase', fontWeight: 400 }}>
+                    {h}
+                  </th>
+                ))}
               </tr>
             </thead>
             <tbody>
               {AUCTION_RESULTS.map((r, i) => (
-                <tr key={i} className="border-b border-zinc-800/50 last:border-0 hover:bg-zinc-800/30 transition-colors">
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-3">
-                      {i === 0 && (
-                        <span className="material-symbols-outlined text-yellow-400 text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
-                      )}
-                      <span className="font-['Space_Grotesk'] font-medium text-zinc-100 text-sm">{r.watch}</span>
-                    </div>
+                <tr
+                  key={i}
+                  style={{ borderBottom: i < AUCTION_RESULTS.length - 1 ? `1px solid ${C.border2}` : 'none', transition: 'background 0.12s', cursor: 'default' }}
+                  onMouseEnter={e => (e.currentTarget.style.background = C.goldDim)}
+                  onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                >
+                  <td style={{ padding: '11px 16px', fontFamily: F.sans, fontSize: 12, fontWeight: 500, color: C.t1 }}>
+                    {i === 0 && <span className="material-symbols-outlined" style={{ fontSize: 12, color: C.gold, marginRight: 6, verticalAlign: 'middle', fontVariationSettings: "'FILL' 1" }}>star</span>}
+                    {r.watch}
                   </td>
-                  <td className="px-6 py-4 hidden md:table-cell">
-                    <span className="text-zinc-400 text-xs">{r.house}</span>
-                  </td>
-                  <td className="px-6 py-4 hidden sm:table-cell">
-                    <span className="text-zinc-500 text-xs">{r.date}</span>
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <span className="font-mono-data text-yellow-400 font-semibold">{r.hammer}</span>
-                  </td>
-                  <td className="px-6 py-4 text-right hidden lg:table-cell">
-                    <span className="font-mono-data text-zinc-500 text-xs">{r.estimate}</span>
-                  </td>
-                  <td className="px-6 py-4 text-right">
+                  <td style={{ padding: '11px 16px', fontFamily: F.mono, fontSize: 10, color: C.t2 }}>{r.house}</td>
+                  <td style={{ padding: '11px 16px', fontFamily: F.mono, fontSize: 10, color: C.t3 }}>{r.date}</td>
+                  <td style={{ padding: '11px 16px', textAlign: 'right', fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: C.gold }}>{r.hammer}</td>
+                  <td style={{ padding: '11px 16px', textAlign: 'right' }}>
                     {r.over ? (
-                      <span className="flex items-center justify-end gap-1 text-green-400 text-[10px] font-bold uppercase">
-                        <span className="material-symbols-outlined text-sm leading-none">arrow_upward</span>
-                        {t.priceUp}
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontFamily: F.mono, fontSize: 9, fontWeight: 700, color: C.green, letterSpacing: '0.1em' }}>
+                        <span className="material-symbols-outlined" style={{ fontSize: 11 }}>arrow_upward</span>
+                        {lang === 'it' ? 'SUPERATO' : 'ABOVE EST.'}
                       </span>
                     ) : (
-                      <span className="text-zinc-500 text-[10px] uppercase">—</span>
+                      <span style={{ fontFamily: F.mono, fontSize: 9, color: C.t3 }}>—</span>
                     )}
                   </td>
                 </tr>
@@ -648,230 +538,91 @@ export default function HomePage() {
             </tbody>
           </table>
         </div>
-      </section>
+      </motion.section>
 
-      {/* ── 4. Top Investment Pick ───────────────────────────────────────── */}
-      <section>
-        <div className="flex justify-between items-center mb-6">
-          <div>
-            <h2 className="font-h2 text-h2 text-zinc-100">{t.topInvestmentTitle}</h2>
-            <p className="text-zinc-500 text-sm mt-1">{t.topInvestmentSub}</p>
-          </div>
-          <button
-            onClick={() => navigate(`/search?ref=${encodeURIComponent(TOP_INVESTMENT.ref)}`)}
-            className="text-xs text-yellow-400 uppercase tracking-widest font-bold hover:underline"
-          >
-            {t.searchNow}
-          </button>
-        </div>
-
-        <div className="bg-zinc-900 border border-zinc-800 p-6">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-
-            {/* Left: image + score */}
-            <div className="flex flex-col gap-4">
-              <div className="relative h-56 bg-zinc-950 border border-zinc-800 overflow-hidden">
-                <img src={TOP_INVESTMENT.img} alt={TOP_INVESTMENT.model} className="w-full h-full object-cover" />
-                <div className="absolute bottom-3 left-3 bg-primary text-on-primary text-[10px] font-bold px-2 py-1 uppercase tracking-tighter">
-                  {TOP_INVESTMENT.signal[lang]}
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="bg-zinc-950 border border-zinc-800 p-3">
-                  <p className="text-[10px] font-label-caps text-zinc-500 uppercase mb-1">{t.invest_score}</p>
-                  <p className="font-['Space_Grotesk'] font-bold text-yellow-400 text-2xl">{TOP_INVESTMENT.score}</p>
-                </div>
-                <div className="bg-zinc-950 border border-zinc-800 p-3">
-                  <p className="text-[10px] font-label-caps text-zinc-500 uppercase mb-1">{t.invest_12m}</p>
-                  <p className="font-['Space_Grotesk'] font-bold text-green-400 text-2xl">{TOP_INVESTMENT.return12m}</p>
-                </div>
-                <div className="bg-zinc-950 border border-zinc-800 p-3">
-                  <p className="text-[10px] font-label-caps text-zinc-500 uppercase mb-1">{t.invest_volume}</p>
-                  <p className="font-mono-data text-zinc-300 text-sm">{TOP_INVESTMENT.volume}</p>
-                </div>
-                <div className="bg-zinc-950 border border-zinc-800 p-3">
-                  <p className="text-[10px] font-label-caps text-zinc-500 uppercase mb-1">{t.invest_liquidity}</p>
-                  <p className="font-mono-data text-green-400 text-sm">{TOP_INVESTMENT.liquidity[lang]}</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Center: title + analysis */}
-            <div className="flex flex-col justify-between gap-4">
-              <div>
-                <p className="text-[10px] font-label-caps text-zinc-500 uppercase mb-1">{TOP_INVESTMENT.brand}</p>
-                <h3 className="font-['Space_Grotesk'] font-bold text-zinc-100 text-2xl mb-4">{TOP_INVESTMENT.model}</h3>
-                <p className="text-zinc-400 text-sm leading-relaxed">{TOP_INVESTMENT.analysis[lang]}</p>
-              </div>
-            </div>
-
-            {/* Right: sparkline chart */}
-            <div className="flex flex-col gap-4">
-              <div className="flex justify-between items-baseline">
-                <span className="text-[10px] font-label-caps text-zinc-500 uppercase">12M Price Trend</span>
-                <span className="text-green-400 text-xs font-bold">{TOP_INVESTMENT.return12m}</span>
-              </div>
-              <div className="h-[120px] relative">
-                <Sparkline values={TOP_INVESTMENT.trend} />
-              </div>
-              <div className="flex justify-between text-[10px] text-zinc-600 font-mono-data uppercase">
-                {[months[0], months[3], months[6], months[9], months[11]].map(m => (
-                  <span key={m}>{m}</span>
-                ))}
-              </div>
-              <div className="border-t border-zinc-800 pt-4 space-y-2">
-                {[
-                  { label: 'Jan 2025', value: `€${(TOP_INVESTMENT.trend[0] * 900).toLocaleString()}` },
-                  { label: lang === 'it' ? 'Ora' : 'Now', value: `€${(TOP_INVESTMENT.trend[11] * 900).toLocaleString()}`, highlight: true },
-                ].map(row => (
-                  <div key={row.label} className="flex justify-between items-center text-xs">
-                    <span className="text-zinc-500">{row.label}</span>
-                    <span className={row.highlight ? 'text-yellow-400 font-bold font-mono-data' : 'text-zinc-400 font-mono-data'}>{row.value}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── 5. Recent Searches ───────────────────────────────────────────── */}
-      <section>
-        <div className="flex justify-between items-center mb-6">
-          <div>
-            <h2 className="font-h2 text-h2 text-zinc-100">{t.recentSearchesTitle}</h2>
-            <p className="text-zinc-500 text-sm mt-1">{t.recentSearchesSub}</p>
-          </div>
-          <button
-            onClick={() => navigate('/search')}
-            className="text-xs text-yellow-400 uppercase tracking-widest font-bold hover:underline"
-          >
-            {t.searchNow}
-          </button>
-        </div>
-
+      {/* ── 4. RECENT SEARCHES ─────────────────────────────────────────── */}
+      <motion.section initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45, delay: 0.25 }}>
+        <SectionHeader
+          title={t.recentSearchesTitle}
+          cta={lang === 'it' ? 'Cerca' : 'Search'}
+          onCta={() => navigate('/search')}
+        />
         {recentSearches.length === 0 ? (
-          <div className="bg-zinc-900 border border-zinc-800 border-dashed p-12 flex flex-col items-center justify-center text-center">
-            <span className="material-symbols-outlined text-4xl text-zinc-700 mb-3">manage_search</span>
-            <p className="font-['Space_Grotesk'] font-semibold text-zinc-400 text-sm">{t.noRecentSearches}</p>
-            <p className="text-xs text-zinc-600 mt-1">{t.noRecentSub}</p>
+          <div style={{ background: C.navy2, border: `1px dashed ${C.border}`, padding: 40, textAlign: 'center' }}>
+            <span className="material-symbols-outlined" style={{ fontSize: 32, color: C.t3, display: 'block', marginBottom: 8 }}>manage_search</span>
+            <p style={{ fontFamily: F.sans, fontSize: 13, color: C.t2, marginBottom: 4 }}>{t.noRecentSearches}</p>
+            <p style={{ fontFamily: F.mono, fontSize: 10, color: C.t3 }}>{t.noRecentSub}</p>
             <button
               onClick={() => navigate('/search')}
-              className="mt-4 bg-primary text-on-primary text-xs font-bold uppercase tracking-widest px-4 py-2 hover:opacity-90 transition-opacity"
+              style={{ marginTop: 16, background: C.gold, color: '#000', fontFamily: F.mono, fontSize: 9, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', padding: '8px 20px', border: 'none', cursor: 'pointer' }}
             >
               {t.searchNow}
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-[12px]">
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 10 }}>
             {recentSearches.slice(0, 8).map(s => (
               <div
                 key={s.ref}
                 onClick={() => navigate(`/search?ref=${encodeURIComponent(s.ref)}`)}
-                className="bg-zinc-900 border border-zinc-800 p-4 cursor-pointer hover:border-zinc-700 transition-colors group"
+                style={{ background: C.navy2, border: `1px solid ${C.border}`, padding: '14px 16px', cursor: 'pointer', transition: 'all 0.12s' }}
+                onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.background = C.goldDim; (e.currentTarget as HTMLDivElement).style.borderColor = C.gold + '44' }}
+                onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.background = C.navy2; (e.currentTarget as HTMLDivElement).style.borderColor = C.border }}
               >
-                <div className="flex items-start justify-between mb-3">
-                  <span className="font-['Space_Grotesk'] font-bold text-zinc-100">{s.ref}</span>
-                  <span className="material-symbols-outlined text-zinc-600 group-hover:text-yellow-400 transition-colors text-sm">open_in_new</span>
-                </div>
-                <p className="text-[10px] text-zinc-600 uppercase tracking-widest">
+                <div style={{ fontFamily: F.serif, fontSize: 15, fontWeight: 700, color: '#fff', marginBottom: 6 }}>{s.ref}</div>
+                <div style={{ fontFamily: F.mono, fontSize: 8, color: C.t3, letterSpacing: '0.08em' }}>
                   {new Date(s.ts).toLocaleDateString(lang === 'it' ? 'it-IT' : 'en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
-                </p>
+                </div>
               </div>
             ))}
           </div>
         )}
-      </section>
+      </motion.section>
 
-      {/* ── 6. Market News ───────────────────────────────────────────────── */}
+      {/* ── 5. MARKET NEWS ─────────────────────────────────────────────── */}
       {newsData !== undefined && (
-        <section>
-          <div className="flex justify-between items-baseline mb-6">
-            <div>
-              <h2 className="font-h2 text-h2 text-zinc-100">
-                {lang === 'it' ? 'Notizie dal Mercato' : 'Market News'}
-              </h2>
-              <p className="text-zinc-500 text-sm mt-1">
-                {lang === 'it' ? 'Ultime dal mondo degli orologi' : 'Latest from the watch world'}
-              </p>
-            </div>
-          </div>
-
+        <motion.section initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45, delay: 0.3 }}>
+          <SectionHeader title={lang === 'it' ? 'Notizie dal Mercato' : 'Market News'} />
           {newsItems.length === 0 ? (
-            <div className="bg-zinc-900 border border-zinc-800 border-dashed p-12 flex flex-col items-center justify-center text-center">
-              <span className="material-symbols-outlined text-4xl text-zinc-700 mb-3">newspaper</span>
-              <p className="font-['Space_Grotesk'] font-semibold text-zinc-400 text-sm">
-                {lang === 'it'
-                  ? 'Notizie in caricamento... Il feed RSS si aggiorna ogni 12 ore.'
-                  : 'News loading... The RSS feed updates every 12 hours.'}
-              </p>
+            <div style={{ background: C.navy2, border: `1px dashed ${C.border}`, padding: 40, textAlign: 'center' }}>
+              <span className="material-symbols-outlined" style={{ fontSize: 28, color: C.t3, display: 'block', marginBottom: 8 }}>newspaper</span>
+              <p style={{ fontFamily: F.mono, fontSize: 10, color: C.t2 }}>{lang === 'it' ? 'Feed RSS in aggiornamento ogni 12h' : 'RSS feed updates every 12h'}</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[12px]">
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 12 }}>
               {newsItems.map((item, i) => {
-                const pubDate = item.published_at
-                  ? new Date(item.published_at).toLocaleDateString(
-                      lang === 'it' ? 'it-IT' : 'en-GB',
-                      { day: 'numeric', month: 'short', year: 'numeric' }
-                    )
-                  : null
-
+                const pub = item.published_at ? new Date(item.published_at).toLocaleDateString(lang === 'it' ? 'it-IT' : 'en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : null
                 return (
-                  <a
-                    key={i}
-                    href={item.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="bg-zinc-900 border border-zinc-800 flex flex-col hover:border-zinc-700 transition-colors group"
+                  <a key={i} href={item.url} target="_blank" rel="noopener noreferrer"
+                    style={{ background: C.navy2, border: `1px solid ${C.border}`, display: 'flex', flexDirection: 'column', textDecoration: 'none', transition: 'border-color 0.15s' }}
+                    onMouseEnter={e => (e.currentTarget.style.borderColor = C.gold + '44')}
+                    onMouseLeave={e => (e.currentTarget.style.borderColor = C.border)}
                   >
-                    {/* Image */}
-                    <div className="relative h-40 bg-zinc-950 overflow-hidden flex-shrink-0">
+                    <div style={{ height: 140, background: C.navy3, overflow: 'hidden', flexShrink: 0 }}>
                       {item.image_url ? (
-                        <img
-                          src={item.image_url}
-                          alt={item.title}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                          onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none' }}
-                        />
+                        <img src={item.image_url} alt={item.title} style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.3s' }}
+                          onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none' }} />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <span className="material-symbols-outlined text-5xl text-zinc-800">newspaper</span>
+                        <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <span className="material-symbols-outlined" style={{ fontSize: 40, color: C.t3 }}>newspaper</span>
                         </div>
                       )}
                     </div>
-
-                    {/* Content */}
-                    <div className="p-4 flex flex-col gap-2 flex-1">
-                      {/* Source badge + date */}
-                      <div className="flex items-center justify-between gap-2">
-                        {item.source && (
-                          <span className="text-[9px] font-bold uppercase tracking-widest bg-yellow-400/10 text-yellow-400 border border-yellow-400/20 px-2 py-0.5">
-                            {item.source}
-                          </span>
-                        )}
-                        {pubDate && (
-                          <span className="text-[10px] text-zinc-600 font-mono-data ml-auto">{pubDate}</span>
-                        )}
+                    <div style={{ padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 8, flex: 1 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                        {item.source && <span style={{ fontFamily: F.mono, fontSize: 8, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', background: C.goldDim, color: C.gold, padding: '2px 8px' }}>{item.source}</span>}
+                        {pub && <span style={{ fontFamily: F.mono, fontSize: 9, color: C.t3, marginLeft: 'auto' }}>{pub}</span>}
                       </div>
-
-                      {/* Title */}
-                      <h3 className="font-['Space_Grotesk'] font-semibold text-zinc-100 text-sm leading-snug line-clamp-2">
+                      <h3 style={{ fontFamily: F.sans, fontSize: 12, fontWeight: 600, color: C.t1, lineHeight: 1.4, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                         {item.title}
                       </h3>
-
-                      {/* Summary */}
                       {item.summary && (
-                        <p className="text-zinc-400 text-xs leading-relaxed line-clamp-3 flex-1">
+                        <p style={{ fontFamily: F.sans, fontSize: 11, color: C.t2, lineHeight: 1.5, display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden', flex: 1 }}>
                           {item.summary}
                         </p>
                       )}
-
-                      {/* Read more */}
-                      <div className="flex items-center gap-1 mt-auto pt-2">
-                        <span className="text-[10px] text-zinc-600 uppercase tracking-widest group-hover:text-yellow-400 transition-colors">
-                          {lang === 'it' ? 'Leggi' : 'Read'}
-                        </span>
-                        <span className="material-symbols-outlined text-zinc-600 group-hover:text-yellow-400 transition-colors text-xs">open_in_new</span>
+                      <div style={{ fontFamily: F.mono, fontSize: 8, color: C.t3, letterSpacing: '0.12em', textTransform: 'uppercase', marginTop: 'auto', paddingTop: 8 }}>
+                        {lang === 'it' ? 'Leggi' : 'Read'} →
                       </div>
                     </div>
                   </a>
@@ -879,9 +630,9 @@ export default function HomePage() {
               })}
             </div>
           )}
-        </section>
+        </motion.section>
       )}
 
-    </main>
+    </div>
   )
 }

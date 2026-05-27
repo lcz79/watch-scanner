@@ -10,6 +10,8 @@ import sqlite3
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
 
+from utils.watch_images import get_watch_image
+
 PH_DB = Path(__file__).parent.parent / "data" / "price_history.db"
 AR_DB = Path(__file__).parent.parent / "data" / "auctions.db"
 
@@ -147,6 +149,7 @@ def compute_market_intelligence() -> dict:
                 "period_days": best["period_days"],
                 "listings_count": best["sample_size"],
                 "sparkline": best["sparkline"],
+                "image_url": get_watch_image(best["reference"], brand, model),
             }
 
         # ── most_offered (highest active listings = most supply on market) ────
@@ -184,6 +187,7 @@ def compute_market_intelligence() -> dict:
                 "change_pct_6m": top["change_pct"],
                 "supply_note": note_it,
                 "supply_note_en": note_en,
+                "image_url": get_watch_image(top["reference"], brand_o, model_o),
             }
 
         # ── rarest (fewest active listings, different from most_appreciated & most_offered) ─
@@ -237,6 +241,7 @@ def compute_market_intelligence() -> dict:
                 "change_pct_6m": change_6m,
                 "scarcity_note": note_it,  # default IT; frontend can pick by lang
                 "scarcity_note_en": note_en,
+                "image_url": get_watch_image(rarest_cand["reference"], brand_r, model_r),
             }
 
     finally:
@@ -265,6 +270,7 @@ def _empty_appreciation_card() -> dict:
         "period_days": 180,
         "listings_count": 0,
         "sparkline": [],
+        "image_url": "",
     }
 
 
@@ -279,6 +285,7 @@ def _empty_offered_card() -> dict:
         "change_pct_6m": None,
         "supply_note": "Dati in aggiornamento.",
         "supply_note_en": "Data updating.",
+        "image_url": "",
     }
 
 
@@ -293,4 +300,5 @@ def _empty_rarest_card() -> dict:
         "change_pct_6m": None,
         "scarcity_note": "Dati in aggiornamento.",
         "scarcity_note_en": "Data updating.",
+        "image_url": "",
     }
