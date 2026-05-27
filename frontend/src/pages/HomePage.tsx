@@ -35,34 +35,34 @@ const MARKET_MODELS = [
 const AUCTION_CALENDAR = [
   {
     house: "Christie's",
-    event: { en: 'Watches Online: The Geneva Edit', it: 'Watches Online: The Geneva Edit' },
-    date: '14 Jun 2026',
-    location: 'Geneva',
-    lots: 120,
-    flag: '🇨🇭',
+    event: { en: 'Important Watches — Kronos: Titans of Time', it: 'Important Watches — Kronos: Titans of Time' },
+    date: '29 mag 2026',
+    location: 'Hong Kong',
+    lots: 0,
+    flag: '🇭🇰',
   },
   {
-    house: "Sotheby's",
-    event: { en: 'Important Watches', it: 'Orologi Importanti' },
-    date: '28 Jun 2026',
-    location: 'New York',
-    lots: 85,
-    flag: '🇺🇸',
-  },
-  {
-    house: 'Phillips',
-    event: { en: 'The Geneva Watch Auction: XVIII', it: 'The Geneva Watch Auction: XVIII' },
-    date: '12 Jul 2026',
-    location: 'Geneva',
-    lots: 200,
-    flag: '🇨🇭',
+    house: 'Bonhams',
+    event: { en: 'Hong Kong Watches: Rare & Iconic', it: 'Hong Kong Watches: Rare & Iconic' },
+    date: '30 mag 2026',
+    location: 'Hong Kong',
+    lots: 0,
+    flag: '🇭🇰',
   },
   {
     house: 'Antiquorum',
     event: { en: 'Important Modern & Vintage Timepieces', it: 'Orologi Moderni e Vintage Importanti' },
-    date: '19 Jul 2026',
+    date: '31 mag 2026',
     location: 'Hong Kong',
-    lots: 60,
+    lots: 0,
+    flag: '🇭🇰',
+  },
+  {
+    house: 'Phillips',
+    event: { en: 'Hong Kong Watch Auction: XXII', it: 'Hong Kong Watch Auction: XXII' },
+    date: '1 giu 2026',
+    location: 'Hong Kong',
+    lots: 0,
     flag: '🇭🇰',
   },
 ]
@@ -250,8 +250,10 @@ export default function HomePage() {
             const raw = a.date as string | undefined
             if (!raw) return '—'
             try {
-              const d = new Date(raw)
-              return d.toLocaleDateString(lang === 'it' ? 'it-IT' : 'en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+              // Parse YYYY-MM-DD as LOCAL date to avoid UTC midnight timezone shift
+              const [y, m, d] = raw.slice(0, 10).split('-').map(Number)
+              const localDate = new Date(y, m - 1, d)
+              return localDate.toLocaleDateString(lang === 'it' ? 'it-IT' : 'en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
             } catch { return raw }
           })(),
           location: a.location as string ?? '—',
