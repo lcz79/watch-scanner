@@ -231,7 +231,7 @@ export default function AuctionsPage() {
   const { data: refreshStatus } = useQuery({
     queryKey: ['auction-refresh-status'],
     queryFn: getAuctionRefreshStatus,
-    refetchInterval: (data) => data?.is_running ? 5_000 : 30_000,
+    refetchInterval: (query) => (query.state.data as { is_running?: boolean } | undefined)?.is_running ? 5_000 : 30_000,
     staleTime: 0,
   })
 
