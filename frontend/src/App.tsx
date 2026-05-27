@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { Routes, Route, useNavigate } from 'react-router-dom'
+import { Routes, Route, useNavigate, useLocation } from 'react-router-dom'
+import { AnimatePresence, motion } from 'framer-motion'
 import Sidebar from './components/Sidebar'
 import WatchBackground from './components/WatchBackground'
 import SplashGate, { useSplashGate } from './components/SplashGate'
@@ -86,6 +87,34 @@ function TopBar() {
   )
 }
 
+function AnimatedRoutes() {
+  const location = useLocation()
+  return (
+    <AnimatePresence mode="wait">
+      <motion.div
+        key={location.pathname}
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -6 }}
+        transition={{ duration: 0.22, ease: 'easeInOut' }}
+        className="h-full"
+      >
+        <Routes location={location}>
+          <Route path="/"        element={<HomePage />} />
+          <Route path="/search"  element={<SearchPage />} />
+          <Route path="/agents"  element={<AgentsPage />} />
+          <Route path="/alerts"  element={<AlertsPage />} />
+          <Route path="/auctions" element={<AuctionsPage />} />
+          <Route path="/catalog" element={<CatalogPage />} />
+          <Route path="/encyclopedia/:reference" element={<EncyclopediaDetailPage />} />
+          <Route path="/verify" element={<VerificationPage />} />
+          <Route path="/opt-out" element={<OptOutPage />} />
+        </Routes>
+      </motion.div>
+    </AnimatePresence>
+  )
+}
+
 export default function App() {
   const { unlocked, unlock } = useSplashGate()
 
@@ -100,17 +129,7 @@ export default function App() {
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         <TopBar />
         <main className="flex-1 overflow-y-auto fade-in">
-          <Routes>
-            <Route path="/"        element={<HomePage />} />
-            <Route path="/search"  element={<SearchPage />} />
-            <Route path="/agents"  element={<AgentsPage />} />
-            <Route path="/alerts"  element={<AlertsPage />} />
-            <Route path="/auctions" element={<AuctionsPage />} />
-            <Route path="/catalog" element={<CatalogPage />} />
-            <Route path="/encyclopedia/:reference" element={<EncyclopediaDetailPage />} />
-            <Route path="/verify" element={<VerificationPage />} />
-            <Route path="/opt-out" element={<OptOutPage />} />
-          </Routes>
+          <AnimatedRoutes />
         </main>
         <footer className="h-8 bg-zinc-950 border-t border-zinc-900 flex items-center justify-center">
           <span className="text-[10px] text-zinc-700">watchscanner.it © 2026</span>

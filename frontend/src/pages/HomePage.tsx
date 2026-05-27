@@ -1,6 +1,9 @@
 import { useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { useLang } from '../lib/lang'
+import { motion } from 'framer-motion'
+import CountUp from 'react-countup'
+import { fmtEur, fmtEurCompact, toEur } from '../lib/currency'
 
 // ── Mock data ────────────────────────────────────────────────────────────────
 
@@ -280,7 +283,11 @@ export default function HomePage() {
     <main className="p-8 max-w-[1600px] mx-auto space-y-[32px]">
 
       {/* ── 1. Market Intelligence ────────────────────────────────────────── */}
-      <section>
+      <motion.section
+        initial={{ opacity: 0, y: 28 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.55, ease: 'easeOut' }}
+      >
         <div className="flex justify-between items-baseline mb-6">
           <div>
             <h2 className="font-h1 text-h1 text-zinc-100">
@@ -316,7 +323,11 @@ export default function HomePage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-[12px]">
 
             {/* ── Card 1: Maggior Apprezzamento ─────────────────────────── */}
-            <div
+            <motion.div
+              initial={{ opacity: 0, y: 32 }}
+              animate={{ opacity: 1, y: 0 }}
+              whileHover={{ scale: 1.015, transition: { duration: 0.18 } }}
+              transition={{ duration: 0.45, ease: 'easeOut', delay: 0.1 }}
               className="bg-zinc-900 border border-zinc-800 hover:border-green-500/40 transition-colors cursor-pointer group flex flex-col"
               onClick={() => navigate(`/search?ref=${encodeURIComponent(intel.most_appreciated.reference)}`)}
             >
@@ -349,14 +360,14 @@ export default function HomePage() {
                   <div>
                     <p className="text-[10px] text-zinc-600 uppercase tracking-widest mb-0.5">{lang === 'it' ? '6 mesi fa' : '6 months ago'}</p>
                     <p className="font-mono-data text-zinc-400 text-sm line-through">
-                      CHF {intel.most_appreciated.price_6m_ago_chf.toLocaleString('it-CH', { maximumFractionDigits: 0 })}
+                      {fmtEur(intel.most_appreciated.price_6m_ago_chf)}
                     </p>
                   </div>
                   <span className="material-symbols-outlined text-green-400 text-base mb-0.5">arrow_forward</span>
                   <div>
                     <p className="text-[10px] text-zinc-600 uppercase tracking-widest mb-0.5">{lang === 'it' ? 'Ora' : 'Now'}</p>
                     <p className="font-mono-data text-green-400 font-bold text-lg">
-                      CHF {intel.most_appreciated.current_price_chf.toLocaleString('it-CH', { maximumFractionDigits: 0 })}
+                      € <CountUp end={toEur(intel.most_appreciated.current_price_chf)} separator="." duration={1.2} />
                     </p>
                   </div>
                 </div>
@@ -372,10 +383,14 @@ export default function HomePage() {
                   <Sparkline values={intel.most_appreciated.sparkline} color="#4ade80" />
                 </div>
               )}
-            </div>
+            </motion.div>
 
             {/* ── Card 2: Più Offerto ────────────────────────────────────── */}
-            <div
+            <motion.div
+              initial={{ opacity: 0, y: 32 }}
+              animate={{ opacity: 1, y: 0 }}
+              whileHover={{ scale: 1.015, transition: { duration: 0.18 } }}
+              transition={{ duration: 0.45, ease: 'easeOut', delay: 0.2 }}
               className="bg-zinc-900 border border-zinc-800 hover:border-orange-500/40 transition-colors cursor-pointer group flex flex-col"
               onClick={() => navigate(`/search?ref=${encodeURIComponent(intel.most_offered.reference)}`)}
             >
@@ -407,7 +422,7 @@ export default function HomePage() {
                 <div className="mb-3">
                   <p className="text-[10px] text-zinc-600 uppercase tracking-widest mb-0.5">{lang === 'it' ? 'Prezzo mediana' : 'Median price'}</p>
                   <p className="font-mono-data text-orange-400 font-bold text-lg">
-                    CHF {intel.most_offered.current_price_chf.toLocaleString('it-CH', { maximumFractionDigits: 0 })}
+                    € <CountUp end={toEur(intel.most_offered.current_price_chf)} separator="." duration={1.2} />
                   </p>
                   {intel.most_offered.change_pct_6m != null && (
                     <p className={`text-xs font-mono-data mt-0.5 ${intel.most_offered.change_pct_6m >= 0 ? 'text-green-400' : 'text-red-400'}`}>
@@ -438,10 +453,14 @@ export default function HomePage() {
                   />
                 </div>
               </div>
-            </div>
+            </motion.div>
 
             {/* ── Card 3: Più Raro ──────────────────────────────────────── */}
-            <div
+            <motion.div
+              initial={{ opacity: 0, y: 32 }}
+              animate={{ opacity: 1, y: 0 }}
+              whileHover={{ scale: 1.015, transition: { duration: 0.18 } }}
+              transition={{ duration: 0.45, ease: 'easeOut', delay: 0.3 }}
               className="bg-zinc-900 border border-zinc-800 hover:border-blue-500/40 transition-colors cursor-pointer group flex flex-col"
               onClick={() => navigate(`/search?ref=${encodeURIComponent(intel.rarest.reference)}`)}
             >
@@ -473,7 +492,7 @@ export default function HomePage() {
                 <div className="mb-3">
                   <p className="text-[10px] text-zinc-600 uppercase tracking-widest mb-0.5">{lang === 'it' ? 'Prezzo mediana' : 'Median price'}</p>
                   <p className="font-mono-data text-blue-400 font-bold text-lg">
-                    CHF {intel.rarest.current_price_chf.toLocaleString('it-CH', { maximumFractionDigits: 0 })}
+                    € <CountUp end={toEur(intel.rarest.current_price_chf)} separator="." duration={1.2} />
                   </p>
                   {intel.rarest.change_pct_6m != null && (
                     <p className={`text-xs font-mono-data mt-0.5 ${intel.rarest.change_pct_6m >= 0 ? 'text-green-400' : 'text-red-400'}`}>
@@ -504,7 +523,7 @@ export default function HomePage() {
                   />
                 </div>
               </div>
-            </div>
+            </motion.div>
 
           </div>
         ) : (
@@ -516,10 +535,14 @@ export default function HomePage() {
             </p>
           </div>
         )}
-      </section>
+      </motion.section>
 
       {/* ── 2. Auction Calendar ──────────────────────────────────────────── */}
-      <section>
+      <motion.section
+        initial={{ opacity: 0, y: 24 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: 'easeOut', delay: 0.15 }}
+      >
         <div className="flex justify-between items-center mb-6">
           <h2 className="font-h2 text-h2 text-zinc-100">{t.auctionCalendarTitle}</h2>
         </div>
@@ -563,7 +586,7 @@ export default function HomePage() {
             </tbody>
           </table>
         </div>
-      </section>
+      </motion.section>
 
       {/* ── 3. Latest Auction Results ────────────────────────────────────── */}
       <section>

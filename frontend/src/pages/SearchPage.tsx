@@ -9,6 +9,7 @@ import { clsx } from 'clsx'
 import { formatDistanceToNow } from 'date-fns'
 import { it as itLocale } from 'date-fns/locale'
 import { useLang } from '../lib/lang'
+import { fmtEur, fmtEurCompact, fmtEurRange } from '../lib/currency'
 
 const QUICK_REFS = ['116610LN', '126710BLNR', '5711/1A', '116500LN', '15500ST']
 
@@ -136,12 +137,7 @@ function AuctionValuesPanel({
   const record = [...results].sort((a, b) => (b.hammer_price_chf ?? 0) - (a.hammer_price_chf ?? 0))[0]
   const avgHammer = results.reduce((s, r) => s + (r.hammer_price_chf ?? 0), 0) / results.filter(r => r.hammer_price_chf).length || 0
 
-  const fmtChf = (n: number | null | undefined) => {
-    if (!n) return '—'
-    if (n >= 1_000_000) return `CHF ${(n / 1_000_000).toFixed(2)}M`
-    if (n >= 1_000) return `CHF ${Math.round(n / 1000)}K`
-    return `CHF ${n.toLocaleString()}`
-  }
+  const fmtChf = (n: number | null | undefined) => fmtEurCompact(n)
 
   const fmtDate = (iso: string) => {
     try { return new Date(iso).toLocaleDateString(lang === 'it' ? 'it-IT' : 'en-GB', { month: 'short', year: 'numeric' }) }
@@ -204,7 +200,7 @@ function AuctionValuesPanel({
             </div>
             {latest.estimate_low_chf && (
               <p className="font-mono-data text-[10px] text-zinc-600 mt-1">
-                Est. {fmtChf(latest.estimate_low_chf)}–{fmtChf(latest.estimate_high_chf)}
+                Est. {fmtEurRange(latest.estimate_low_chf, latest.estimate_high_chf)}
                 {latest.hammer_to_estimate_ratio && latest.hammer_to_estimate_ratio > 1 && (
                   <span className="text-green-400 ml-1">+{((latest.hammer_to_estimate_ratio - 1) * 100).toFixed(0)}% vs est.</span>
                 )}

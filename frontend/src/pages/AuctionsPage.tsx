@@ -10,6 +10,7 @@ import {
   triggerAuctionRefresh,
 } from '../lib/api'
 import type { AuctionResult, UpcomingAuction } from '../types'
+import { fmtEur, fmtEurRange } from '../lib/currency'
 
 // ---------------------------------------------------------------------------
 // Static house definitions
@@ -45,11 +46,8 @@ const houseTextColor = (name: string) => houseColor(name).split(' ')[0]
 // Helpers
 // ---------------------------------------------------------------------------
 
-function fmtPrice(n: number | null | undefined, cur = 'CHF') {
-  if (!n) return '—'
-  if (n >= 1_000_000) return `${cur} ${(n / 1_000_000).toFixed(2)}M`
-  if (n >= 1_000) return `${cur} ${Math.round(n / 1000)}K`
-  return `${cur} ${n.toLocaleString()}`
+function fmtPrice(n: number | null | undefined, _cur?: string) {
+  return fmtEur(n)
 }
 
 function fmtDate(iso: string | null | undefined, lang: string) {
