@@ -1,7 +1,7 @@
 """
 Cambi Casa d'Aste scraper.
 Casa d'aste italiana con sede a Genova.
-Sito: https://www.cambi.it
+Sito: https://www.cambiaste.com
 
 Cambi tiene aste di orologi periodicamente come parte delle loro vendite
 di "Gioielli, Orologi e Oggetti Preziosi".
@@ -17,16 +17,17 @@ from utils.logger import get_logger
 
 logger = get_logger("auctions")
 
-BASE_URL = "https://www.cambi.it"
+BASE_URL = "https://www.cambiaste.com"
 
 RESULTS_URLS = [
-    f"{BASE_URL}/aste/risultati/",
-    f"{BASE_URL}/risultati-aste/",
-    f"{BASE_URL}/vendite/risultati/",
-    f"{BASE_URL}/aste/",
+    f"{BASE_URL}/it/risultati/",
+    f"{BASE_URL}/it/archivio/",
+    f"{BASE_URL}/it/aste/",
+    f"{BASE_URL}/it/lotti/",
+    f"{BASE_URL}",
 ]
 
-SEARCH_URL = f"{BASE_URL}/ricerca/"
+SEARCH_URL = f"{BASE_URL}/it/ricerca/"
 
 HEADERS = {
     "User-Agent": (

@@ -137,12 +137,17 @@ async def get_auction_records(
 @router.get("/calendar")
 async def get_upcoming_auctions_endpoint(
     from_date: str | None = Query(default=None, description="Data ISO YYYY-MM-DD"),
+    include_past: bool = Query(default=False, description="Includi anche aste passate"),
+    house: str | None = Query(default=None, description="Filtra per casa d'aste"),
 ) -> list:
     """
-    Prossime aste in calendario.
-    Mergia dati statici 2025-2026 con dati live scrappati dallo scheduler.
+    Calendario aste: future (default) o tutte incluse le passate.
+    Mergia dati statici 2023-2026 con dati live scrappati dallo scheduler.
     """
-    return get_upcoming_auctions(from_date=from_date)
+    results = get_upcoming_auctions(from_date=from_date, include_past=include_past)
+    if house:
+        results = [a for a in results if house.lower() in a.get("house", "").lower()]
+    return results
 
 
 @router.get("/upcoming")

@@ -1,7 +1,7 @@
 """
 Bolaffi Aste scraper.
 Casa d'aste italiana con sede a Torino.
-Sito: https://www.bolaffi.it
+Sito: https://www.astebolaffi.it
 
 Bolaffi tiene aste periodiche di gioielli e orologi, spesso con ottime
 opportunità su orologi vintage e sportivi italiani.
@@ -17,14 +17,14 @@ from utils.logger import get_logger
 
 logger = get_logger("auctions")
 
-BASE_URL = "https://www.bolaffi.it"
+BASE_URL = "https://www.astebolaffi.it"
 
 RESULTS_URLS = [
-    f"{BASE_URL}/aste/orologi/",
-    f"{BASE_URL}/risultati/orologi/",
+    f"{BASE_URL}/aste/orologi-e-gioielli/",
     f"{BASE_URL}/aste/risultati/",
-    f"{BASE_URL}/catalogo/orologi/",
-    f"{BASE_URL}/orologi/",
+    f"{BASE_URL}/lotti/orologi/",
+    f"{BASE_URL}/aste/",
+    f"{BASE_URL}",
 ]
 
 HEADERS = {

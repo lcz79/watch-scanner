@@ -108,8 +108,8 @@ export const getAuctionSentiment = (reference: string) =>
 export const getAuctionRecords = (params?: { limit?: number; brand?: string }) =>
   api.get<AuctionResult[]>('/auctions/records', { params }).then(r => r.data)
 
-export const getAuctionCalendar = () =>
-  api.get<UpcomingAuction[]>('/auctions/calendar').then(r => r.data)
+export const getAuctionCalendar = (params?: { include_past?: boolean; house?: string }) =>
+  api.get<UpcomingAuction[]>('/auctions/calendar', { params }).then(r => r.data)
 
 // ── Verification ──────────────────────────────────────────────────────────────
 
