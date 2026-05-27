@@ -172,13 +172,12 @@ interface AppreciationCard extends IntelCard {
   listings_count: number
   sparkline: number[]
 }
-interface TradedCard extends IntelCard {
-  auction_count: number
-  avg_hammer_chf: number
-  last_hammer_chf: number
-  last_sale_date: string
-  auction_houses: string[]
-  current_price_chf?: number
+interface OfferedCard extends IntelCard {
+  listings_count: number
+  current_price_chf: number
+  change_pct_6m?: number
+  supply_note: string       // Italian
+  supply_note_en?: string   // English
 }
 interface RarestCard extends IntelCard {
   listings_count: number
@@ -189,7 +188,7 @@ interface RarestCard extends IntelCard {
 }
 interface MarketIntelligence {
   most_appreciated: AppreciationCard
-  most_traded: TradedCard
+  most_offered: OfferedCard
   rarest: RarestCard
   computed_at: string
 }
@@ -349,69 +348,69 @@ export default function HomePage() {
               )}
             </div>
 
-            {/* ── Card 2: Più Venduto All'Asta ──────────────────────────── */}
+            {/* ── Card 2: Più Offerto ────────────────────────────────────── */}
             <div
-              className="bg-zinc-900 border border-zinc-800 hover:border-yellow-500/40 transition-colors cursor-pointer group flex flex-col"
-              onClick={() => navigate(`/search?ref=${encodeURIComponent(intel.most_traded.reference)}`)}
+              className="bg-zinc-900 border border-zinc-800 hover:border-orange-500/40 transition-colors cursor-pointer group flex flex-col"
+              onClick={() => navigate(`/search?ref=${encodeURIComponent(intel.most_offered.reference)}`)}
             >
               {/* Header */}
               <div className="px-5 pt-5 pb-4 border-b border-zinc-800">
                 <div className="flex items-center justify-between mb-1">
-                  <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-yellow-400">
-                    <span className="material-symbols-outlined text-sm leading-none" style={{ fontVariationSettings: "'FILL' 1" }}>gavel</span>
-                    {lang === 'it' ? 'Più Venduto All\'Asta' : 'Most Auctioned'}
+                  <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-orange-400">
+                    <span className="material-symbols-outlined text-sm leading-none" style={{ fontVariationSettings: "'FILL' 1" }}>inventory_2</span>
+                    {lang === 'it' ? 'Più Offerto' : 'Highest Supply'}
                   </span>
-                  <span className="bg-yellow-400/10 border border-yellow-400/20 text-yellow-400 text-[11px] font-bold px-2 py-0.5 font-mono-data">
-                    {intel.most_traded.auction_count} {lang === 'it' ? 'aste' : 'sales'}
+                  <span className="bg-orange-400/10 border border-orange-400/20 text-orange-400 text-[11px] font-bold px-2 py-0.5 font-mono-data">
+                    {intel.most_offered.listings_count} {lang === 'it' ? 'annunci' : 'listings'}
                   </span>
                 </div>
                 <p className="text-[10px] text-zinc-500 font-mono-data">
-                  {lang === 'it' ? 'Nei nostri archivi' : 'In our records'}
+                  {lang === 'it' ? 'Mercato secondario globale' : 'Global secondary market'}
                 </p>
               </div>
 
               {/* Body */}
               <div className="px-5 py-4 flex-1">
-                <p className="text-[10px] font-label-caps text-zinc-500 uppercase mb-0.5">{intel.most_traded.brand}</p>
+                <p className="text-[10px] font-label-caps text-zinc-500 uppercase mb-0.5">{intel.most_offered.brand}</p>
                 <h3 className="font-['Space_Grotesk'] font-bold text-zinc-100 text-lg leading-tight mb-3">
-                  {intel.most_traded.model}
-                  <span className="ml-2 text-zinc-500 text-xs font-mono-data font-normal">{intel.most_traded.reference}</span>
+                  {intel.most_offered.model}
+                  <span className="ml-2 text-zinc-500 text-xs font-mono-data font-normal">{intel.most_offered.reference}</span>
                 </h3>
 
-                {/* Price data */}
-                <div className="flex gap-4 mb-3">
-                  <div>
-                    <p className="text-[10px] text-zinc-600 uppercase tracking-widest mb-0.5">{lang === 'it' ? 'Martello medio' : 'Avg. hammer'}</p>
-                    <p className="font-mono-data text-yellow-400 font-bold text-lg">
-                      CHF {intel.most_traded.avg_hammer_chf.toLocaleString('it-CH', { maximumFractionDigits: 0 })}
+                {/* Price + trend */}
+                <div className="mb-3">
+                  <p className="text-[10px] text-zinc-600 uppercase tracking-widest mb-0.5">{lang === 'it' ? 'Prezzo mediana' : 'Median price'}</p>
+                  <p className="font-mono-data text-orange-400 font-bold text-lg">
+                    CHF {intel.most_offered.current_price_chf.toLocaleString('it-CH', { maximumFractionDigits: 0 })}
+                  </p>
+                  {intel.most_offered.change_pct_6m != null && (
+                    <p className={`text-xs font-mono-data mt-0.5 ${intel.most_offered.change_pct_6m >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                      {intel.most_offered.change_pct_6m >= 0 ? '+' : ''}{intel.most_offered.change_pct_6m.toFixed(1)}%{' '}
+                      <span className="text-zinc-500 font-normal">6M</span>
                     </p>
-                  </div>
-                  {intel.most_traded.last_hammer_chf > 0 && (
-                    <div>
-                      <p className="text-[10px] text-zinc-600 uppercase tracking-widest mb-0.5">{lang === 'it' ? 'Ultima' : 'Last'}</p>
-                      <p className="font-mono-data text-zinc-300 text-sm">
-                        CHF {intel.most_traded.last_hammer_chf.toLocaleString('it-CH', { maximumFractionDigits: 0 })}
-                      </p>
-                    </div>
                   )}
                 </div>
 
-                {/* Auction houses */}
-                <div className="flex flex-wrap gap-1.5">
-                  {intel.most_traded.auction_houses.slice(0, 4).map(house => (
-                    <span key={house} className="text-[10px] bg-zinc-800 border border-zinc-700 text-zinc-400 px-2 py-0.5 uppercase tracking-wide">
-                      {house}
-                    </span>
-                  ))}
-                </div>
+                {/* Supply note */}
+                <p className="text-zinc-400 text-xs leading-relaxed">
+                  {lang === 'it' ? intel.most_offered.supply_note : (intel.most_offered.supply_note_en ?? intel.most_offered.supply_note)}
+                </p>
               </div>
 
-              {/* Last sale footer */}
-              <div className="px-5 py-3 border-t border-zinc-800/50 mt-auto">
-                <p className="text-[10px] text-zinc-600">
-                  {lang === 'it' ? 'Ultima vendita:' : 'Last sale:'}{' '}
-                  <span className="text-zinc-400 font-mono-data">{intel.most_traded.last_sale_date}</span>
-                </p>
+              {/* Supply bar */}
+              <div className="px-5 py-4 border-t border-zinc-800/50 mt-auto">
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-[10px] text-zinc-600 uppercase tracking-widest">{lang === 'it' ? 'Offerta' : 'Supply'}</span>
+                  <span className="text-[10px] text-orange-400 font-bold font-mono-data">
+                    {Math.min(100, Math.round((intel.most_offered.listings_count / 150) * 100))}%
+                  </span>
+                </div>
+                <div className="h-1 bg-zinc-800 w-full">
+                  <div
+                    className="h-full bg-orange-400 transition-all duration-700"
+                    style={{ width: `${Math.min(100, Math.max(5, Math.round((intel.most_offered.listings_count / 150) * 100)))}%` }}
+                  />
+                </div>
               </div>
             </div>
 

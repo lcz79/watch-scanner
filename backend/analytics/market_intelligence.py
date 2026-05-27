@@ -149,82 +149,55 @@ def compute_market_intelligence() -> dict:
                 "sparkline": best["sparkline"],
             }
 
-        # ── most_traded (auction appearances) ───────────────────────────────
-        ar_cur.execute(
-            """
-            SELECT brand, model, reference,
-                   COUNT(*) AS cnt,
-                   AVG(hammer_price_chf) AS avg_h,
-                   MAX(hammer_price_chf) AS max_h,
-                   MAX(sale_date) AS last_date
-            FROM auction_results
-            WHERE brand != 'Unknown'
-              AND reference IS NOT NULL
-              AND reference NOT IN ('None', '')
-              AND hammer_price_chf > 0
-            GROUP BY reference
-            ORDER BY cnt DESC
-            LIMIT 1
-            """,
-        )
-        traded_row = ar_cur.fetchone()
+        # ── most_offered (highest active listings = most supply on market) ────
+        appreciated_ref = most_appreciated.get("reference", "")
 
-        if not traded_row:
-            most_traded = _empty_traded_card()
+        offered_candidates = [
+            c for c in appreciation_candidates
+            if c["reference"] != appreciated_ref and c["sample_size"] > 0
+        ]
+
+        if not offered_candidates:
+            most_offered = _empty_offered_card()
         else:
-            ref_t = traded_row["reference"]
-            brand_t = traded_row["brand"] or REF_INFO.get(ref_t, ("Unknown", ref_t))[0]
-            model_t = traded_row["model"] or REF_INFO.get(ref_t, ("Unknown", ref_t))[1]
+            top = max(offered_candidates, key=lambda x: x["sample_size"])
+            brand_o, model_o = _lookup_brand_model(top["reference"], ar_cur)
+            count_o = top["sample_size"]
 
-            # get last hammer price
-            ar_cur.execute(
-                "SELECT hammer_price_chf FROM auction_results "
-                "WHERE reference=? AND hammer_price_chf > 0 ORDER BY sale_date DESC LIMIT 1",
-                (ref_t,),
-            )
-            last_row = ar_cur.fetchone()
-            last_hammer = float(last_row["hammer_price_chf"]) if last_row else float(traded_row["avg_h"] or 0)
+            if count_o >= 200:
+                note_it = f"{count_o} annunci attivi — offerta molto abbondante. Alta concorrenza tra i venditori."
+                note_en = f"{count_o} active listings — very abundant supply. High seller competition."
+            elif count_o >= 80:
+                note_it = f"{count_o} annunci attivi — mercato liquido con buona disponibilità."
+                note_en = f"{count_o} active listings — liquid market with good availability."
+            else:
+                note_it = f"{count_o} annunci attivi nel mercato secondario globale."
+                note_en = f"{count_o} active listings in the global secondary market."
 
-            # unique auction houses
-            ar_cur.execute(
-                "SELECT DISTINCT auction_house FROM auction_results WHERE reference=? AND auction_house IS NOT NULL",
-                (ref_t,),
-            )
-            houses = [r["auction_house"] for r in ar_cur.fetchall() if r["auction_house"]]
-
-            # current marketplace price if available
-            current_price = None
-            for cand in appreciation_candidates:
-                if cand["reference"] == ref_t:
-                    current_price = cand["new_price"]
-                    break
-
-            most_traded = {
+            most_offered = {
                 "has_data": True,
-                "reference": ref_t,
-                "brand": brand_t,
-                "model": model_t,
-                "auction_count": traded_row["cnt"],
-                "avg_hammer_chf": round(float(traded_row["avg_h"] or 0)),
-                "last_hammer_chf": round(last_hammer),
-                "last_sale_date": traded_row["last_date"] or "—",
-                "auction_houses": houses,
-                "current_price_chf": current_price,
+                "reference": top["reference"],
+                "brand": brand_o,
+                "model": model_o,
+                "listings_count": count_o,
+                "current_price_chf": top["new_price"],
+                "change_pct_6m": top["change_pct"],
+                "supply_note": note_it,
+                "supply_note_en": note_en,
             }
 
-        # ── rarest (fewest active listings, different from most_appreciated) ─
-        appreciated_ref = most_appreciated.get("reference", "")
-        traded_ref = most_traded.get("reference", "")
+        # ── rarest (fewest active listings, different from most_appreciated & most_offered) ─
+        offered_ref = most_offered.get("reference", "")
 
         # exclude refs already shown in other cards
         rarest_candidates = [
             c for c in appreciation_candidates
-            if c["reference"] not in (appreciated_ref, traded_ref)
+            if c["reference"] not in (appreciated_ref, offered_ref)
             and c["sample_size"] > 0
         ]
 
         if not rarest_candidates:
-            # If all refs are already used, allow duplication with rarest by sample_size
+            # If all refs are already used, allow any ref not in appreciated
             rarest_candidates = [
                 c for c in appreciation_candidates
                 if c["reference"] != appreciated_ref and c["sample_size"] > 0
@@ -272,7 +245,7 @@ def compute_market_intelligence() -> dict:
 
     return {
         "most_appreciated": most_appreciated,
-        "most_traded": most_traded,
+        "most_offered": most_offered,
         "rarest": rarest,
         "computed_at": now.isoformat(),
     }
@@ -295,18 +268,17 @@ def _empty_appreciation_card() -> dict:
     }
 
 
-def _empty_traded_card() -> dict:
+def _empty_offered_card() -> dict:
     return {
         "has_data": False,
         "reference": "—",
         "brand": "—",
         "model": "Dati non disponibili",
-        "auction_count": 0,
-        "avg_hammer_chf": 0,
-        "last_hammer_chf": 0,
-        "last_sale_date": "—",
-        "auction_houses": [],
-        "current_price_chf": None,
+        "listings_count": 0,
+        "current_price_chf": 0,
+        "change_pct_6m": None,
+        "supply_note": "Dati in aggiornamento.",
+        "supply_note_en": "Data updating.",
     }
 
 
