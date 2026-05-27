@@ -237,8 +237,34 @@ export default function HomePage() {
     staleTime: 30 * 60 * 1000,
   })
 
+  // Normalize API auctions (sale_name:string) → template format (event:{en,it})
   const auctionCalendar: typeof AUCTION_CALENDAR =
-    upcomingData?.auctions?.length ? upcomingData.auctions : AUCTION_CALENDAR
+    upcomingData?.auctions?.length
+      ? upcomingData.auctions.map((a: Record<string, unknown>) => ({
+          house: a.house as string,
+          event: a.event ?? { en: a.sale_name as string, it: a.sale_name as string },
+          date: (() => {
+            const raw = a.date as string | undefined
+            if (!raw) return '—'
+            try {
+              const d = new Date(raw)
+              return d.toLocaleDateString(lang === 'it' ? 'it-IT' : 'en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+            } catch { return raw }
+          })(),
+          location: a.location as string ?? '—',
+          lots: (a.lots as number) ?? 0,
+          flag: a.flag as string ?? (
+            (a.location as string)?.toLowerCase().includes('hong kong') ? '🇭🇰' :
+            (a.location as string)?.toLowerCase().includes('geneva') || (a.location as string)?.toLowerCase().includes('ginevra') ? '🇨🇭' :
+            (a.location as string)?.toLowerCase().includes('new york') ? '🇺🇸' :
+            (a.location as string)?.toLowerCase().includes('london') || (a.location as string)?.toLowerCase().includes('londra') ? '🇬🇧' :
+            (a.location as string)?.toLowerCase().includes('paris') || (a.location as string)?.toLowerCase().includes('parigi') ? '🇫🇷' :
+            (a.location as string)?.toLowerCase().includes('monaco') ? '🇲🇨' :
+            (a.location as string)?.toLowerCase().includes('milan') || (a.location as string)?.toLowerCase().includes('milano') ? '🇮🇹' :
+            (a.location as string)?.toLowerCase().includes('torino') ? '🇮🇹' : '🌍'
+          ),
+        }))
+      : AUCTION_CALENDAR
 
   const newsItems: Array<{
     title: string
