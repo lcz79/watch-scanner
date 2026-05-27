@@ -157,15 +157,51 @@ function Sparkline({ values, color = '#f2c345' }: { values: number[]; color?: st
   )
 }
 
-// ── Market stat query helper ──────────────────────────────────────────────────
-function useMarketStat(ref: string) {
-  return useQuery({
-    queryKey: ['market-stats', ref],
+// ── Market Intelligence types ─────────────────────────────────────────────────
+interface IntelCard {
+  reference: string
+  brand: string
+  model: string
+  has_data?: boolean
+}
+interface AppreciationCard extends IntelCard {
+  current_price_chf: number
+  price_6m_ago_chf: number
+  change_pct: number
+  period_days: number
+  listings_count: number
+  sparkline: number[]
+}
+interface TradedCard extends IntelCard {
+  auction_count: number
+  avg_hammer_chf: number
+  last_hammer_chf: number
+  last_sale_date: string
+  auction_houses: string[]
+  current_price_chf?: number
+}
+interface RarestCard extends IntelCard {
+  listings_count: number
+  current_price_chf: number
+  change_pct_6m?: number
+  scarcity_note: string       // Italian
+  scarcity_note_en?: string   // English
+}
+interface MarketIntelligence {
+  most_appreciated: AppreciationCard
+  most_traded: TradedCard
+  rarest: RarestCard
+  computed_at: string
+}
+
+function useMarketIntelligence() {
+  return useQuery<MarketIntelligence>({
+    queryKey: ['market-intelligence'],
     queryFn: () =>
-      fetch(`http://localhost:8000/analytics/market-stats?reference=${encodeURIComponent(ref)}`)
+      fetch('/api/market/intelligence')
         .then(r => { if (!r.ok) throw new Error('api error'); return r.json() }),
     retry: false,
-    staleTime: 5 * 60 * 1000,
+    staleTime: 15 * 60 * 1000,
   })
 }
 
@@ -179,17 +215,14 @@ export default function HomePage() {
     ? ['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic']
     : ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
 
-  // ── Market stats queries (one per model) ──────────────────────────────────
-  const stat0 = useMarketStat(MARKET_MODELS[0].ref)
-  const stat1 = useMarketStat(MARKET_MODELS[1].ref)
-  const stat2 = useMarketStat(MARKET_MODELS[2].ref)
-  const marketStats = [stat0, stat1, stat2]
+  // ── Market Intelligence (single endpoint, 3 dynamic cards) ──────────────
+  const { data: intel, isLoading: intelLoading } = useMarketIntelligence()
 
   // ── News query ────────────────────────────────────────────────────────────
   const { data: newsData } = useQuery({
     queryKey: ['news'],
     queryFn: () =>
-      fetch('http://localhost:8000/news?limit=6')
+      fetch('/api/news?limit=6')
         .then(r => { if (!r.ok) throw new Error('api error'); return r.json() }),
     retry: false,
     staleTime: 10 * 60 * 1000,
@@ -199,7 +232,7 @@ export default function HomePage() {
   const { data: upcomingData } = useQuery({
     queryKey: ['auctions-upcoming'],
     queryFn: () =>
-      fetch('http://localhost:8000/auctions/upcoming')
+      fetch('/api/auctions/upcoming')
         .then(r => { if (!r.ok) throw new Error('api error'); return r.json() }),
     retry: false,
     staleTime: 30 * 60 * 1000,
@@ -221,87 +254,243 @@ export default function HomePage() {
   return (
     <main className="p-8 max-w-[1600px] mx-auto space-y-[32px]">
 
-      {/* ── 1. Market Highlights ──────────────────────────────────────────── */}
+      {/* ── 1. Market Intelligence ────────────────────────────────────────── */}
       <section>
         <div className="flex justify-between items-baseline mb-6">
           <div>
-            <h2 className="font-h1 text-h1 text-zinc-100">{t.watchWorldTitle}</h2>
-            <p className="text-zinc-500 text-sm mt-1">{t.watchWorldSub}</p>
+            <h2 className="font-h1 text-h1 text-zinc-100">
+              {lang === 'it' ? 'Segnali di Mercato' : 'Market Signals'}
+            </h2>
+            <p className="text-zinc-500 text-sm mt-1">
+              {lang === 'it'
+                ? 'Dati live: apprezzamento, liquidità e scarsità nel mercato secondario'
+                : 'Live data: appreciation, liquidity and scarcity in the secondary market'}
+            </p>
           </div>
+          {intel?.computed_at && (
+            <span className="text-zinc-600 text-[10px] font-mono-data hidden md:block">
+              {lang === 'it' ? 'Aggiornato' : 'Updated'}{' '}
+              {new Date(intel.computed_at).toLocaleTimeString(lang === 'it' ? 'it-IT' : 'en-GB', { hour: '2-digit', minute: '2-digit' })}
+            </span>
+          )}
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-[12px]">
-          {MARKET_MODELS.map((model, i) => {
-            const query = marketStats[i]
-            const stats = query.data
-            const hasData = !query.isError && stats && (stats.median_price || stats.listing_count)
-            const isLoading = query.isLoading
 
-            // Derived display values
-            const medianPrice: string | null = stats?.median_price
-              ? `€${Number(stats.median_price).toLocaleString()}`
-              : null
-            const listingCount: number | null = stats?.listing_count ?? null
-            const changePct: number | null = stats?.change_1m ?? null
+        {intelLoading ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-[12px]">
+            {[0, 1, 2].map(i => (
+              <div key={i} className="bg-zinc-900 border border-zinc-800 p-6 h-52 animate-pulse">
+                <div className="h-3 bg-zinc-800 rounded w-1/3 mb-4" />
+                <div className="h-5 bg-zinc-800 rounded w-2/3 mb-2" />
+                <div className="h-8 bg-zinc-800 rounded w-1/2 mb-3" />
+                <div className="h-3 bg-zinc-800 rounded w-full mb-1" />
+                <div className="h-3 bg-zinc-800 rounded w-3/4" />
+              </div>
+            ))}
+          </div>
+        ) : intel ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-[12px]">
 
-            // Tag: from real data if available, else fallback
-            let tagLabel = model.fallbackTag[lang]
-            let tagColor = model.fallbackTagColor
-            if (changePct !== null) {
-              if (changePct > 0) {
-                tagLabel = lang === 'it' ? `+${changePct.toFixed(1)}%` : `+${changePct.toFixed(1)}%`
-                tagColor = 'bg-green-400/10 text-green-400 border-green-400/20'
-              } else if (changePct < 0) {
-                tagLabel = `${changePct.toFixed(1)}%`
-                tagColor = 'bg-red-400/10 text-red-400 border-red-400/20'
-              }
-            }
-
-            return (
-              <div
-                key={model.ref}
-                className="bg-zinc-900 border border-zinc-800 p-6 flex flex-col gap-4 hover:border-zinc-700 transition-colors cursor-pointer"
-                onClick={() => navigate(`/search?ref=${encodeURIComponent(model.ref)}`)}
-              >
-                <div className="flex justify-between items-start">
-                  <span className="material-symbols-outlined text-yellow-400 text-2xl">{model.icon}</span>
-                  <span className={`text-[10px] font-bold px-2 py-0.5 border uppercase tracking-widest ${tagColor}`}>
-                    {tagLabel}
+            {/* ── Card 1: Maggior Apprezzamento ─────────────────────────── */}
+            <div
+              className="bg-zinc-900 border border-zinc-800 hover:border-green-500/40 transition-colors cursor-pointer group flex flex-col"
+              onClick={() => navigate(`/search?ref=${encodeURIComponent(intel.most_appreciated.reference)}`)}
+            >
+              {/* Header */}
+              <div className="px-5 pt-5 pb-4 border-b border-zinc-800">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-green-400">
+                    <span className="material-symbols-outlined text-sm leading-none" style={{ fontVariationSettings: "'FILL' 1" }}>trending_up</span>
+                    {lang === 'it' ? 'Maggior Apprezzamento' : 'Best Appreciation'}
+                  </span>
+                  <span className="bg-green-400/10 border border-green-400/20 text-green-400 text-[11px] font-bold px-2 py-0.5 font-mono-data">
+                    +{intel.most_appreciated.change_pct.toFixed(1)}%
                   </span>
                 </div>
-                <div>
-                  <h3 className="font-['Space_Grotesk'] font-semibold text-zinc-100 text-base mb-2">
-                    {model.label[lang]}
-                  </h3>
-                  {isLoading ? (
-                    <p className="text-zinc-600 text-xs animate-pulse">
-                      {lang === 'it' ? 'Dati in aggiornamento…' : 'Data updating…'}
+                <p className="text-[10px] text-zinc-500 font-mono-data">
+                  {lang === 'it' ? `Ultimi ${Math.round(intel.most_appreciated.period_days / 30)} mesi` : `Last ${Math.round(intel.most_appreciated.period_days / 30)} months`}
+                </p>
+              </div>
+
+              {/* Body */}
+              <div className="px-5 py-4 flex-1">
+                <p className="text-[10px] font-label-caps text-zinc-500 uppercase mb-0.5">{intel.most_appreciated.brand}</p>
+                <h3 className="font-['Space_Grotesk'] font-bold text-zinc-100 text-lg leading-tight mb-3">
+                  {intel.most_appreciated.model}
+                  <span className="ml-2 text-zinc-500 text-xs font-mono-data font-normal">{intel.most_appreciated.reference}</span>
+                </h3>
+
+                {/* Price evolution */}
+                <div className="flex items-end gap-3 mb-3">
+                  <div>
+                    <p className="text-[10px] text-zinc-600 uppercase tracking-widest mb-0.5">{lang === 'it' ? '6 mesi fa' : '6 months ago'}</p>
+                    <p className="font-mono-data text-zinc-400 text-sm line-through">
+                      CHF {intel.most_appreciated.price_6m_ago_chf.toLocaleString('it-CH', { maximumFractionDigits: 0 })}
                     </p>
-                  ) : hasData ? (
-                    <div className="flex flex-col gap-1">
-                      {medianPrice && (
-                        <div className="flex items-baseline gap-2">
-                          <span className="font-mono-data text-yellow-400 text-lg font-bold">{medianPrice}</span>
-                          <span className="text-zinc-500 text-[10px] uppercase tracking-widest">
-                            {lang === 'it' ? 'mediana' : 'median'}
-                          </span>
-                        </div>
-                      )}
-                      {listingCount !== null && (
-                        <p className="text-zinc-500 text-xs">
-                          {listingCount} {lang === 'it' ? 'annunci trovati' : 'listings found'}
-                        </p>
-                      )}
+                  </div>
+                  <span className="material-symbols-outlined text-green-400 text-base mb-0.5">arrow_forward</span>
+                  <div>
+                    <p className="text-[10px] text-zinc-600 uppercase tracking-widest mb-0.5">{lang === 'it' ? 'Ora' : 'Now'}</p>
+                    <p className="font-mono-data text-green-400 font-bold text-lg">
+                      CHF {intel.most_appreciated.current_price_chf.toLocaleString('it-CH', { maximumFractionDigits: 0 })}
+                    </p>
+                  </div>
+                </div>
+
+                <p className="text-zinc-500 text-xs">
+                  {intel.most_appreciated.listings_count} {lang === 'it' ? 'annunci attivi' : 'active listings'}
+                </p>
+              </div>
+
+              {/* Sparkline footer */}
+              {intel.most_appreciated.sparkline.length > 2 && (
+                <div className="h-[48px] px-0 pb-0 mt-auto border-t border-zinc-800/50">
+                  <Sparkline values={intel.most_appreciated.sparkline} color="#4ade80" />
+                </div>
+              )}
+            </div>
+
+            {/* ── Card 2: Più Venduto All'Asta ──────────────────────────── */}
+            <div
+              className="bg-zinc-900 border border-zinc-800 hover:border-yellow-500/40 transition-colors cursor-pointer group flex flex-col"
+              onClick={() => navigate(`/search?ref=${encodeURIComponent(intel.most_traded.reference)}`)}
+            >
+              {/* Header */}
+              <div className="px-5 pt-5 pb-4 border-b border-zinc-800">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-yellow-400">
+                    <span className="material-symbols-outlined text-sm leading-none" style={{ fontVariationSettings: "'FILL' 1" }}>gavel</span>
+                    {lang === 'it' ? 'Più Venduto All\'Asta' : 'Most Auctioned'}
+                  </span>
+                  <span className="bg-yellow-400/10 border border-yellow-400/20 text-yellow-400 text-[11px] font-bold px-2 py-0.5 font-mono-data">
+                    {intel.most_traded.auction_count} {lang === 'it' ? 'aste' : 'sales'}
+                  </span>
+                </div>
+                <p className="text-[10px] text-zinc-500 font-mono-data">
+                  {lang === 'it' ? 'Nei nostri archivi' : 'In our records'}
+                </p>
+              </div>
+
+              {/* Body */}
+              <div className="px-5 py-4 flex-1">
+                <p className="text-[10px] font-label-caps text-zinc-500 uppercase mb-0.5">{intel.most_traded.brand}</p>
+                <h3 className="font-['Space_Grotesk'] font-bold text-zinc-100 text-lg leading-tight mb-3">
+                  {intel.most_traded.model}
+                  <span className="ml-2 text-zinc-500 text-xs font-mono-data font-normal">{intel.most_traded.reference}</span>
+                </h3>
+
+                {/* Price data */}
+                <div className="flex gap-4 mb-3">
+                  <div>
+                    <p className="text-[10px] text-zinc-600 uppercase tracking-widest mb-0.5">{lang === 'it' ? 'Martello medio' : 'Avg. hammer'}</p>
+                    <p className="font-mono-data text-yellow-400 font-bold text-lg">
+                      CHF {intel.most_traded.avg_hammer_chf.toLocaleString('it-CH', { maximumFractionDigits: 0 })}
+                    </p>
+                  </div>
+                  {intel.most_traded.last_hammer_chf > 0 && (
+                    <div>
+                      <p className="text-[10px] text-zinc-600 uppercase tracking-widest mb-0.5">{lang === 'it' ? 'Ultima' : 'Last'}</p>
+                      <p className="font-mono-data text-zinc-300 text-sm">
+                        CHF {intel.most_traded.last_hammer_chf.toLocaleString('it-CH', { maximumFractionDigits: 0 })}
+                      </p>
                     </div>
-                  ) : (
-                    <p className="text-zinc-600 text-xs">
-                      {lang === 'it' ? 'Dati in aggiornamento…' : 'Data updating…'}
+                  )}
+                </div>
+
+                {/* Auction houses */}
+                <div className="flex flex-wrap gap-1.5">
+                  {intel.most_traded.auction_houses.slice(0, 4).map(house => (
+                    <span key={house} className="text-[10px] bg-zinc-800 border border-zinc-700 text-zinc-400 px-2 py-0.5 uppercase tracking-wide">
+                      {house}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              {/* Last sale footer */}
+              <div className="px-5 py-3 border-t border-zinc-800/50 mt-auto">
+                <p className="text-[10px] text-zinc-600">
+                  {lang === 'it' ? 'Ultima vendita:' : 'Last sale:'}{' '}
+                  <span className="text-zinc-400 font-mono-data">{intel.most_traded.last_sale_date}</span>
+                </p>
+              </div>
+            </div>
+
+            {/* ── Card 3: Più Raro ──────────────────────────────────────── */}
+            <div
+              className="bg-zinc-900 border border-zinc-800 hover:border-blue-500/40 transition-colors cursor-pointer group flex flex-col"
+              onClick={() => navigate(`/search?ref=${encodeURIComponent(intel.rarest.reference)}`)}
+            >
+              {/* Header */}
+              <div className="px-5 pt-5 pb-4 border-b border-zinc-800">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-blue-400">
+                    <span className="material-symbols-outlined text-sm leading-none" style={{ fontVariationSettings: "'FILL' 1" }}>diamond</span>
+                    {lang === 'it' ? 'Più Raro' : 'Rarest'}
+                  </span>
+                  <span className="bg-blue-400/10 border border-blue-400/20 text-blue-400 text-[11px] font-bold px-2 py-0.5 font-mono-data">
+                    {intel.rarest.listings_count} {lang === 'it' ? 'annunci' : 'listings'}
+                  </span>
+                </div>
+                <p className="text-[10px] text-zinc-500 font-mono-data">
+                  {lang === 'it' ? 'Mercato secondario globale' : 'Global secondary market'}
+                </p>
+              </div>
+
+              {/* Body */}
+              <div className="px-5 py-4 flex-1">
+                <p className="text-[10px] font-label-caps text-zinc-500 uppercase mb-0.5">{intel.rarest.brand}</p>
+                <h3 className="font-['Space_Grotesk'] font-bold text-zinc-100 text-lg leading-tight mb-3">
+                  {intel.rarest.model}
+                  <span className="ml-2 text-zinc-500 text-xs font-mono-data font-normal">{intel.rarest.reference}</span>
+                </h3>
+
+                {/* Price */}
+                <div className="mb-3">
+                  <p className="text-[10px] text-zinc-600 uppercase tracking-widest mb-0.5">{lang === 'it' ? 'Prezzo mediana' : 'Median price'}</p>
+                  <p className="font-mono-data text-blue-400 font-bold text-lg">
+                    CHF {intel.rarest.current_price_chf.toLocaleString('it-CH', { maximumFractionDigits: 0 })}
+                  </p>
+                  {intel.rarest.change_pct_6m != null && (
+                    <p className={`text-xs font-mono-data mt-0.5 ${intel.rarest.change_pct_6m >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                      {intel.rarest.change_pct_6m >= 0 ? '+' : ''}{intel.rarest.change_pct_6m.toFixed(1)}%{' '}
+                      <span className="text-zinc-500 font-normal">6M</span>
                     </p>
                   )}
                 </div>
+
+                {/* Scarcity note */}
+                <p className="text-zinc-400 text-xs leading-relaxed">
+                  {lang === 'it' ? intel.rarest.scarcity_note : (intel.rarest.scarcity_note_en ?? intel.rarest.scarcity_note)}
+                </p>
               </div>
-            )
-          })}
-        </div>
+
+              {/* Scarcity bar */}
+              <div className="px-5 py-4 border-t border-zinc-800/50 mt-auto">
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-[10px] text-zinc-600 uppercase tracking-widest">{lang === 'it' ? 'Scarsità' : 'Scarcity'}</span>
+                  <span className="text-[10px] text-blue-400 font-bold font-mono-data">
+                    {Math.max(0, Math.min(100, Math.round(100 - (intel.rarest.listings_count / 150) * 100)))}%
+                  </span>
+                </div>
+                <div className="h-1 bg-zinc-800 w-full">
+                  <div
+                    className="h-full bg-blue-400 transition-all duration-700"
+                    style={{ width: `${Math.max(5, Math.min(100, Math.round(100 - (intel.rarest.listings_count / 150) * 100)))}%` }}
+                  />
+                </div>
+              </div>
+            </div>
+
+          </div>
+        ) : (
+          /* Fallback se API non disponibile */
+          <div className="bg-zinc-900 border border-zinc-800 p-6 text-center">
+            <span className="material-symbols-outlined text-zinc-600 text-3xl mb-2 block">bar_chart</span>
+            <p className="text-zinc-500 text-sm">
+              {lang === 'it' ? 'Dati di mercato in aggiornamento…' : 'Market data updating…'}
+            </p>
+          </div>
+        )}
       </section>
 
       {/* ── 2. Auction Calendar ──────────────────────────────────────────── */}

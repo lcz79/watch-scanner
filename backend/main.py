@@ -295,6 +295,13 @@ async def analyze_reference_endpoint(reference: str):
     }
 
 
+@app.get("/market/intelligence")
+async def get_market_intelligence():
+    """3 dynamic market intelligence cards: best appreciation, most traded, rarest."""
+    from analytics.market_intelligence import compute_market_intelligence
+    return compute_market_intelligence()
+
+
 @app.get("/market/{reference}")
 async def get_market_stats(reference: str):
     """Market stats dalla cache o dal DB storico."""
