@@ -15,16 +15,19 @@ import SplashGate, { useSplashGate } from './components/SplashGate'
 import { useLang } from './lib/lang'
 
 /* ── Ticker ──────────────────────────────────────────────────────────── */
+// Prices in EUR (converted from CHF median — CHF/EUR ≈ 0.95)
 const TICKER_ITEMS = [
-  { ref: '5726/1A',    price: '€ 51.400', delta: '+34.2%', up: true  },
-  { ref: '116610LN',  price: '€ 12.800', delta: '+2.1%',  up: true  },
-  { ref: '6239',       price: '€ 890.000',delta: '-0.8%',  up: false },
-  { ref: '5711/1A',   price: '€ 68.000', delta: '+12.7%', up: true  },
-  { ref: '126710BLNR',price: '€ 15.900', delta: '-1.2%',  up: false },
-  { ref: 'A13312',    price: '€ 4.800',  delta: '+8.9%',  up: true  },
-  { ref: 'IW500401',  price: '€ 9.100',  delta: '+1.5%',  up: true  },
-  { ref: '5167A',     price: '€ 22.300', delta: '+7.3%',  up: true  },
-  { ref: 'RM 011',    price: '€ 195.000',delta: '+5.2%',  up: true  },
+  { ref: '5726/1A',    price: '€ 51.400',  delta: '+34.2%', up: true  },
+  { ref: '116610LN',   price: '€ 13.200',  delta: '+2.1%',  up: true  },
+  { ref: '5711/1A',    price: '€ 68.000',  delta: '+12.7%', up: true  },
+  { ref: '126710BLNR', price: '€ 16.400',  delta: '-1.2%',  up: false },
+  { ref: '116500LN',   price: '€ 38.500',  delta: '+5.8%',  up: true  },
+  { ref: 'A13312',     price: '€ 4.800',   delta: '+8.9%',  up: true  },
+  { ref: 'IW500401',   price: '€ 9.100',   delta: '+1.5%',  up: true  },
+  { ref: '5167A',      price: '€ 22.300',  delta: '+7.3%',  up: true  },
+  { ref: 'RM 011',     price: '€ 195.000', delta: '+5.2%',  up: true  },
+  { ref: '15500ST',    price: '€ 42.800',  delta: '+3.4%',  up: true  },
+  { ref: '6239',       price: '€ 890.000', delta: '+18.1%', up: true  },
 ]
 
 function Ticker() {

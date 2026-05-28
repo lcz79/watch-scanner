@@ -368,7 +368,7 @@ function ListingCard({ listing, isBest, isBestDeal = false }: {
           </div>
           <div className="text-right shrink-0">
             <span className={clsx('font-display-price text-3xl leading-none', isBest ? 'text-zinc-100' : 'text-zinc-100')}>
-              {listing.price.toLocaleString('it-IT')} €
+              {fmtEur(listing.price)}
             </span>
             <p className="text-zinc-500 text-xs mt-1 uppercase tracking-tight">
               {isSocial ? t.socialVerified : t.marketPrice}
@@ -401,6 +401,163 @@ function ListingCard({ listing, isBest, isBestDeal = false }: {
         </div>
       </div>
     </a>
+  )
+}
+
+/* ── Submarine Radar Loading Animation ─────────────────────────────────── */
+function SubmarineRadar({ reference, lang }: { reference: string; lang: string }) {
+  return (
+    <div style={{ position: 'relative', width: '100%', height: 260, overflow: 'hidden', background: '#060810' }}>
+      <style>{`
+        @keyframes subBob { 0%,100%{transform:translateY(0px)} 50%{transform:translateY(-8px)} }
+        @keyframes radarRotate { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+        @keyframes radarPing { 0%{r:0;opacity:.7} 100%{r:120;opacity:0} }
+        @keyframes bubbleUp { 0%{opacity:.7;transform:translateY(0) scale(1)} 100%{opacity:0;transform:translateY(-70px) scale(.4)} }
+        @keyframes propSpin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+        @keyframes blipFade { 0%,30%{opacity:0} 50%{opacity:1} 100%{opacity:0} }
+        @keyframes scanPulse { 0%,100%{opacity:0} 50%{opacity:.5} }
+        @keyframes textBlink { 0%,100%{opacity:1} 50%{opacity:.4} }
+        @keyframes waveAnim { 0%{d:path("M0,200 Q100,185 200,200 Q300,215 400,200 Q500,185 600,200 Q700,215 800,200 L800,260 L0,260 Z")} 50%{d:path("M0,200 Q100,215 200,200 Q300,185 400,200 Q500,215 600,200 Q700,185 800,200 L800,260 L0,260 Z")} 100%{d:path("M0,200 Q100,185 200,200 Q300,215 400,200 Q500,185 600,200 Q700,215 800,200 L800,260 L0,260 Z")} }
+      `}</style>
+      <svg viewBox="0 0 800 260" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <radialGradient id="sgBg" cx="50%" cy="40%" r="70%">
+            <stop offset="0%" stopColor="#0a1628"/>
+            <stop offset="100%" stopColor="#040608"/>
+          </radialGradient>
+          <radialGradient id="sgGlow" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="#4EB87A" stopOpacity="0.2"/>
+            <stop offset="100%" stopColor="#4EB87A" stopOpacity="0"/>
+          </radialGradient>
+          <filter id="sgGlowF">
+            <feGaussianBlur stdDeviation="3" result="b"/>
+            <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+          <filter id="sgGlowS">
+            <feGaussianBlur stdDeviation="1.5" result="b"/>
+            <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+          <clipPath id="sgClip">
+            <rect width="800" height="260"/>
+          </clipPath>
+        </defs>
+
+        {/* Background */}
+        <rect width="800" height="260" fill="url(#sgBg)"/>
+
+        {/* Sonar grid */}
+        {Array.from({length:11},(_,i)=>(
+          <line key={`h${i}`} x1="0" y1={i*26} x2="800" y2={i*26} stroke="rgba(184,151,90,0.035)" strokeWidth="1"/>
+        ))}
+        {Array.from({length:17},(_,i)=>(
+          <line key={`v${i}`} x1={i*50} y1="0" x2={i*50} y2="260" stroke="rgba(184,151,90,0.035)" strokeWidth="1"/>
+        ))}
+
+        {/* Water layer at bottom */}
+        <path d="M0,200 Q100,185 200,200 Q300,215 400,200 Q500,185 600,200 Q700,215 800,200 L800,260 L0,260 Z"
+          fill="rgba(10,22,40,0.6)" style={{animation:'waveAnim 4s ease-in-out infinite'}}/>
+
+        {/* ── Radar display (right) ── */}
+        <g transform="translate(630,125)" clipPath="url(#sgClip)">
+          <circle cx="0" cy="0" r="120" fill="url(#sgGlow)"/>
+          {[120,90,60,30].map((r,i)=>(
+            <circle key={i} cx="0" cy="0" r={r} fill="none" stroke="rgba(78,184,122,0.12)" strokeWidth="1"/>
+          ))}
+          {/* Cross hairs */}
+          <line x1="-120" y1="0" x2="120" y2="0" stroke="rgba(78,184,122,0.08)" strokeWidth="1"/>
+          <line x1="0" y1="-120" x2="0" y2="120" stroke="rgba(78,184,122,0.08)" strokeWidth="1"/>
+          {/* Sweep arm */}
+          <g style={{animation:'radarRotate 4s linear infinite',transformOrigin:'0px 0px'}}>
+            <path d="M0,0 L120,0 A120,120,0,0,0,104,-60Z" fill="rgba(78,184,122,0.12)"/>
+            <line x1="0" y1="0" x2="120" y2="0" stroke="#4EB87A" strokeWidth="1.5" opacity="0.9" filter="url(#sgGlowF)"/>
+          </g>
+          {/* Ping ring */}
+          <circle cx="0" cy="0" r="0" fill="none" stroke="#4EB87A" strokeWidth="1.5" opacity="0">
+            <animate attributeName="r" values="0;120" dur="4s" repeatCount="indefinite"/>
+            <animate attributeName="opacity" values="0.7;0" dur="4s" repeatCount="indefinite"/>
+          </circle>
+          {/* Center */}
+          <circle cx="0" cy="0" r="4" fill="#4EB87A" filter="url(#sgGlowF)"/>
+          {/* Blips */}
+          <circle cx="-55" cy="-70" r="3.5" fill="#4EB87A" filter="url(#sgGlowF)" style={{animation:'blipFade 4s 1.2s ease-in-out infinite'}}/>
+          <circle cx="70" cy="30" r="2.5" fill="#4EB87A" filter="url(#sgGlowS)" style={{animation:'blipFade 4s 2.8s ease-in-out infinite'}}/>
+          <circle cx="-30" cy="85" r="2" fill="#4EB87A" filter="url(#sgGlowS)" style={{animation:'blipFade 4s 0.5s ease-in-out infinite'}}/>
+        </g>
+
+        {/* ── Submarine (center-left) ── */}
+        <g style={{animation:'subBob 3s ease-in-out infinite'}} transform="translate(280,118)">
+          {/* Shadow */}
+          <ellipse cx="0" cy="42" rx="90" ry="8" fill="rgba(0,0,0,0.3)"/>
+          {/* Tail fin */}
+          <polygon points="-95,15 -115,35 -95,5" fill="#0d1e35" stroke="#B8975A" strokeWidth="1.2"/>
+          <polygon points="-95,-5 -115,-25 -95,5" fill="#0d1e35" stroke="#B8975A" strokeWidth="1.2"/>
+          {/* Hull */}
+          <path d="M -90,0 Q -90,-32 -60,-32 L 70,-32 Q 100,-32 100,0 Q 100,32 70,32 L -60,32 Q -90,32 -90,0 Z"
+            fill="#0c1a30" stroke="#B8975A" strokeWidth="1.5"/>
+          {/* Hull highlight stripe */}
+          <path d="M -60,-28 L 70,-28 Q 96,-28 96,-12" fill="none" stroke="rgba(184,151,90,0.18)" strokeWidth="2"/>
+          {/* Conning tower */}
+          <rect x="-20" y="-60" width="40" height="28" rx="6" fill="#0d1e35" stroke="#B8975A" strokeWidth="1.5"/>
+          {/* Periscope */}
+          <line x1="5" y1="-60" x2="5" y2="-78" stroke="#B8975A" strokeWidth="2.5"/>
+          <line x1="5" y1="-78" x2="22" y2="-78" stroke="#B8975A" strokeWidth="2.5"/>
+          <circle cx="22" cy="-78" r="5" fill="#0a1628" stroke="#4EB87A" strokeWidth="1.5" filter="url(#sgGlowS)"/>
+          <circle cx="22" cy="-78" r="2.5" fill="#4EB87A" filter="url(#sgGlowF)"/>
+          {/* Portholes */}
+          {[-42,0,42].map((x,i)=>(
+            <g key={i}>
+              <circle cx={x} cy="0" r="10" fill="#080f1e" stroke="#B8975A" strokeWidth="1.2"/>
+              <circle cx={x} cy="0" r="6" fill="rgba(78,184,122,0.18)"/>
+              <circle cx={x-3} cy={-3} r="2" fill="rgba(255,255,255,0.12)"/>
+            </g>
+          ))}
+          {/* Front nose sonar emitter */}
+          <ellipse cx="100" cy="0" rx="12" ry="20" fill="#0c1a30" stroke="#B8975A" strokeWidth="1.5"/>
+          <circle cx="112" cy="0" r="4" fill="#4EB87A" filter="url(#sgGlowF)" opacity="0.9">
+            <animate attributeName="opacity" values="0.4;1;0.4" dur="1.5s" repeatCount="indefinite"/>
+          </circle>
+          {/* Bottom fins */}
+          <polygon points="-30,32 -50,55 -10,32" fill="#0d1e35" stroke="#B8975A" strokeWidth="1"/>
+          <polygon points="30,32 10,55 50,32" fill="#0d1e35" stroke="#B8975A" strokeWidth="1"/>
+          {/* Propeller group */}
+          <g transform="translate(-102,0)" style={{animation:'propSpin 0.8s linear infinite',transformOrigin:'-102px 0px'}}>
+            <ellipse cx="-102" cy="-16" rx="5" ry="16" fill="#B8975A" opacity="0.7" transform="rotate(-15 -102 0)"/>
+            <ellipse cx="-102" cy="16" rx="5" ry="16" fill="#B8975A" opacity="0.7" transform="rotate(15 -102 0)"/>
+            <circle cx="-102" cy="0" r="4" fill="#0d1e35" stroke="#B8975A" strokeWidth="1.5"/>
+          </g>
+          {/* Bubbles from periscope */}
+          {[
+            {x:8,delay:'0s',r:4},{x:14,delay:'0.7s',r:3},{x:5,delay:'1.4s',r:5},
+            {x:18,delay:'2.1s',r:2.5},{x:10,delay:'2.8s',r:3.5},
+          ].map((b,i)=>(
+            <circle key={i} cx={b.x} cy={-80} r={b.r}
+              fill="none" stroke="rgba(184,151,90,0.5)" strokeWidth="1"
+              style={{animation:`bubbleUp 2.5s ease-out ${b.delay} infinite`}}/>
+          ))}
+          {/* Sonar ping from nose */}
+          {[1,2,3].map(i=>(
+            <circle key={i} cx="112" cy="0" r="0" fill="none" stroke="#4EB87A" strokeWidth="1" opacity="0">
+              <animate attributeName="r" values="0;60" dur="2s" begin={`${i*0.6}s`} repeatCount="indefinite"/>
+              <animate attributeName="opacity" values="0.4;0" dur="2s" begin={`${i*0.6}s`} repeatCount="indefinite"/>
+            </circle>
+          ))}
+        </g>
+
+        {/* ── Labels ── */}
+        <text x="50" y="250" fontFamily='"IBM Plex Mono",monospace' fontSize="9"
+          fill="#3d3a30" letterSpacing="2" style={{animation:'textBlink 2s ease-in-out infinite'}}>
+          SONAR ACTIVE · SCANNING ALL SOURCES
+        </text>
+        <text x="400" y="250" textAnchor="middle" fontFamily='"IBM Plex Mono",monospace' fontSize="10"
+          fill="#B8975A" letterSpacing="4">
+          {reference.toUpperCase() || '—'} · {lang === 'it' ? 'RICERCA IN CORSO' : 'SCANNING'}
+        </text>
+        <text x="750" y="250" textAnchor="end" fontFamily='"IBM Plex Mono",monospace' fontSize="9"
+          fill="#3d3a30" letterSpacing="2">
+          DEPTH: 3.847m
+        </text>
+      </svg>
+    </div>
   )
 }
 
@@ -508,7 +665,8 @@ export default function SearchPage() {
 
   useEffect(() => {
     const ref = params.get('ref')
-    if (ref) { setReference(ref); mutate({ reference: ref.toUpperCase() }) }
+    if (ref) handleScan(ref)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const filteredListings = result ? result.listings.filter(l =>
@@ -677,24 +835,17 @@ export default function SearchPage() {
       {isPending && (
         <div className="space-y-4">
 
-          {/* Trieste hero image */}
-          <div className="relative overflow-hidden border border-zinc-800" style={{ height: '220px' }}>
-            <img
-              src="/daytona-16520.jpg"
-              alt="Rolex Deep Sea Special — Bathyscaphe Trieste"
-              className="w-full h-full object-cover object-center"
-              style={{ filter: 'grayscale(0.4) brightness(0.5) contrast(1.2)' }}
-            />
-            {/* vignette bottom */}
-            <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/40 to-transparent" />
+          {/* Submarine radar animation */}
+          <div className="border border-zinc-800">
+            <SubmarineRadar reference={reference} lang={lang} />
             {/* copy */}
-            <div className="absolute bottom-0 left-0 right-0 p-5">
+            <div className="px-5 py-3 bg-zinc-900 border-t border-zinc-800">
               <p className="text-yellow-400 font-bold uppercase tracking-[0.18em] text-[10px] mb-1">
-                Rolex Oyster · Batiscafo Trieste · 10.916 m
+                SONAR ACTIVE · SCANNING DEPTH
               </p>
-              <p className="text-zinc-100 font-['Space_Grotesk'] font-semibold text-lg leading-snug">
+              <p style={{ fontFamily: '"Space Grotesk", system-ui, sans-serif' }} className="font-semibold text-zinc-300 text-sm leading-snug">
                 {lang === 'it'
-                  ? 'Scandaglieremo ogni angolo del web fino agli abissi per trovare il prezzo migliore.'
+                  ? 'Scandagliamo ogni angolo del web fino agli abissi per trovare il prezzo migliore.'
                   : 'We dive to the deepest corners of the web to surface the best price.'}
               </p>
             </div>
