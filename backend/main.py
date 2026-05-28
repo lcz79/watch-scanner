@@ -302,6 +302,67 @@ async def get_market_intelligence():
     return compute_market_intelligence()
 
 
+@app.get("/market/ticker")
+async def get_ticker_prices(refs: str = "5711/1A,116610LN,126710BLNR,116500LN,15500ST,5726/1A,16520,116503"):
+    """
+    Latest CHF median prices for a comma-separated list of references.
+    Returns price + 1-month delta for use in the live ticker.
+    """
+    import sqlite3 as _sqlite3
+    from pathlib import Path as _Path
+
+    ph_path = _Path(__file__).parent / "data" / "price_history.db"
+    reference_list = [r.strip() for r in refs.split(",") if r.strip()]
+
+    results = []
+    try:
+        conn = _sqlite3.connect(str(ph_path))
+        conn.row_factory = _sqlite3.Row
+        cur = conn.cursor()
+
+        for ref in reference_list:
+            # Latest snapshot
+            cur.execute(
+                "SELECT median_price, date FROM price_snapshots "
+                "WHERE reference=? ORDER BY date DESC LIMIT 1",
+                (ref,),
+            )
+            latest = cur.fetchone()
+            if not latest or not latest["median_price"]:
+                continue
+
+            current_chf = float(latest["median_price"])
+
+            # Snapshot ~30 days ago for delta
+            from datetime import datetime, timezone, timedelta
+            thirty_ago = (datetime.now(timezone.utc) - timedelta(days=30)).strftime("%Y-%m-%d")
+            cur.execute(
+                "SELECT median_price FROM price_snapshots "
+                "WHERE reference=? AND date <= ? ORDER BY date DESC LIMIT 1",
+                (ref, thirty_ago),
+            )
+            prev = cur.fetchone()
+            delta_pct = None
+            if prev and prev["median_price"] and float(prev["median_price"]) > 0:
+                delta_pct = round(
+                    (current_chf - float(prev["median_price"])) / float(prev["median_price"]) * 100, 2
+                )
+
+            results.append({
+                "reference": ref,
+                "price_chf": round(current_chf, 2),
+                "price_eur": round(current_chf / 0.95, 0),
+                "delta_pct_30d": delta_pct,
+                "date": latest["date"],
+            })
+
+        conn.close()
+    except Exception as e:
+        return {"items": [], "error": str(e)}
+
+    return {"items": results}
+
+
 @app.get("/market/{reference}")
 async def get_market_stats(reference: str):
     """Market stats dalla cache o dal DB storico."""

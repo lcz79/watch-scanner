@@ -15,23 +15,47 @@ import SplashGate, { useSplashGate } from './components/SplashGate'
 import { useLang } from './lib/lang'
 
 /* ── Ticker ──────────────────────────────────────────────────────────── */
-// Prices in EUR (converted from CHF median — CHF/EUR ≈ 0.95)
-const TICKER_ITEMS = [
-  { ref: '5726/1A',    price: '€ 51.400',  delta: '+34.2%', up: true  },
-  { ref: '116610LN',   price: '€ 13.200',  delta: '+2.1%',  up: true  },
-  { ref: '5711/1A',    price: '€ 68.000',  delta: '+12.7%', up: true  },
-  { ref: '126710BLNR', price: '€ 16.400',  delta: '-1.2%',  up: false },
-  { ref: '116500LN',   price: '€ 38.500',  delta: '+5.8%',  up: true  },
-  { ref: 'A13312',     price: '€ 4.800',   delta: '+8.9%',  up: true  },
-  { ref: 'IW500401',   price: '€ 9.100',   delta: '+1.5%',  up: true  },
-  { ref: '5167A',      price: '€ 22.300',  delta: '+7.3%',  up: true  },
-  { ref: 'RM 011',     price: '€ 195.000', delta: '+5.2%',  up: true  },
-  { ref: '15500ST',    price: '€ 42.800',  delta: '+3.4%',  up: true  },
-  { ref: '6239',       price: '€ 890.000', delta: '+18.1%', up: true  },
+type TickerItem = { ref: string; price: string; delta: string; up: boolean }
+
+// Fallback statico — mostrato solo se l'API non risponde
+const TICKER_FALLBACK: TickerItem[] = [
+  { ref: '5711/1A',    price: '—',        delta: '—',      up: true  },
+  { ref: '116610LN',   price: '—',        delta: '—',      up: true  },
+  { ref: '5726/1A',    price: '—',        delta: '—',      up: true  },
+  { ref: '126710BLNR', price: '—',        delta: '—',      up: false },
+  { ref: '116500LN',   price: '—',        delta: '—',      up: true  },
+  { ref: '15500ST',    price: '—',        delta: '—',      up: true  },
+  { ref: '16520',      price: '—',        delta: '—',      up: true  },
 ]
 
+function fmtTickerEur(eur: number): string {
+  return `€ ${Math.round(eur).toLocaleString('it-IT')}`
+}
+
 function Ticker() {
-  const items = [...TICKER_ITEMS, ...TICKER_ITEMS] // duplicate for seamless loop
+  const [items, setItems] = useState<TickerItem[]>(TICKER_FALLBACK)
+
+  useEffect(() => {
+    fetch('/api/market/ticker')
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (!data?.items?.length) return
+        const live: TickerItem[] = data.items.map((d: {
+          reference: string; price_eur: number; delta_pct_30d: number | null
+        }) => ({
+          ref: d.reference,
+          price: fmtTickerEur(d.price_eur),
+          delta: d.delta_pct_30d != null
+            ? `${d.delta_pct_30d > 0 ? '+' : ''}${d.delta_pct_30d.toFixed(1)}%`
+            : '—',
+          up: (d.delta_pct_30d ?? 0) >= 0,
+        }))
+        setItems(live)
+      })
+      .catch(() => { /* keep fallback */ })
+  }, [])
+
+  const doubled = [...items, ...items] // seamless loop
   return (
     <div
       style={{
@@ -72,7 +96,7 @@ function Ticker() {
             animation: 'wsTickerScroll 40s linear infinite',
           }}
         >
-          {items.map((item, i) => (
+          {doubled.map((item, i) => (
             <span
               key={i}
               style={{ display: 'flex', alignItems: 'center', gap: 8, fontFamily: '"IBM Plex Mono", monospace', fontSize: 10 }}
@@ -80,9 +104,11 @@ function Ticker() {
               <span style={{ color: '#B8975A', fontWeight: 600 }}>{item.ref}</span>
               <span style={{ color: '#8a8070' }}>·</span>
               <span style={{ color: '#e8e2d4' }}>{item.price}</span>
-              <span style={{ color: item.up ? '#4EB87A' : '#E05A5A' }}>
-                {item.up ? '▲' : '▼'} {item.delta}
-              </span>
+              {item.delta !== '—' && (
+                <span style={{ color: item.up ? '#4EB87A' : '#E05A5A' }}>
+                  {item.up ? '▲' : '▼'} {item.delta}
+                </span>
+              )}
             </span>
           ))}
         </div>
