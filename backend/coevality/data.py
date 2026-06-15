@@ -20,6 +20,14 @@ SOURCES = {
         "name": "Bob's Watches — Rolex Serial Numbers",
         "url": "https://www.bobswatches.com/rolex-serial-numbers",
     },
+    "iws": {
+        "name": "Italian Watch Spotter — Guida ai Daytona vintage 4 cifre",
+        "url": "https://italianwatchspotter.com/vintage-rolex-daytonas-guide/?lang=en",
+    },
+    "goldammer": {
+        "name": "Goldammer — Reference Guide: early Rolex Daytona (1963-88)",
+        "url": "https://goldammer.me/blogs/articles/reference-guide-rolex-daytona",
+    },
 }
 
 # --- Seriale (lettera iniziale) → anno di produzione (range, consenso) --------
@@ -38,10 +46,32 @@ SERIAL_YEAR: dict[str, tuple[int, int]] = {
     "A": (1998, 1999),
     "P": (2000, 2000),
     "K": (2000, 2001),
+    # Anni 2000 (per referenze come 116520, fino ai seriali casuali ~2010)
+    "Y": (2002, 2003),
+    "F": (2003, 2004),
+    "D": (2005, 2006),
+    "Z": (2006, 2007),
+    "M": (2007, 2008),
+    "V": (2008, 2009),
+    "G": (2010, 2010),
 }
 
 # Lettere mai usate da Rolex su orologi (riservate a Tudor o non emesse).
 SERIAL_NEVER_USED = set("BIJOQ")
+
+# --- Seriale NUMERICO (pre-1987) → anno: (seriale iniziale, anno) ordinati ----
+# Per i Daytona vintage (6239/6263/6265). Fonte: Bob's Watches.
+# NB: nel 1976-77 Rolex saltò da ~4,15M a ~5,0M (range 4,3-4,8M riservato ai
+# ricambi di servizio). Tolleranza ±1-2 anni.
+NUMERIC_SERIAL: list[tuple[int, int]] = [
+    (516000, 1960), (643000, 1961), (744000, 1962), (824000, 1963),
+    (1008000, 1964), (1100000, 1965), (1200000, 1966), (1538000, 1967),
+    (1752000, 1968), (1900000, 1969), (2241000, 1970), (2589000, 1971),
+    (2890000, 1972), (3200000, 1973), (3567000, 1974), (3862000, 1975),
+    (4115000, 1976), (5000000, 1977), (5400000, 1978), (5737000, 1979),
+    (6434000, 1980), (6850000, 1981), (7100000, 1982), (7400000, 1983),
+    (8070000, 1984), (8614000, 1985), (8900000, 1986), (9400000, 1987),
+]
 
 
 def _v(label, description, yf, yt, conf):
@@ -148,6 +178,87 @@ REFERENCES: dict[str, dict] = {
                     _v("Set scatola era 16520", "Scatola/controscatola Rolex del periodo (es. box 'Daytona' con etichetta interna/codice). Da verificare il codice esatto per l'anno.", 1988, 2000, "bassa"),
                 ],
             },
+        ],
+    },
+
+    "6239": {
+        "model": "Rolex Cosmograph Daytona ref. 6239",
+        "production_from": 1963,
+        "production_to": 1969,
+        "components": [
+            {"component": "Pulsanti (pushers)", "icon": "radio_button_unchecked", "sources": ["iws", "goldammer"], "note": "I 6239 hanno pulsanti a pompa, non a vite.",
+             "variants": [_v("A pompa (pump)", "Pulsanti cronografici a pompa, non avvitati.", 1963, 1969, "alta")]},
+            {"component": "Ghiera (scala tachimetrica)", "icon": "lens", "sources": ["iws", "goldammer"], "note": None,
+             "variants": [_v("Acciaio, tachimetro inciso", "Ghiera in acciaio con scala tachimetrica incisa (varianti di base e 'exotic').", 1963, 1969, "alta")]},
+            {"component": "Calibro", "icon": "settings", "sources": ["iws", "goldammer"], "note": None,
+             "variants": [_v("Valjoux 72 (manuale)", "Cronografo a carica manuale Valjoux cal. 72.", 1963, 1969, "alta")]},
+            {"component": "Quadrante", "icon": "radio_button_checked", "sources": ["iws", "goldammer"], "note": "I quadranti 'Paul Newman' (esotici, Singer) sono molto ricercati e coevi solo a una parte della produzione.",
+             "variants": [
+                 _v("Standard 'Cosmograph'", "Quadrante standard a tre contatori.", 1963, 1969, "alta"),
+                 _v("Esotico 'Paul Newman'", "Quadrante esotico Singer (Art Déco), montato su parte della produzione.", 1965, 1969, "media"),
+             ]},
+            {"component": "Bracciale", "icon": "watch", "sources": ["iws"], "note": "Da verificare il riferimento e i terminali coevi.",
+             "variants": [_v("Oyster rivettato / folded (7835/7836)", "Bracciali Oyster del periodo, spesso poi sostituiti con maglie solide.", 1963, 1969, "media")]},
+        ],
+    },
+
+    "6263": {
+        "model": "Rolex Cosmograph Daytona ref. 6263",
+        "production_from": 1971,
+        "production_to": 1988,
+        "components": [
+            {"component": "Pulsanti (pushers)", "icon": "radio_button_unchecked", "sources": ["iws", "goldammer"], "note": "Caratteristica chiave del 6263: pulsanti a vite.",
+             "variants": [_v("A vite (screw-down)", "Pulsanti cronografici avvitati, cassa Oyster impermeabile.", 1971, 1988, "alta")]},
+            {"component": "Ghiera (scala tachimetrica)", "icon": "lens", "sources": ["iws", "goldammer"], "note": "Il 6263 monta la ghiera acrilica nera (vs. acciaio del 6265).",
+             "variants": [_v("Acrilica nera (plexi)", "Ghiera fissa in acrilico nero con scala tachimetrica.", 1971, 1988, "alta")]},
+            {"component": "Calibro", "icon": "settings", "sources": ["iws", "goldammer"], "note": None,
+             "variants": [_v("Valjoux 727 (manuale)", "Cronografo a carica manuale Valjoux cal. 727.", 1971, 1988, "alta")]},
+            {"component": "Quadrante", "icon": "radio_button_checked", "sources": ["iws", "goldammer"], "note": "I 'Paul Newman' sul 6263 sono coevi alla prima parte della produzione.",
+             "variants": [
+                 _v("Standard 'Cosmograph'", "Quadrante standard a tre contatori.", 1971, 1988, "alta"),
+                 _v("Esotico 'Paul Newman'", "Quadrante esotico, montato sui primi anni di produzione.", 1971, 1973, "media"),
+             ]},
+            {"component": "Bracciale", "icon": "watch", "sources": ["iws"], "note": "Verificare riferimento e terminali coevi all'anno.",
+             "variants": [_v("Oyster (folded/solido del periodo)", "Bracciale Oyster coevo; primi esemplari folded, poi maglie solide.", 1971, 1988, "media")]},
+        ],
+    },
+
+    "6265": {
+        "model": "Rolex Cosmograph Daytona ref. 6265",
+        "production_from": 1971,
+        "production_to": 1988,
+        "components": [
+            {"component": "Pulsanti (pushers)", "icon": "radio_button_unchecked", "sources": ["iws", "goldammer"], "note": None,
+             "variants": [_v("A vite (screw-down)", "Pulsanti cronografici avvitati, cassa Oyster.", 1971, 1988, "alta")]},
+            {"component": "Ghiera (scala tachimetrica)", "icon": "lens", "sources": ["iws", "goldammer"], "note": "Il 6265 monta la ghiera in acciaio (vs. acrilica del 6263).",
+             "variants": [_v("Acciaio inox, tachimetro inciso", "Ghiera in acciaio lucido con scala tachimetrica incisa.", 1971, 1988, "alta")]},
+            {"component": "Calibro", "icon": "settings", "sources": ["iws", "goldammer"], "note": None,
+             "variants": [_v("Valjoux 727 (manuale)", "Cronografo a carica manuale Valjoux cal. 727.", 1971, 1988, "alta")]},
+            {"component": "Quadrante", "icon": "radio_button_checked", "sources": ["iws", "goldammer"], "note": None,
+             "variants": [
+                 _v("Standard 'Cosmograph'", "Quadrante standard a tre contatori.", 1971, 1988, "alta"),
+                 _v("Esotico 'Paul Newman'", "Quadrante esotico dei primi anni di produzione.", 1971, 1973, "media"),
+             ]},
+            {"component": "Bracciale", "icon": "watch", "sources": ["iws"], "note": "Verificare riferimento e terminali coevi.",
+             "variants": [_v("Oyster (folded/solido del periodo)", "Bracciale Oyster coevo all'anno.", 1971, 1988, "media")]},
+        ],
+    },
+
+    "116520": {
+        "model": "Rolex Cosmograph Daytona ref. 116520",
+        "production_from": 2000,
+        "production_to": 2016,
+        "components": [
+            {"component": "Calibro", "icon": "settings", "sources": ["bobs"], "note": "Primo Daytona con movimento di manifattura Rolex.",
+             "variants": [_v("Cal. 4130 (manifattura Rolex, automatico)", "Cronografo automatico in-house, sostituisce il Zenith 4030.", 2000, 2016, "alta")]},
+            {"component": "Ghiera (scala tachimetrica)", "icon": "lens", "sources": ["bobs"], "note": None,
+             "variants": [_v("Acciaio, tachimetro inciso (400)", "Ghiera in acciaio con scala tachimetrica incisa per 400 unità.", 2000, 2016, "alta")]},
+            {"component": "Bracciale", "icon": "watch", "sources": ["bobs"], "note": None,
+             "variants": [_v("Oyster 78590 (SEL, Oysterlock)", "Bracciale Oyster a terminali solidi con fermaglio Oysterlock.", 2000, 2016, "alta")]},
+            {"component": "Materiale luminescente", "icon": "light_mode", "sources": ["bobs"], "note": None,
+             "variants": [_v("Super-LumiNova", "Indici e lancette a Super-LumiNova.", 2000, 2016, "alta")]},
+            {"component": "Quadrante", "icon": "radio_button_checked", "sources": ["bobs"], "note": "Indici applicati; minori revisioni nel corso della produzione (proporzioni contatori, dettagli stampa).",
+             "variants": [_v("Indici applicati (Super-LumiNova)", "Quadrante a indici applicati luminescenti; piccole revisioni grafiche nel tempo.", 2000, 2016, "media")]},
         ],
     },
 }

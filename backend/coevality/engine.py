@@ -1,7 +1,10 @@
 """Motore di coevità: stima l'anno dal seriale e filtra i componenti coevi."""
+import re
 from urllib.parse import quote_plus
 
-from .data import SERIAL_YEAR, SERIAL_NEVER_USED, REFERENCES, SOURCES
+from .data import SERIAL_YEAR, SERIAL_NEVER_USED, NUMERIC_SERIAL, REFERENCES, SOURCES
+
+_LETTER_SERIAL_RE = re.compile(r"^[A-Z]\d{5,7}$")
 from .models import (
     Source, ComponentVariant, ComponentResult, SerialEstimate, CoevalityResult,
 )
@@ -16,29 +19,52 @@ _DISCLAIMER = (
 
 
 def estimate_year(serial: str) -> SerialEstimate:
-    s = (serial or "").strip().upper()
-    letter = next((c for c in s if c.isalpha()), None)
-    if not letter:
+    s = (serial or "").strip().upper().replace(" ", "")
+
+    # --- Caso 1: seriale NUMERICO puro (vintage, pre-1987) ---
+    if s.isdigit():
+        n = int(s)
+        year = None
+        for start, y in NUMERIC_SERIAL:
+            if n >= start:
+                year = y
+            else:
+                break
+        if year is None:
+            return SerialEstimate(
+                serial=s, sequential=True,
+                note="Seriale numerico fuori dall'intervallo coperto (1960-1987).",
+            )
         return SerialEstimate(
-            serial=s, sequential=False,
-            note="Nessun prefisso-lettera riconosciuto. I Rolex moderni (post ~2010) "
-                 "hanno seriali casuali e non databili dal numero.",
+            serial=s, year_from=year, year_to=min(1987, year + 1), sequential=True,
+            note=f"Seriale numerico {n:,} → circa {year} (consenso collezionisti, ±1-2 anni).",
         )
-    if letter in SERIAL_NEVER_USED:
+
+    # --- Caso 2: prefisso-lettera classico (1987-~2010), formato Lettera+cifre ---
+    if _LETTER_SERIAL_RE.match(s):
+        letter = s[0]
+        if letter in SERIAL_NEVER_USED:
+            return SerialEstimate(
+                serial=s, letter=letter, sequential=False,
+                note=f"La lettera '{letter}' non è usata da Rolex per i seriali: verificare il numero.",
+            )
+        rng = SERIAL_YEAR.get(letter)
+        if rng:
+            span = f"{rng[0]}" if rng[0] == rng[1] else f"{rng[0]}-{rng[1]}"
+            return SerialEstimate(
+                serial=s, letter=letter, year_from=rng[0], year_to=rng[1], sequential=True,
+                note=f"Prefisso '{letter}' → circa {span} (consenso collezionisti, ±1-2 anni).",
+            )
         return SerialEstimate(
             serial=s, letter=letter, sequential=False,
-            note=f"La lettera '{letter}' non è usata da Rolex per i seriali: verificare il numero.",
+            note=f"Prefisso '{letter}' fuori dal periodo coperto: anno non stimabile.",
         )
-    rng = SERIAL_YEAR.get(letter)
-    if not rng:
-        return SerialEstimate(
-            serial=s, letter=letter, sequential=False,
-            note=f"Prefisso '{letter}' fuori dal periodo coperto (1987-2001) o seriale casuale: anno non stimabile.",
-        )
-    span = f"{rng[0]}" if rng[0] == rng[1] else f"{rng[0]}-{rng[1]}"
+
+    # --- Caso 3: seriale casuale moderno (~2010+) o non riconosciuto ---
     return SerialEstimate(
-        serial=s, letter=letter, year_from=rng[0], year_to=rng[1], sequential=True,
-        note=f"Prefisso '{letter}' → circa {span} (consenso collezionisti, ±1-2 anni).",
+        serial=s, sequential=False,
+        note="Seriale non sequenziale: i Rolex dal ~2010 hanno seriali casuali, "
+             "non databili dal numero. La coevità non è applicabile a questo seriale.",
     )
 
 
