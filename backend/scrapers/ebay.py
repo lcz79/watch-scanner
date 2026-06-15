@@ -3,11 +3,14 @@ Scraper reale per eBay Italia.
 Usa Playwright, filtra categoria Orologi da polso (31387).
 """
 import re
+import asyncio
 from datetime import datetime
 from playwright.async_api import BrowserContext
+from bs4 import BeautifulSoup
 from models.schemas import WatchListing
 from utils.logger import get_logger
 from utils.watch_filter import is_watch_listing
+from utils import scraping_api
 
 logger = get_logger("scraper.ebay")
 
@@ -31,7 +34,72 @@ def _parse_price(text: str) -> float | None:
         return None
 
 
+def _img_from(el) -> str | None:
+    if not el:
+        return None
+    img = el.get("src") or el.get("data-src") or ""
+    if (not img or img.startswith("data:")) and el.get("srcset"):
+        img = el.get("srcset").split(",")[0].strip().split(" ")[0]
+    return img if img.startswith("http") else None
+
+
+def _parse_html_listings(html: str, reference: str) -> list[WatchListing]:
+    """Estrae i listing dall'HTML statico (percorso Scraping API)."""
+    soup = BeautifulSoup(html, "lxml")
+    listings: list[WatchListing] = []
+    for li in soup.select(".srp-river-results li"):
+        a = li.select_one('a[href*="/itm/"]')
+        if not a:
+            continue
+        url = (a.get("href") or "").split("?")[0]
+        if not url or "/itm/123456" in url:
+            continue
+        price_el = li.select_one('.s-item__price, [class*="price"]')
+        title_el = li.select_one('.s-item__title, [class*="title"], h3')
+        cond_el = li.select_one('.SECONDARY_INFO, [class*="condition"]')
+        loc_el = li.select_one('[class*="location"], [class*="country"]')
+        price_text = price_el.get_text(strip=True) if price_el else ""
+        title = (title_el.get_text(strip=True)[:100] if title_el else "")
+        price = _parse_price(price_text)
+        if not price or price < 1500:
+            continue
+        if not is_watch_listing(title, "", price):
+            continue
+        cond_text = cond_el.get_text(strip=True).lower() if cond_el else ""
+        condition = next((v for k, v in CONDITION_MAP.items() if k in cond_text), "unknown")
+        listings.append(WatchListing(
+            source="ebay", reference=reference, price=price, currency="EUR",
+            seller="Venditore eBay", url=url, condition=condition,
+            scraped_at=datetime.now(),
+            location=(loc_el.get_text(strip=True) if loc_el else "Italia"),
+            description=title,
+            image_url=_img_from(li.select_one('.s-item__image img, img')),
+        ))
+    listings.sort(key=lambda x: x.price)
+    return listings
+
+
+async def _scrape_via_api(reference: str) -> list[WatchListing]:
+    url = f"https://www.ebay.it/sch/31387/i.html?_nkw={reference}&_sop=15&_ipg=60&LH_BIN=1"
+    html = await asyncio.to_thread(scraping_api.fetch_rendered_html, url)
+    if not html:
+        return []
+    listings = _parse_html_listings(html, reference)
+    logger.info(f"eBay (Scraping API): {len(listings)} listing per {reference}")
+    return listings
+
+
 async def scrape(reference: str, context: BrowserContext) -> list[WatchListing]:
+    # Scraping API se configurata (stesso blocco datacenter di Chrono24).
+    if scraping_api.is_enabled():
+        try:
+            api_listings = await _scrape_via_api(reference)
+            if api_listings:
+                return api_listings
+            logger.warning("eBay: Scraping API 0 risultati — fallback a Playwright diretto")
+        except Exception as e:
+            logger.error(f"eBay Scraping API error: {e}")
+
     page = await context.new_page()
     listings = []
     try:

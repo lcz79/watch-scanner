@@ -168,8 +168,9 @@ def _extract_image_from_ad(ad: dict) -> str | None:
         if isinstance(first, str):
             return first if first.startswith("http") else None
         if isinstance(first, dict):
-            # forme dirette
-            uri = first.get("uri") or first.get("secureuri") or first.get("url")
+            # forme dirette (Subito Hades usa cdn_base_url)
+            uri = (first.get("cdn_base_url") or first.get("uri")
+                   or first.get("secureuri") or first.get("url"))
             if not uri:
                 # forma con varianti di scala: prende la più grande disponibile
                 scales = first.get("scale") or first.get("scales") or []
