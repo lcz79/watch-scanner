@@ -70,9 +70,9 @@ async def _scrape_attempt(page, reference: str) -> tuple[list, int, str]:
         "Accept-Language": "it-IT,it;q=0.9,en;q=0.8",
         "Referer": "https://www.google.com/",
     })
-    resp = await page.goto(url, timeout=40000, wait_until="domcontentloaded")
+    resp = await page.goto(url, timeout=25000, wait_until="domcontentloaded")
     status = resp.status if resp else 0
-    await page.wait_for_timeout(8000)
+    await page.wait_for_timeout(4000)
 
     raw_links = await page.evaluate("""
         () => Array.from(document.querySelectorAll('a[href*="--id"]'))
@@ -125,14 +125,14 @@ async def scrape(reference: str, context: BrowserContext) -> list[WatchListing]:
     listings = []
     try:
         logger.info(f"Chrono24: scraping {reference}")
-        for attempt in range(3):
+        for attempt in range(2):
             if attempt > 0:
-                await asyncio.sleep(3)
-                logger.debug(f"Chrono24 retry {attempt+1}/3 per {reference}")
+                await asyncio.sleep(2)
+                logger.debug(f"Chrono24 retry {attempt+1}/2 per {reference}")
             listings, status, preview = await _scrape_attempt(page, reference)
             if listings:
                 break
-            logger.warning(f"Chrono24: 0 risultati (tentativo {attempt+1}/3) | status={status} | preview={preview[:200]}")
+            logger.warning(f"Chrono24: 0 risultati (tentativo {attempt+1}/2) | status={status} | preview={preview[:200]}")
 
         logger.info(f"Chrono24: {len(listings)} listing trovati per {reference}")
     except Exception as e:

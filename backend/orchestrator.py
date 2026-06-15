@@ -11,6 +11,11 @@ from utils.logger import get_logger
 
 logger = get_logger("orchestrator")
 
+# Budget massimo (secondi) per ciascun agente. Vincolo UX: la ricerca non deve
+# mai superare il minuto. Oltre questa soglia l'agente viene annullato e si
+# tengono i risultati già arrivati dagli altri.
+AGENT_DEADLINE_SECONDS = 35
+
 # Istanze singleton degli agenti
 _agents = {
     "marketplace": MarketplaceAgent(),
@@ -81,14 +86,22 @@ async def run_scan(query: WatchQuery) -> ScanResult:
 
     logger.info(f"[{scan_id}] Starting scan | ref={query.reference} | agents={list(_agents.keys())}")
 
+    # Deadline globale per agente: garantisce che la ricerca resti sotto il
+    # minuto anche se una fonte è lenta/bloccata (es. Chrono24 dietro Cloudflare).
+    # Oltre il budget l'agente viene annullato e si usano i risultati parziali.
     tasks = {name: agent.run(query) for name, agent in _agents.items()}
-    raw_results = await asyncio.gather(*tasks.values(), return_exceptions=True)
+    raw_results = await asyncio.gather(
+        *[asyncio.wait_for(c, timeout=AGENT_DEADLINE_SECONDS) for c in tasks.values()],
+        return_exceptions=True,
+    )
 
     all_listings: list[WatchListing] = []
     agents_used: list[str] = []
 
     for agent_name, result in zip(tasks.keys(), raw_results):
-        if isinstance(result, Exception):
+        if isinstance(result, asyncio.TimeoutError):
+            logger.warning(f"[{scan_id}] Agent '{agent_name}' oltre {AGENT_DEADLINE_SECONDS}s — annullato, uso risultati parziali")
+        elif isinstance(result, Exception):
             logger.error(f"[{scan_id}] Agent '{agent_name}' failed: {result}")
         else:
             all_listings.extend(result)

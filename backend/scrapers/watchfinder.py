@@ -76,8 +76,8 @@ async def scrape(reference: str, context: BrowserContext) -> list[WatchListing]:
     try:
         url = f"{_BASE_URL}?q={reference}"
         logger.info(f"Watchfinder: scraping {reference} → {url}")
-        await page.goto(url, timeout=45000, wait_until="domcontentloaded")
-        await page.wait_for_timeout(6000)  # attendi hydration React
+        await page.goto(url, timeout=25000, wait_until="domcontentloaded")
+        await page.wait_for_timeout(3500)  # attendi hydration React
 
         # Watchfinder usa React: i card di listing vengono renderizzati
         # con classi variabili; cerchiamo pattern stabili nei link e nel DOM.
