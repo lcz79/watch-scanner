@@ -8,6 +8,7 @@ export default function Sidebar() {
     { to: '/',         icon: 'grid_view',             label: 'Home' },
     { to: '/search',   icon: 'search',                label: t.marketFeed },
     { to: '/auctions', icon: 'gavel',                 label: t.auctionsNav },
+    { to: '/coevality', icon: 'fact_check',           label: 'Coevità' },
     { to: '/alerts',   icon: 'notifications',         label: t.priceAlerts },
     { to: '/agents',   icon: 'auto_graph',            label: t.analytics },
     { to: '/catalog',  icon: 'menu_book',             label: t.portfolio },

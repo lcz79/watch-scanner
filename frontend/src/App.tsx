@@ -10,6 +10,7 @@ import AuctionsPage from './pages/AuctionsPage'
 import CatalogPage from './pages/CatalogPage'
 import EncyclopediaDetailPage from './pages/EncyclopediaDetailPage'
 import VerificationPage from './pages/VerificationPage'
+import CoevalityPage from './pages/CoevalityPage'
 import OptOutPage from './pages/OptOutPage'
 import SplashGate, { useSplashGate } from './components/SplashGate'
 import { useLang } from './lib/lang'
@@ -275,6 +276,7 @@ function AnimatedRoutes() {
           <Route path="/catalog"  element={<CatalogPage />} />
           <Route path="/encyclopedia/:reference" element={<EncyclopediaDetailPage />} />
           <Route path="/verify"   element={<VerificationPage />} />
+          <Route path="/coevality" element={<CoevalityPage />} />
           <Route path="/opt-out"  element={<OptOutPage />} />
         </Routes>
       </motion.div>

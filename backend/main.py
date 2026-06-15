@@ -19,6 +19,7 @@ from analytics.recommender import analyze_reference as _analyze_reference, get_r
 from verification.router import router as verification_router
 from auctions.router import router as auctions_router
 from encyclopedia.router import router as encyclopedia_router
+from coevality.router import router as coevality_router
 
 logger = get_logger("main")
 settings = get_settings()
@@ -115,6 +116,7 @@ app.add_middleware(
 app.include_router(verification_router)
 app.include_router(auctions_router)
 app.include_router(encyclopedia_router)
+app.include_router(coevality_router)
 
 
 @app.get("/")

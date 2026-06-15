@@ -179,3 +179,35 @@ export const getAuctionRefreshStatus = () =>
 export const triggerAuctionRefresh = () =>
   api.post<{ status: string; message: string }>('/auctions/refresh')
     .then(r => r.data)
+
+// ── Controllo Coevità ───────────────────────────────────────────────────────
+export interface CoevalVariant {
+  label: string; description: string; year_from: number; year_to: number; confidence: string
+}
+export interface CoevalSource { name: string; url: string }
+export interface CoevalComponent {
+  component: string; icon: string
+  coeval: CoevalVariant[]; other_variants: CoevalVariant[]
+  note: string | null; sources: CoevalSource[]
+}
+export interface SerialEstimate {
+  serial: string; letter: string | null
+  year_from: number | null; year_to: number | null
+  sequential: boolean; note: string
+}
+export interface CoevalityResult {
+  reference: string; model: string
+  production_from: number; production_to: number
+  serial_estimate: SerialEstimate
+  components: CoevalComponent[]
+  disclaimer: string
+}
+export interface CoevalityRef {
+  reference: string; model: string; production_from: number; production_to: number
+}
+
+export const checkCoevality = (serial: string, reference = '16520') =>
+  api.get<CoevalityResult>('/coevality/check', { params: { serial, reference } }).then(r => r.data)
+
+export const getCoevalityReferences = () =>
+  api.get<CoevalityRef[]>('/coevality/references').then(r => r.data)
