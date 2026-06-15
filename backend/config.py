@@ -55,6 +55,14 @@ class Settings(BaseSettings):
     # Opzionale: https://apify.com
     apify_api_key: str = ""
 
+    # --- Scraping API (bypass Cloudflare per Chrono24 da IP datacenter) ---
+    # Servizio che instrada via proxy residenziali e risolve la challenge.
+    # provider supportati: "scraperapi" (https://www.scraperapi.com) o "zenrows".
+    # Imposta la chiave in backend/.env: SCRAPER_API_KEY=...
+    scraper_api_key: str = ""
+    scraper_api_provider: str = "scraperapi"
+    scraper_api_country: str = "it"
+
     # --- Rate limiting ---
     scraper_delay_seconds: float = 2.0
     max_retries: int = 3

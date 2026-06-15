@@ -8,11 +8,15 @@ import asyncio
 import random
 from datetime import datetime
 from playwright.async_api import async_playwright, BrowserContext
+from bs4 import BeautifulSoup
 from models.schemas import WatchListing
 from utils.logger import get_logger
 from utils.watch_filter import is_watch_listing
+from utils import scraping_api
 
 logger = get_logger("scraper.chrono24")
+
+_BASE = "https://www.chrono24.it"
 
 _USER_AGENTS = [
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
@@ -119,7 +123,70 @@ async def _scrape_attempt(page, reference: str) -> tuple[list, int, str]:
     return listings, status, preview
 
 
+def _parse_html_listings(html: str, reference: str) -> list[WatchListing]:
+    """Estrae i listing dall'HTML statico (percorso Scraping API). Stessa logica
+    del percorso Playwright ma con BeautifulSoup."""
+    soup = BeautifulSoup(html, "lxml")
+    listings: list[WatchListing] = []
+    seen: set[str] = set()
+    for a in soup.select('a[href*="--id"]'):
+        text = a.get_text("\n", strip=True)
+        if "€" not in text:
+            continue
+        href = a.get("href") or ""
+        if href.startswith("/"):
+            href = _BASE + href
+        if not href.startswith("http") or href in seen:
+            continue
+        seen.add(href)
+        price = _parse_price(text)
+        if not price or price < 1500:
+            continue
+        if not is_watch_listing(text, "", price):
+            continue
+        lines = [l.strip() for l in text.split('\n') if l.strip() and '€' not in l and 'Vai alla' not in l and 'scheda' not in l and len(l.strip()) > 2]
+        title = lines[0] if lines else reference
+        description = lines[1] if len(lines) > 1 else ""
+        country_match = re.search(r'\b([A-Z]{2})\b', text)
+        location = country_match.group(1) if country_match else ""
+        img_el = a.find("img")
+        img = ""
+        if img_el:
+            img = img_el.get("src") or img_el.get("data-src") or ""
+            if (not img or img.startswith("data:")) and img_el.get("srcset"):
+                img = img_el.get("srcset").split(",")[0].strip().split(" ")[0]
+        listings.append(WatchListing(
+            source="chrono24", reference=reference, price=price, currency="EUR",
+            seller=title, url=href, condition=_parse_condition(text),
+            scraped_at=datetime.now(), location=location, description=description or title,
+            image_url=(img if img.startswith("http") else None),
+        ))
+    return listings
+
+
+async def _scrape_via_api(reference: str) -> list[WatchListing]:
+    """Percorso Scraping API: bypassa Cloudflare via proxy residenziale."""
+    url = f"{_BASE}/search/index.htm?query={reference}&dosearch=1&resultview=list"
+    html = await asyncio.to_thread(scraping_api.fetch_rendered_html, url)
+    if not html:
+        return []
+    listings = _parse_html_listings(html, reference)
+    logger.info(f"Chrono24 (Scraping API): {len(listings)} listing per {reference}")
+    return listings
+
+
 async def scrape(reference: str, context: BrowserContext) -> list[WatchListing]:
+    # Se è configurata una Scraping API, usala: bypassa il blocco Cloudflare che
+    # colpisce l'IP datacenter del server. Fallback a Playwright diretto se 0/errore.
+    if scraping_api.is_enabled():
+        try:
+            api_listings = await _scrape_via_api(reference)
+            if api_listings:
+                return api_listings
+            logger.warning("Chrono24: Scraping API 0 risultati — fallback a Playwright diretto")
+        except Exception as e:
+            logger.error(f"Chrono24 Scraping API error: {e}")
+
     page = await context.new_page()
     await page.add_init_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
     listings = []
