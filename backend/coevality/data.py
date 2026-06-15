@@ -28,6 +28,22 @@ SOURCES = {
         "name": "Goldammer — Reference Guide: early Rolex Daytona (1963-88)",
         "url": "https://goldammer.me/blogs/articles/reference-guide-rolex-daytona",
     },
+    "subref": {
+        "name": "Professional Watches — Submariner Reference Guide",
+        "url": "https://professionalwatches.com/rolex-submariner-reference-guide/",
+    },
+    "mono_sub": {
+        "name": "Monochrome — Submariner, le referenze a 5 cifre",
+        "url": "https://monochrome-watches.com/rolex-submariner-history-part-3-the-5-digit-references/",
+    },
+    "gmt_fratello": {
+        "name": "Fratello — Rolex GMT-Master History",
+        "url": "https://www.fratellowatches.com/fasten-your-seatbelts-rolex-gmt-master-history/",
+    },
+    "gmt_wind": {
+        "name": "Wind Vintage — Collector's Guide: GMT-Master 1675",
+        "url": "https://www.windvintage.com/blog/collectors-guide-the-rolex-gmt-master-reference-1675-in-steel",
+    },
 }
 
 # --- Seriale (lettera iniziale) → anno di produzione (range, consenso) --------
@@ -259,6 +275,141 @@ REFERENCES: dict[str, dict] = {
              "variants": [_v("Super-LumiNova", "Indici e lancette a Super-LumiNova.", 2000, 2016, "alta")]},
             {"component": "Quadrante", "icon": "radio_button_checked", "sources": ["bobs"], "note": "Indici applicati; minori revisioni nel corso della produzione (proporzioni contatori, dettagli stampa).",
              "variants": [_v("Indici applicati (Super-LumiNova)", "Quadrante a indici applicati luminescenti; piccole revisioni grafiche nel tempo.", 2000, 2016, "media")]},
+        ],
+    },
+
+    # ===================== SUBMARINER =====================
+    "5513": {
+        "model": "Rolex Submariner ref. 5513 (no-date)",
+        "production_from": 1962, "production_to": 1989,
+        "components": [
+            {"component": "Quadrante", "icon": "radio_button_checked", "sources": ["subref", "mono_sub"], "note": "Evoluzione gilt → matte → glossy con contorni in oro bianco.",
+             "variants": [
+                 _v("Gilt (dorato)", "Quadrante lucido con scritte dorate (prime serie).", 1962, 1967, "media"),
+                 _v("Matte", "Quadrante opaco con stampa bianca.", 1967, 1984, "alta"),
+                 _v("Glossy, contorni oro bianco", "Quadrante lucido con indici cerchiati in oro bianco (ultime serie).", 1984, 1989, "alta"),
+             ]},
+            {"component": "Calibro", "icon": "settings", "sources": ["subref"], "note": None,
+             "variants": [_v("Cal. 1520 / 1530 (automatico, no data)", "Movimento automatico senza datario.", 1962, 1989, "alta")]},
+            {"component": "Materiale luminescente", "icon": "light_mode", "sources": ["subref"], "note": None,
+             "variants": [_v("Tritio", "Indici e lancette al tritio per tutta la produzione.", 1962, 1989, "alta")]},
+            {"component": "Ghiera (insert)", "icon": "lens", "sources": ["subref"], "note": "Insert graduata 60'; varianti di stampa nel tempo.",
+             "variants": [_v("Insert graduata in alluminio", "Lunetta girevole con insert graduata.", 1962, 1989, "media")]},
+        ],
+    },
+    "1680": {
+        "model": "Rolex Submariner Date ref. 1680",
+        "production_from": 1969, "production_to": 1980,
+        "components": [
+            {"component": "Quadrante", "icon": "radio_button_checked", "sources": ["subref", "mono_sub"], "note": "Il 'Red Submariner' (scritta rossa) è coevo solo alle prime serie.",
+             "variants": [
+                 _v("Red Submariner (scritta rossa)", "Scritta 'Submariner' in rosso, prime serie.", 1969, 1975, "media"),
+                 _v("Scritta bianca", "Scritta 'Submariner' in bianco (serie successive).", 1975, 1980, "alta"),
+             ]},
+            {"component": "Calibro", "icon": "settings", "sources": ["subref"], "note": None,
+             "variants": [_v("Cal. 1575 (automatico, data)", "Primo Submariner con datario.", 1969, 1980, "alta")]},
+            {"component": "Materiale luminescente", "icon": "light_mode", "sources": ["subref"], "note": None,
+             "variants": [_v("Tritio", "Indici e lancette al tritio.", 1969, 1980, "alta")]},
+        ],
+    },
+    "16800": {
+        "model": "Rolex Submariner Date ref. 16800 (transitional)",
+        "production_from": 1979, "production_to": 1988,
+        "components": [
+            {"component": "Cristallo", "icon": "crop_square", "sources": ["subref", "mono_sub"], "note": None,
+             "variants": [_v("Zaffiro", "Introduce il vetro zaffiro e l'impermeabilità a 300 m.", 1979, 1988, "alta")]},
+            {"component": "Quadrante", "icon": "radio_button_checked", "sources": ["subref", "mono_sub"], "note": "Da matte a glossy con contorni in oro bianco.",
+             "variants": [
+                 _v("Matte", "Quadrante opaco (prime serie).", 1979, 1984, "media"),
+                 _v("Glossy, contorni oro bianco", "Quadrante lucido con indici cerchiati in oro bianco.", 1984, 1988, "alta"),
+             ]},
+            {"component": "Calibro", "icon": "settings", "sources": ["subref"], "note": None,
+             "variants": [_v("Cal. 3035 (automatico, quickset)", "Datario a regolazione rapida.", 1979, 1988, "alta")]},
+            {"component": "Materiale luminescente", "icon": "light_mode", "sources": ["subref"], "note": None,
+             "variants": [_v("Tritio", "Indici e lancette al tritio.", 1979, 1988, "alta")]},
+        ],
+    },
+    "16610": {
+        "model": "Rolex Submariner Date ref. 16610",
+        "production_from": 1988, "production_to": 2010,
+        "components": [
+            {"component": "Calibro", "icon": "settings", "sources": ["subref"], "note": None,
+             "variants": [_v("Cal. 3135 (automatico)", "Movimento automatico con datario.", 1988, 2010, "alta")]},
+            {"component": "Materiale luminescente", "icon": "light_mode", "sources": ["subref", "mono_sub"], "note": "Transizione tritio → Luminova → Super-LumiNova; cambia la dicitura sul quadrante.",
+             "variants": [
+                 _v("Tritio — 'SWISS - T<25'", "Indici al tritio; dicitura 'T<25'.", 1988, 1998, "alta"),
+                 _v("Luminova — 'SWISS'", "Breve fase Luminova; dicitura 'SWISS' soltanto.", 1998, 2000, "media"),
+                 _v("Super-LumiNova — 'SWISS MADE'", "Super-LumiNova; dicitura 'SWISS MADE'.", 2000, 2010, "alta"),
+             ]},
+            {"component": "Quadrante", "icon": "radio_button_checked", "sources": ["subref"], "note": None,
+             "variants": [_v("Glossy, contorni oro bianco", "Quadrante lucido con indici cerchiati in oro bianco.", 1988, 2010, "alta")]},
+            {"component": "Bracciale", "icon": "watch", "sources": ["subref"], "note": "Terminali solidi (SEL) introdotti nelle serie più recenti.",
+             "variants": [
+                 _v("Oyster terminali cavi", "Bracciale Oyster con terminali stampati (prime serie).", 1988, 2003, "media"),
+                 _v("Oyster SEL (terminali solidi)", "Terminali solidi, fermaglio Oysterlock.", 2003, 2010, "media"),
+             ]},
+        ],
+    },
+
+    # ===================== GMT-MASTER =====================
+    "1675": {
+        "model": "Rolex GMT-Master ref. 1675",
+        "production_from": 1959, "production_to": 1980,
+        "components": [
+            {"component": "Quadrante", "icon": "radio_button_checked", "sources": ["gmt_fratello", "gmt_wind"], "note": "Da gilt a matte attorno al 1966.",
+             "variants": [
+                 _v("Gilt (dorato)", "Quadrante lucido con scritte dorate (prime serie).", 1959, 1966, "media"),
+                 _v("Matte", "Quadrante opaco con stampa bianca.", 1966, 1980, "alta"),
+             ]},
+            {"component": "Crown guards (protezioni corona)", "icon": "shield", "sources": ["gmt_wind"], "note": "Le 'PCG' (pointed crown guards) sono coeve solo alle prime serie.",
+             "variants": [
+                 _v("PCG — pointed crown guards", "Protezioni corona appuntite (prime serie).", 1959, 1966, "media"),
+                 _v("Protezioni arrotondate", "Protezioni corona arrotondate (serie successive).", 1966, 1980, "alta"),
+             ]},
+            {"component": "Ghiera (insert)", "icon": "lens", "sources": ["gmt_fratello"], "note": "Insert 24h 'Pepsi'; primissime serie con ghiera in bachelite.",
+             "variants": [
+                 _v("Insert bachelite", "Ghiera in bachelite (primissime serie).", 1959, 1960, "bassa"),
+                 _v("Insert alluminio 'Pepsi'", "Insert 24h in alluminio rosso/blu.", 1960, 1980, "alta"),
+             ]},
+            {"component": "Calibro", "icon": "settings", "sources": ["gmt_fratello"], "note": None,
+             "variants": [_v("Cal. 1565 / 1575 (automatico, GMT)", "Movimento automatico con lancetta 24h.", 1959, 1980, "alta")]},
+            {"component": "Materiale luminescente", "icon": "light_mode", "sources": ["gmt_fratello"], "note": None,
+             "variants": [_v("Tritio", "Indici e lancette al tritio.", 1959, 1980, "alta")]},
+        ],
+    },
+    "16750": {
+        "model": "Rolex GMT-Master ref. 16750 (transitional)",
+        "production_from": 1981, "production_to": 1988,
+        "components": [
+            {"component": "Calibro", "icon": "settings", "sources": ["gmt_fratello"], "note": None,
+             "variants": [_v("Cal. 3075 (automatico, quickset)", "Introduce il datario a regolazione rapida.", 1981, 1988, "alta")]},
+            {"component": "Quadrante", "icon": "radio_button_checked", "sources": ["gmt_fratello"], "note": "Da matte a glossy con indici in oro bianco (~1986).",
+             "variants": [
+                 _v("Matte", "Quadrante opaco con indici stampati.", 1981, 1986, "media"),
+                 _v("Glossy, indici oro bianco", "Quadrante lucido con indici cerchiati in oro bianco.", 1986, 1988, "alta"),
+             ]},
+            {"component": "Materiale luminescente", "icon": "light_mode", "sources": ["gmt_fratello"], "note": None,
+             "variants": [_v("Tritio", "Indici e lancette al tritio.", 1981, 1988, "alta")]},
+        ],
+    },
+    "16710": {
+        "model": "Rolex GMT-Master II ref. 16710",
+        "production_from": 1989, "production_to": 2007,
+        "components": [
+            {"component": "Calibro", "icon": "settings", "sources": ["gmt_fratello", "bobs"], "note": "Ultime serie con cal. 3186.",
+             "variants": [
+                 _v("Cal. 3185 (automatico, GMT II)", "Movimento GMT-Master II.", 1989, 2005, "alta"),
+                 _v("Cal. 3186", "Aggiornamento di movimento nelle ultime serie.", 2005, 2007, "media"),
+             ]},
+            {"component": "Ghiera (insert)", "icon": "lens", "sources": ["gmt_fratello"], "note": "Disponibile con insert Pepsi, Coke o nera (a seconda della configurazione).",
+             "variants": [_v("Insert 'Pepsi' / 'Coke' / nera", "Insert 24h bicolore (rosso/blu o rosso/nero) o nera.", 1989, 2007, "alta")]},
+            {"component": "Materiale luminescente", "icon": "light_mode", "sources": ["gmt_fratello"], "note": "Transizione tritio → Super-LumiNova.",
+             "variants": [
+                 _v("Tritio — 'SWISS - T<25'", "Indici al tritio; dicitura 'T<25'.", 1989, 1998, "alta"),
+                 _v("Super-LumiNova — 'SWISS MADE'", "Super-LumiNova; dicitura 'SWISS MADE'.", 1999, 2007, "alta"),
+             ]},
+            {"component": "Quadrante", "icon": "radio_button_checked", "sources": ["gmt_fratello"], "note": None,
+             "variants": [_v("Glossy, indici oro bianco", "Quadrante lucido con indici cerchiati in oro bianco.", 1989, 2007, "alta")]},
         ],
     },
 }
