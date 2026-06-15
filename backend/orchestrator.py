@@ -124,6 +124,21 @@ async def run_scan(query: WatchQuery) -> ScanResult:
     if query.max_price:
         listings = [l for l in listings if l.price <= query.max_price]
 
+    # Garantisce che OGNI listing abbia una foto: se manca, la risolve dal
+    # reference (il resolver ha cache interna e fallback a PLACEHOLDER su timeout).
+    # Risolve una sola volta per reference per non moltiplicare le richieste HTTP.
+    try:
+        from utils.watch_images import get_watch_image
+        _img_cache: dict[str, str] = {}
+        for l in listings:
+            if not l.image_url:
+                key = l.reference or query.reference
+                if key not in _img_cache:
+                    _img_cache[key] = get_watch_image(key, brand=query.brand or "")
+                l.image_url = _img_cache[key]
+    except Exception as e:
+        logger.debug(f"[{scan_id}] image backfill error: {e}")
+
     best = listings[0] if listings else None
     duration = (datetime.now() - start_time).total_seconds()
 

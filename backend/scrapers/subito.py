@@ -155,6 +155,31 @@ def _extract_condition(ad: dict) -> str:
     return "unknown"
 
 
+def _extract_image_from_ad(ad: dict) -> str | None:
+    """
+    Estrae la PRIMA immagine dell'annuncio dal JSON Hades di Subito.
+    La struttura varia: tenta diverse forme note e ritorna solo URL http validi.
+    """
+    imgs = ad.get("images") or ad.get("image") or []
+    if isinstance(imgs, str):
+        return imgs if imgs.startswith("http") else None
+    if isinstance(imgs, list) and imgs:
+        first = imgs[0]
+        if isinstance(first, str):
+            return first if first.startswith("http") else None
+        if isinstance(first, dict):
+            # forme dirette
+            uri = first.get("uri") or first.get("secureuri") or first.get("url")
+            if not uri:
+                # forma con varianti di scala: prende la più grande disponibile
+                scales = first.get("scale") or first.get("scales") or []
+                if isinstance(scales, list) and scales and isinstance(scales[-1], dict):
+                    uri = scales[-1].get("secureuri") or scales[-1].get("uri")
+            if uri and str(uri).startswith("http"):
+                return uri
+    return None
+
+
 # ---------------------------------------------------------------------------
 # Relevance check
 # ---------------------------------------------------------------------------
@@ -329,6 +354,7 @@ async def scrape(reference: str, context=None) -> list[WatchListing]:
                                 scraped_at=datetime.now(),
                                 location=city,
                                 description=title,
+                                image_url=_extract_image_from_ad(ad),
                             )
                         )
 

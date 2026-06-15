@@ -11,6 +11,54 @@ from .database import bulk_insert_results, count_results
 
 logger = get_logger("auctions")
 
+
+def _normalize_scraped(rows: list) -> list:
+    """
+    Applica il fallback/normalizzazione di lot_url a una lista di lotti
+    scrappati, così nessun record entra nel DB con un link rotto o assente.
+    """
+    try:
+        from .seed_data import normalize_lot_url
+    except Exception:
+        return rows or []
+
+    out = []
+    for row in (rows or []):
+        if not isinstance(row, dict):
+            continue
+        row["lot_url"] = normalize_lot_url(
+            row.get("lot_url"),
+            house=row.get("auction_house", ""),
+            brand=row.get("brand"),
+            reference=row.get("reference"),
+            model=row.get("model"),
+        )
+        out.append(row)
+    return out
+
+
+def ensure_seeded() -> int:
+    """
+    Garantisce che il DB aste contenga almeno i dati seed (storici + recenti).
+    Idempotente: salta i duplicati. Ritorna il numero di record inseriti.
+    Chiamato all'avvio dello scheduler così le aste concluse sono SEMPRE
+    disponibili anche se gli scraper live falliscono (anti-bot / rete).
+    """
+    try:
+        from .seed_data import get_seed_data
+
+        data = get_seed_data()
+        inserted = bulk_insert_results(data)
+        total = count_results()
+        logger.info(
+            f"Auction seed: {inserted} nuovi record su {len(data)} disponibili. "
+            f"Totale DB: {total}"
+        )
+        return inserted
+    except Exception as e:
+        logger.error(f"Auction seed: errore durante il seed iniziale: {e}")
+        return 0
+
 # Stato ultimo refresh — accessibile dall'endpoint
 _refresh_status: dict = {
     "last_run": None,
@@ -44,6 +92,14 @@ async def run_full_refresh() -> dict:
 
     logger.info("Auction scheduler: avvio refresh completo aste")
 
+    # Garantisce che i dati seed (storici + recenti) siano presenti anche se
+    # il DB è vuoto e tutti gli scraper live falliscono.
+    try:
+        stats["seed"] = {"inserted": ensure_seeded()}
+    except Exception as e:
+        logger.error(f"Seed durante refresh error: {e}")
+        stats["seed"] = {"error": str(e)}
+
     # ── 1. Invaluable: ricerca lotti per referenze chiave ──────────────────
     try:
         from .scrapers.invaluable_scraper import search_reference
@@ -61,6 +117,7 @@ async def run_full_refresh() -> dict:
             except Exception as e:
                 logger.error(f"Invaluable search '{ref}' error: {e}")
 
+        invaluable_results = _normalize_scraped(invaluable_results)
         inserted_inv = bulk_insert_results(invaluable_results)
         stats["invaluable"] = {"found": len(invaluable_results), "inserted": inserted_inv}
         logger.info(f"Invaluable: {len(invaluable_results)} trovati, {inserted_inv} inseriti")
@@ -75,7 +132,7 @@ async def run_full_refresh() -> dict:
     try:
         from .scrapers.phillips_scraper import scrape_recent_results as phillips_scrape
 
-        phillips_results = await phillips_scrape(limit=50)
+        phillips_results = _normalize_scraped(await phillips_scrape(limit=50))
         inserted_phi = bulk_insert_results(phillips_results)
         stats["phillips"] = {"found": len(phillips_results), "inserted": inserted_phi}
         logger.info(f"Phillips: {len(phillips_results)} trovati, {inserted_phi} inseriti")
@@ -90,7 +147,7 @@ async def run_full_refresh() -> dict:
     try:
         from .scrapers.christies_scraper import scrape_recent_results as christies_scrape
 
-        christies_results = await christies_scrape(limit=50)
+        christies_results = _normalize_scraped(await christies_scrape(limit=50))
         inserted_chr = bulk_insert_results(christies_results)
         stats["christies"] = {"found": len(christies_results), "inserted": inserted_chr}
         logger.info(f"Christie's: {len(christies_results)} trovati, {inserted_chr} inseriti")
@@ -105,7 +162,7 @@ async def run_full_refresh() -> dict:
     try:
         from .scrapers.sotherby_scraper import scrape_recent_results as sothebys_scrape
 
-        sothebys_results = await sothebys_scrape(limit=50)
+        sothebys_results = _normalize_scraped(await sothebys_scrape(limit=50))
         inserted_sot = bulk_insert_results(sothebys_results)
         stats["sothebys"] = {"found": len(sothebys_results), "inserted": inserted_sot}
         logger.info(f"Sotheby's: {len(sothebys_results)} trovati, {inserted_sot} inseriti")
@@ -120,7 +177,7 @@ async def run_full_refresh() -> dict:
     try:
         from .scrapers.antiquorum_scraper import scrape_recent_results as antiquorum_scrape
 
-        antiquorum_results = await antiquorum_scrape(limit=40)
+        antiquorum_results = _normalize_scraped(await antiquorum_scrape(limit=40))
         inserted_ant = bulk_insert_results(antiquorum_results)
         stats["antiquorum"] = {"found": len(antiquorum_results), "inserted": inserted_ant}
         logger.info(f"Antiquorum: {len(antiquorum_results)} trovati, {inserted_ant} inseriti")
@@ -135,7 +192,7 @@ async def run_full_refresh() -> dict:
     try:
         from .scrapers.cambi_scraper import scrape_recent_results as cambi_scrape
 
-        cambi_results = await cambi_scrape(limit=40)
+        cambi_results = _normalize_scraped(await cambi_scrape(limit=40))
         inserted_cam = bulk_insert_results(cambi_results)
         stats["cambi"] = {"found": len(cambi_results), "inserted": inserted_cam}
         logger.info(f"Cambi: {len(cambi_results)} trovati, {inserted_cam} inseriti")
@@ -150,7 +207,7 @@ async def run_full_refresh() -> dict:
     try:
         from .scrapers.bolaffi_scraper import scrape_recent_results as bolaffi_scrape
 
-        bolaffi_results = await bolaffi_scrape(limit=40)
+        bolaffi_results = _normalize_scraped(await bolaffi_scrape(limit=40))
         inserted_bol = bulk_insert_results(bolaffi_results)
         stats["bolaffi"] = {"found": len(bolaffi_results), "inserted": inserted_bol}
         logger.info(f"Bolaffi: {len(bolaffi_results)} trovati, {inserted_bol} inseriti")
@@ -197,6 +254,11 @@ async def start_auction_scheduler():
         f"Auction scheduler: avviato. Prima run tra {_INITIAL_DELAY_SECONDS}s, "
         f"poi ogni {_INTERVAL_SECONDS // 3600}h"
     )
+
+    # Seed immediato all'avvio: garantisce che le aste concluse (storiche +
+    # recenti 2024-2026) siano subito disponibili, indipendentemente dal fatto
+    # che gli scraper live riescano a girare.
+    ensure_seeded()
 
     # Calcola prossima run
     from datetime import datetime, timedelta

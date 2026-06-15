@@ -53,6 +53,13 @@ async def scrape(reference: str, context: BrowserContext) -> list[WatchListing]:
                     const sellerEl = li.querySelector('[class*="seller"]');
                     const condEl = li.querySelector('.SECONDARY_INFO, [class*="condition"]');
                     const locEl = li.querySelector('[class*="location"], [class*="country"]');
+                    const imgEl = li.querySelector('.s-item__image img, img');
+                    let img = '';
+                    if (imgEl) {
+                        img = imgEl.getAttribute('src') || imgEl.getAttribute('data-src') || '';
+                        if ((!img || img.startsWith('data:')) && imgEl.getAttribute('srcset'))
+                            img = imgEl.getAttribute('srcset').split(',')[0].trim().split(' ')[0];
+                    }
                     return {
                         url: a ? a.href.split('?')[0] : '',
                         price_text: priceEl ? priceEl.innerText.trim() : '',
@@ -60,6 +67,7 @@ async def scrape(reference: str, context: BrowserContext) -> list[WatchListing]:
                         seller: sellerEl ? sellerEl.innerText.trim().split('(')[0].trim() : 'Venditore eBay',
                         condition: condEl ? condEl.innerText.trim().toLowerCase() : '',
                         location: locEl ? locEl.innerText.trim() : 'Italia',
+                        image: img,
                     }
                 })
         """)
@@ -92,6 +100,7 @@ async def scrape(reference: str, context: BrowserContext) -> list[WatchListing]:
                 scraped_at=datetime.now(),
                 location=item.get("location", "Italia"),
                 description=item["title"],
+                image_url=(item.get("image") if str(item.get("image", "")).startswith("http") else None),
             ))
 
         listings.sort(key=lambda x: x.price)

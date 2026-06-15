@@ -196,6 +196,47 @@ def is_watch_listing(title: str, description: str = "", price: float = 0) -> boo
     return score >= 5
 
 
+# ---------------------------------------------------------------------------
+# Classificazione "full set" (scatola + garanzia/documenti) vs "solo orologio"
+# Allineata alle keyword usate dal frontend (matchesSetFilter in SearchPage.tsx).
+# ---------------------------------------------------------------------------
+
+FULLSET_KEYWORDS = [
+    "full set", "full kit", "set completo", "completo di tutto", "tutto originale",
+    "box and papers", "box & papers", "box papers", "b&p", "b+p",
+    "con scatola", "con garanzia", "scatola e garanzia",
+    "con documenti", "documenti", "con papers", "papers", "with papers",
+    "warranty card", "warranty", "garanzia", "cartellino",
+    "punzonata", "timbrata", "con tagliando", "completo", "complete",
+]
+
+# Se presenti, l'annuncio NON è un full set anche se contiene una keyword positiva.
+FULLSET_NEGATIONS = [
+    "solo orologio", "watch only", "head only", "senza scatola", "senza garanzia",
+    "senza documenti", "no papers", "no box", "without box", "without papers",
+    "no garanzia", "priva di garanzia", "manca garanzia", "manca scatola",
+]
+
+
+def _strip_accents(text: str) -> str:
+    import unicodedata
+    return "".join(
+        c for c in unicodedata.normalize("NFD", text)
+        if unicodedata.category(c) != "Mn"
+    )
+
+
+def is_full_set(text: str) -> bool:
+    """
+    True se l'annuncio è un orologio completo di scatola e garanzia/documenti.
+    Case- e accent-insensitive. Le negazioni hanno priorità sulle keyword positive.
+    """
+    norm = _strip_accents((text or "").lower())
+    if any(_strip_accents(neg) in norm for neg in FULLSET_NEGATIONS):
+        return False
+    return any(_strip_accents(kw) in norm for kw in FULLSET_KEYWORDS)
+
+
 def filter_watch_listings(listings: list, min_price: float = MIN_WATCH_PRICE) -> list:
     """
     Filtra una lista di WatchListing, tenendo solo gli orologi completi.

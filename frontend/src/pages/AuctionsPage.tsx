@@ -11,6 +11,7 @@ import {
 } from '../lib/api'
 import type { AuctionResult, UpcomingAuction } from '../types'
 import { fmtEur, fmtEurRange } from '../lib/currency'
+import { isValidHttpUrl } from './SearchPage'
 
 // ---------------------------------------------------------------------------
 // Static house definitions
@@ -144,8 +145,9 @@ function RecordRow({ record, index }: { record: AuctionResult; index: number }) 
   const ratio = hammer && estimate ? hammer / estimate : null
   const pct = ratio ? ((ratio - 1) * 100).toFixed(0) : null
 
-  const href = record.lot_url ||
-    `https://www.google.com/search?q=${encodeURIComponent(`${record.auction_house} ${record.brand} ${record.reference || record.model} ${record.sale_date?.slice(0, 4) || ''}`)}`
+  const href = isValidHttpUrl(record.lot_url)
+    ? record.lot_url as string
+    : `https://www.google.com/search?q=${encodeURIComponent(`${record.auction_house} ${record.brand} ${record.reference || record.model} ${record.sale_date?.slice(0, 4) || ''}`)}`
 
   return (
     <a href={href} target="_blank" rel="noopener noreferrer"
@@ -468,7 +470,7 @@ export default function AuctionsPage() {
               </div>
               <div className="divide-y divide-zinc-800">
                 {recentData.results.slice(0, 5).map((lot, i) => {
-                  const href = lot.lot_url || `https://www.google.com/search?q=${encodeURIComponent(`${lot.auction_house} ${lot.brand} ${lot.reference || lot.model}`)}`
+                  const href = isValidHttpUrl(lot.lot_url) ? lot.lot_url as string : `https://www.google.com/search?q=${encodeURIComponent(`${lot.auction_house} ${lot.brand} ${lot.reference || lot.model}`)}`
                   return (
                     <a key={lot.id ?? i} href={href} target="_blank" rel="noopener noreferrer"
                       className="px-4 py-3 flex items-center justify-between gap-3 hover:bg-zinc-800/40 transition-colors group">

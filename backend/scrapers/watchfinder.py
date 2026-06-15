@@ -92,7 +92,14 @@ async def scrape(reference: str, context: BrowserContext) -> list[WatchListing]:
                     // Filtra link di navigazione senza prezzo
                     const hasPrice = /[£€$]\\s*[\\d,\\.]+/.test(text);
                     if (href && text && hasPrice) {
-                        results.push({ href, text: text.trim() });
+                        const imgEl = card.querySelector('img');
+                        let img = '';
+                        if (imgEl) {
+                            img = imgEl.getAttribute('src') || imgEl.getAttribute('data-src') || '';
+                            if ((!img || img.startsWith('data:')) && imgEl.getAttribute('srcset'))
+                                img = imgEl.getAttribute('srcset').split(',')[0].trim().split(' ')[0];
+                        }
+                        results.push({ href, text: text.trim(), img });
                     }
                 });
                 return results;
@@ -157,6 +164,7 @@ async def scrape(reference: str, context: BrowserContext) -> list[WatchListing]:
                     scraped_at=datetime.now(),
                     location=location,
                     description=description or title,
+                    image_url=(item.get("img") if str(item.get("img", "")).startswith("http") else None),
                 )
             )
 

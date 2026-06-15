@@ -77,7 +77,16 @@ async def _scrape_attempt(page, reference: str) -> tuple[list, int, str]:
     raw_links = await page.evaluate("""
         () => Array.from(document.querySelectorAll('a[href*="--id"]'))
             .filter(a => a.innerText.includes('€'))
-            .map(a => ({ href: a.href, text: a.innerText.trim() }))
+            .map(a => {
+                const img = a.querySelector('img');
+                let src = '';
+                if (img) {
+                    src = img.getAttribute('src') || img.getAttribute('data-src') || '';
+                    if ((!src || src.startsWith('data:')) && img.getAttribute('srcset'))
+                        src = img.getAttribute('srcset').split(',')[0].trim().split(' ')[0];
+                }
+                return { href: a.href, text: a.innerText.trim(), img: src };
+            })
     """)
 
     listings = []
@@ -98,10 +107,12 @@ async def _scrape_attempt(page, reference: str) -> tuple[list, int, str]:
         description = lines[1] if len(lines) > 1 else ""
         country_match = re.search(r'\b([A-Z]{2})\b', text)
         location = country_match.group(1) if country_match else ""
+        img = item.get("img") or ""
         listings.append(WatchListing(
             source="chrono24", reference=reference, price=price, currency="EUR",
             seller=title, url=href, condition=_parse_condition(text),
             scraped_at=datetime.now(), location=location, description=description or title,
+            image_url=(img if img.startswith("http") else None),
         ))
 
     preview = (await page.content())[:200]

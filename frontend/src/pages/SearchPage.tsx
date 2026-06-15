@@ -56,8 +56,27 @@ const EU_COUNTRIES = new Set(['IT','DE','FR','ES','NL','BE','AT','CH','PT','PL',
   'SE','NO','DK','FI','CZ','HU','RO','GR','SK','HR','SI','LU','IE','BG','LV',
   'LT','EE','MT','CY','GB','UK'])
 const ITALY_KEYWORDS = ['italia','italy','it','roma','milano','torino','napoli','firenze']
-const FULLSET_KEYWORDS = ['full set','box and papers','con scatola','con garanzia',
-  'scatola e garanzia','b&p','b+p','completo','complete','box papers']
+const FULLSET_KEYWORDS = ['full set','full kit','set completo','completo di tutto',
+  'tutto originale','box and papers','box & papers','box papers','b&p','b+p',
+  'con scatola','con garanzia','scatola e garanzia','con documenti','documenti',
+  'con papers','papers','with papers','warranty card','warranty','garanzia',
+  'cartellino','punzonata','timbrata','con tagliando','completo','complete']
+
+// Se presenti, l'annuncio NON è full set anche se contiene una keyword positiva.
+const WATCHONLY_KEYWORDS = ['solo orologio','watch only','head only','senza scatola',
+  'senza garanzia','senza documenti','no papers','no box','without box',
+  'without papers','no garanzia','priva di garanzia','manca garanzia','manca scatola']
+
+// Rimuove accenti e normalizza per un match robusto IT/EN.
+function normalizeText(s: string): string {
+  return s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
+}
+
+function isFullSet(l: WatchListing): boolean {
+  const text = normalizeText((l.description || '') + ' ' + (l.seller || ''))
+  if (WATCHONLY_KEYWORDS.some(k => text.includes(normalizeText(k)))) return false
+  return FULLSET_KEYWORDS.some(k => text.includes(normalizeText(k)))
+}
 
 function matchesGeoFilter(l: WatchListing, f: 'all'|'italy'|'europe') {
   if (f === 'all') return true
@@ -68,8 +87,7 @@ function matchesGeoFilter(l: WatchListing, f: 'all'|'italy'|'europe') {
 
 function matchesSetFilter(l: WatchListing, f: 'all'|'fullset'|'watchonly') {
   if (f === 'all') return true
-  const text = ((l.description || '') + ' ' + (l.seller || '')).toLowerCase()
-  const has = FULLSET_KEYWORDS.some(k => text.includes(k))
+  const has = isFullSet(l)
   return f === 'fullset' ? has : !has
 }
 
@@ -88,8 +106,10 @@ function computeClientStats(listings: WatchListing[], reference: string): Market
   const p75 = pct(clean, 0.75)
   return {
     reference,
-    min_price: clean[0],
-    max_price: clean[clean.length - 1],
+    // min/max dal set COMPLETO (non quello ripulito dagli outlier): il prezzo
+    // più basso mostrato corrisponde sempre a un listing realmente visibile.
+    min_price: prices[0],
+    max_price: prices[prices.length - 1],
     median_price: Math.round(median),
     mean_price: Math.round(mean),
     p25: Math.round(p25),
@@ -124,6 +144,23 @@ function deriveInvestment(listings: WatchListing[], stats: MarketStats): Investm
 // ---------------------------------------------------------------------------
 // Auction Values Panel
 // ---------------------------------------------------------------------------
+
+// Link aste robusti: se lot_url manca o non è valido, fallback a ricerca Google.
+export function isValidHttpUrl(u: string | null | undefined): boolean {
+  if (!u) return false
+  try { const p = new URL(u); return p.protocol === 'http:' || p.protocol === 'https:' }
+  catch { return false }
+}
+
+export function auctionLink(
+  r: { lot_url?: string | null; auction_house?: string; sale_date?: string },
+  reference: string,
+): string {
+  if (isValidHttpUrl(r.lot_url)) return r.lot_url as string
+  const year = r.sale_date?.slice(0, 4) ?? ''
+  const q = `${r.auction_house ?? ''} ${reference} ${year}`.trim()
+  return `https://www.google.com/search?q=${encodeURIComponent(q)}`
+}
 
 function AuctionValuesPanel({
   reference, results, total, lang,
@@ -191,12 +228,10 @@ function AuctionValuesPanel({
               </span>
               <span className="text-zinc-600 text-[9px]">·</span>
               <span className="font-mono-data text-[9px] text-zinc-500">{fmtDate(latest.sale_date)}</span>
-              {latest.lot_url && (
-                <a href={latest.lot_url} target="_blank" rel="noopener noreferrer"
-                  className="text-zinc-600 hover:text-yellow-400 transition-colors ml-auto">
-                  <span className="material-symbols-outlined text-[12px]">open_in_new</span>
-                </a>
-              )}
+              <a href={auctionLink(latest, reference)} target="_blank" rel="noopener noreferrer"
+                className="text-zinc-600 hover:text-yellow-400 transition-colors ml-auto">
+                <span className="material-symbols-outlined text-[12px]">open_in_new</span>
+              </a>
             </div>
             {latest.estimate_low_chf && (
               <p className="font-mono-data text-[10px] text-zinc-600 mt-1">
@@ -248,7 +283,7 @@ function AuctionValuesPanel({
               return (
                 <a
                   key={r.id ?? i}
-                  href={r.lot_url || `https://www.google.com/search?q=${encodeURIComponent(`${r.auction_house} ${reference} ${r.sale_date?.slice(0,4)}`)}`}
+                  href={auctionLink(r, reference)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-3 p-2.5 bg-zinc-800/30 hover:bg-zinc-800/70 border border-zinc-800 hover:border-zinc-700 transition-colors group rounded"
@@ -300,10 +335,29 @@ function AuctionValuesPanel({
 // Listing card
 // ---------------------------------------------------------------------------
 
+// Foto di fallback reali (Unsplash) — una card non mostra MAI l'icona vuota.
+const GENERIC_WATCH_PHOTO = 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&q=80&fit=crop'
+const BRAND_WATCH_PHOTOS: Record<string, string> = {
+  rolex:    'https://images.unsplash.com/photo-1587836374828-4dbafa94cf0e?w=600&q=80&fit=crop',
+  omega:    'https://images.unsplash.com/photo-1548171915-e79a380a2a4b?w=600&q=80&fit=crop',
+  patek:    'https://images.unsplash.com/photo-1523170335258-f5ed11844a49?w=600&q=80&fit=crop',
+  audemars: 'https://images.unsplash.com/photo-1542496658-e33a6d0d50f6?w=600&q=80&fit=crop',
+  tudor:    'https://images.unsplash.com/photo-1495856458515-0637185db551?w=600&q=80&fit=crop',
+}
+
+function fallbackWatchPhoto(listing: WatchListing): string {
+  const hay = ((listing.seller || '') + ' ' + (listing.description || '') + ' ' + (listing.reference || '')).toLowerCase()
+  for (const [brand, url] of Object.entries(BRAND_WATCH_PHOTOS)) {
+    if (hay.includes(brand)) return url
+  }
+  return GENERIC_WATCH_PHOTO
+}
+
 function ListingCard({ listing, isBest, isBestDeal = false }: {
   listing: WatchListing; isBest: boolean; isBestDeal?: boolean
 }) {
   const { t, lang } = useLang()
+  const [imgSrc, setImgSrc] = useState(listing.image_url || fallbackWatchPhoto(listing))
   const sourceColor = SOURCE_COLORS[listing.source] || 'text-zinc-400 bg-zinc-400/10 border-zinc-400/20'
   const isSocial = ['instagram', 'vision_ai', 'tiktok', 'instagram_story'].includes(listing.source)
   const conditionLabels = lang === 'it'
@@ -335,20 +389,20 @@ function ListingCard({ listing, isBest, isBestDeal = false }: {
         </div>
       )}
 
-      {/* Image */}
+      {/* Image — sempre una foto reale (mai icona vuota) */}
       <div className="w-48 h-48 bg-zinc-950 border border-zinc-800 overflow-hidden flex-shrink-0 flex items-center justify-center grayscale group-hover:grayscale-0 transition-all relative">
-        {listing.image_url ? (
-          <img
-            src={listing.image_url}
-            alt={listing.seller}
-            className="w-full h-full object-cover"
-            onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none'; (e.currentTarget.nextElementSibling as HTMLElement | null)?.style.setProperty('display', 'flex') }}
-          />
-        ) : null}
-        <span
-          className="material-symbols-outlined text-5xl text-zinc-700 absolute inset-0 flex items-center justify-center"
-          style={{ display: listing.image_url ? 'none' : 'flex' }}
-        >watch</span>
+        <img
+          src={imgSrc}
+          alt={listing.seller}
+          className="w-full h-full object-cover"
+          loading="lazy"
+          onError={() => {
+            const brandFallback = fallbackWatchPhoto(listing)
+            // Se l'immagine sorgente fallisce, passa al fallback di brand;
+            // se anche quello fallisce, al fallback generico.
+            setImgSrc(prev => prev !== brandFallback ? brandFallback : GENERIC_WATCH_PHOTO)
+          }}
+        />
       </div>
 
       {/* Content */}
@@ -430,8 +484,8 @@ function SubmarineRadar({ reference, lang }: { reference: string; lang: string }
         @keyframes sgTravel{ 0%,28%{transform:translateX(710px)} 54%{transform:translateX(312px)} 72%{transform:translateX(300px)} 93%,100%{transform:translateX(-150px)} }
         /* detection visuals ride with the watch, only flash while centred */
         @keyframes sgDetect{ 0%,55%{opacity:0} 60%{opacity:1} 76%{opacity:1} 82%{opacity:0} 100%{opacity:0} }
-        @keyframes sgPing2 { 0%,56%{opacity:0;transform:scale(0)} 61%{opacity:1;transform:scale(1.12)} 68%{opacity:1;transform:scale(1)} 80%{opacity:0;transform:scale(1)} 100%{opacity:0} }
-        @keyframes sgRing  { 0%,57%{r:6;opacity:0} 59%{opacity:.9} 74%{r:40;opacity:0} 100%{opacity:0} }
+        /* outgoing sonar wave: leaves the sub nose and travels to the watch */
+        @keyframes sgWaveOut { 0%,30%{opacity:0;transform:translate(0px,0px) scale(.35)} 34%{opacity:.95} 48%{opacity:.6} 56%{opacity:0;transform:translate(46px,12px) scale(1.15)} 100%{opacity:0} }
         /* echo bouncing back from the watch to the sub */
         @keyframes sgEcho  { 0%,58%{opacity:0;transform:translate(46px,12px)} 61%{opacity:1;transform:translate(46px,12px)} 69%{opacity:.9;transform:translate(0,0)} 72%{opacity:0;transform:translate(0,0)} 100%{opacity:0} }
         /* sub alarm strobe */
@@ -500,11 +554,9 @@ function SubmarineRadar({ reference, lang }: { reference: string; lang: string }
         {/* ── Watch drifting in slowly from the right ── */}
         <g style={{ animation: 'sgTravel 13s cubic-bezier(0.45,0,0.55,1) infinite' }}>
           <g transform="translate(0,130)">
-            {/* detection halo + shock ring (flash only while centred) */}
+            {/* detection halo (flash only while centred, when the wave hits) */}
             <circle cx="0" cy="0" r="38" fill="url(#sgDetectG)"
               style={{ animation: 'sgDetect 13s linear infinite' }}/>
-            <circle cx="0" cy="0" r="6" fill="none" stroke="#B8975A" strokeWidth="2"
-              style={{ animation: 'sgRing 13s linear infinite' }}/>
             {/* shadow */}
             <ellipse cx="0" cy="24" rx="24" ry="4.5" fill="rgba(0,0,0,0.35)"/>
             {/* strap */}
@@ -534,18 +586,16 @@ function SubmarineRadar({ reference, lang }: { reference: string; lang: string }
               <path d="M -30,22 L -30,30 L -22,30"/>
               <path d="M 30,22 L 30,30 L 22,30"/>
             </g>
-            {/* comic PING (nudged clear of the dial) */}
-            <g transform="translate(38,-42)" style={{ animation: 'sgPing2 13s linear infinite', transformOrigin: '38px -42px' }}>
-              <polygon points="0,-13 4,-4 13,-5 6,1 9,11 0,5 -9,11 -6,1 -13,-5 -4,-4"
-                fill="#B8975A" stroke="#e8e2d4" strokeWidth="1"/>
-              <text x="0" y="3" textAnchor="middle"
-                fontFamily='"Space Grotesk", system-ui, sans-serif' fontSize="7" fontWeight="700"
-                fill="#081223">PING</text>
-            </g>
           </g>
         </g>
 
-        {/* ── Echo bouncing back from the watch to the sub ── */}
+        {/* ── Outgoing sonar wave: from the sub nose toward the watch ── */}
+        <g transform="translate(259,118)" style={{ animation: 'sgWaveOut 13s linear infinite' }}>
+          <path d="M -4,-12 A 14,14 0 0 1 -4,12" fill="none" stroke="#B8975A" strokeWidth="2.4" strokeLinecap="round" filter="url(#sgGlow)"/>
+          <path d="M 2,-7 A 9,9 0 0 1 2,7" fill="none" stroke="#B8975A" strokeWidth="1.5" strokeLinecap="round" opacity="0.6"/>
+        </g>
+
+        {/* ── Echo bouncing back from the watch to the sub (= contatto/successo) ── */}
         <g transform="translate(259,118)" style={{ animation: 'sgEcho 13s linear infinite' }}>
           <circle cx="0" cy="0" r="3" fill="#4EB87A" filter="url(#sgGlow)"/>
           <path d="M 6,-8 A 10,10 0 0 1 6,8" fill="none" stroke="#4EB87A" strokeWidth="2" opacity="0.7"/>
@@ -742,7 +792,7 @@ export default function SearchPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const filteredListings = result ? result.listings.filter(l =>
+  const filteredListings = (result ? result.listings.filter(l =>
     matchesGeoFilter(l, filterGeo) &&
     matchesSetFilter(l, filterSet) &&
     (!filterSeller || l.seller.toLowerCase().includes(filterSeller.toLowerCase()) ||
@@ -750,16 +800,21 @@ export default function SearchPage() {
     (!filterPriceMin || l.price >= parseFloat(filterPriceMin)) &&
     (!filterPriceMax || l.price <= parseFloat(filterPriceMax)) &&
     (filterSources.size === 0 || filterSources.has(l.source))
-  ) : []
+  ) : [])
+    // Ordina per prezzo crescente: così il primo è davvero il più economico
+    // e riceve correttamente il badge "best price" (isBest={i===0}).
+    .slice().sort((a, b) => a.price - b.price)
 
   const sourceCounts = result ? result.listings.reduce((acc, l) => {
     acc[l.source] = (acc[l.source] || 0) + 1
     return acc
   }, {} as Record<string, number>) : {}
 
-  const clientStats = result && result.listings.length >= 2
-    ? computeClientStats(result.listings, result.query.reference) : null
-  const clientInvestment = clientStats ? deriveInvestment(result!.listings, clientStats) : null
+  // Statistiche calcolate sugli STESSI listing mostrati (filtrati): il "prezzo
+  // più basso" in MarketCard corrisponde sempre a un risultato visibile.
+  const clientStats = result && filteredListings.length >= 2
+    ? computeClientStats(filteredListings, result.query.reference) : null
+  const clientInvestment = clientStats ? deriveInvestment(filteredListings, clientStats) : null
   const medianForDeal = clientStats?.median_price ?? 0
 
   const { data: priceHistory = [] } = useQuery({

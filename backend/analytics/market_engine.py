@@ -61,8 +61,12 @@ def compute_market_stats(listings: list[WatchListing]) -> dict:
 
     sorted_p = sorted(cleaned_prices)
 
-    min_price = sorted_p[0]
-    max_price = sorted_p[-1]
+    # min/max dal set COMPLETO (non quello ripulito dagli outlier): così il
+    # "prezzo più basso" mostrato corrisponde sempre a un listing realmente
+    # presente nei risultati. Mediana/media/percentili restano sul set pulito.
+    sorted_all = sorted(all_prices)
+    min_price = sorted_all[0]
+    max_price = sorted_all[-1]
     median_price = statistics.median(sorted_p)
     mean_price = statistics.mean(sorted_p)
     p25 = _percentile(sorted_p, 25)

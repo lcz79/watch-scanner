@@ -18,7 +18,7 @@ from .database import (
     count_results,
 )
 from .sentiment import compute_sentiment, enrich_results
-from .calendar import get_upcoming_auctions, get_auction_houses_info
+from .calendar import get_upcoming_auctions, get_auction_houses_info, get_recently_concluded
 from .scheduler import run_full_refresh, get_refresh_status
 
 logger = get_logger("auctions")
@@ -148,6 +148,22 @@ async def get_upcoming_auctions_endpoint(
     if house:
         results = [a for a in results if house.lower() in a.get("house", "").lower()]
     return results
+
+
+@router.get("/concluded")
+async def get_concluded_endpoint(
+    days: int = Query(default=120, ge=1, le=730, description="Finestra giorni indietro"),
+) -> dict:
+    """
+    Aste appena concluse (calendario) negli ultimi `days` giorni.
+    La transizione upcoming→conclusa è automatica in base alla data odierna.
+    """
+    auctions = get_recently_concluded(days=days)
+    return {
+        "total": len(auctions),
+        "days": days,
+        "auctions": auctions,
+    }
 
 
 @router.get("/upcoming")
@@ -295,6 +311,8 @@ async def trigger_scrape(
                 return
 
             results = await scrape_recent_results(limit=lim)
+            from .scheduler import _normalize_scraped
+            results = _normalize_scraped(results)
             inserted = bulk_insert_results(results)
             logger.info(f"Scraping {src}: {len(results)} lotti trovati, {inserted} inseriti nel DB")
         except Exception as e:

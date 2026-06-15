@@ -996,6 +996,26 @@ def get_upcoming_auctions(from_date: str | None = None, include_past: bool = Fal
     return combined
 
 
+def get_recently_concluded(days: int = 120) -> list[dict]:
+    """
+    Aste appena concluse: sale con data negli ultimi `days` giorni (passate),
+    ordinate dalla più recente. Serve al frontend per mostrare le aste
+    'appena concluse' la cui transizione upcoming→conclusa è automatica
+    (basata sulla data odierna).
+    """
+    from datetime import date, timedelta
+
+    today = date.today()
+    floor = today - timedelta(days=days)
+
+    concluded = [
+        a for a in ALL_AUCTIONS
+        if a.get("date") and floor <= _safe_date(a["date"]) < today
+    ]
+    concluded.sort(key=lambda x: x.get("date", ""), reverse=True)
+    return concluded
+
+
 def _safe_date(date_str: str):
     """Parsa una data ISO senza lanciare eccezioni."""
     from datetime import date
