@@ -404,266 +404,198 @@ function ListingCard({ listing, isBest, isBestDeal = false }: {
   )
 }
 
-/* ── Submarine Sonar Hunt — modern-comic loading animation ─────────────────
-   Narrative loop (4.2s): the sub glides through the deep → fires a sonar
-   wavefront that travels toward the seabed → the wave hits a luxury watch
-   resting on the bottom (it lights up + "PING!") → an echo returns to the
-   sub → the sub's display registers the contact. Then it repeats. */
+/* ── Submarine Sonar Hunt — responsive horizontal-scroller loading anim ─────
+   The sub stays fixed on the left, scanning. The luxury watch drifts in from
+   the right along the seabed, crosses the sonar beam (lights up + "PING!"),
+   then exits left. A side-scroller reads well at any width — no squishing on
+   mobile. Driven by CSS keyframes (one shared 6.5s period keeps the watch
+   travel and the detection flash in sync). */
 function SubmarineRadar({ reference, lang }: { reference: string; lang: string }) {
-  // Forward path: sub nose → watch.  Reverse path: watch → sub nose.
-  const FWD = 'M 270,126 Q 430,150 566,206'
-  const REV = 'M 566,206 Q 430,150 270,126'
   return (
-    <div style={{ position: 'relative', width: '100%', height: 280, overflow: 'hidden', background: '#060810' }}>
+    <div className="sg-stage">
       <style>{`
-        @keyframes sgBob   { 0%,100%{transform:translate(0px,0px) rotate(-1deg)} 50%{transform:translate(4px,-7px) rotate(1deg)} }
-        @keyframes sgProp  { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
-        @keyframes sgBub   { 0%{opacity:.6;transform:translate(0,0) scale(1)} 100%{opacity:0;transform:translate(6px,-72px) scale(.3)} }
-        @keyframes sgRay   { 0%,100%{opacity:.35} 50%{opacity:.6} }
-        @keyframes sgFish  { from{transform:translateX(0)} to{transform:translateX(-880px)} }
+        .sg-stage{position:relative;width:100%;height:230px;overflow:hidden;background:#060810}
+        @media (max-width:640px){ .sg-stage{height:165px} }
+        @keyframes sgBob   { 0%,100%{transform:translate(0,0) rotate(-1.2deg)} 50%{transform:translate(3px,-6px) rotate(1.2deg)} }
+        @keyframes sgProp  { from{transform:rotate(0)} to{transform:rotate(360deg)} }
+        @keyframes sgBub   { 0%{opacity:.6;transform:translate(0,0) scale(1)} 100%{opacity:0;transform:translate(5px,-60px) scale(.3)} }
+        @keyframes sgRay   { 0%,100%{opacity:.3} 50%{opacity:.55} }
+        @keyframes sgSonar { 0%{transform:scale(.35);opacity:0} 18%{opacity:.85} 100%{transform:scale(1.7);opacity:0} }
+        @keyframes sgBed   { from{transform:translateX(0)} to{transform:translateX(-600px)} }
         @keyframes sgLabel { 0%,100%{opacity:.5} 50%{opacity:1} }
-        @media (prefers-reduced-motion: reduce){
-          [data-anim]{animation:none !important}
-        }
+        /* travel: watch crosses the beam (center) around 46% of the cycle */
+        @keyframes sgTravel{ from{transform:translateX(660px)} to{transform:translateX(-90px)} }
+        @keyframes sgDetect{ 0%,38%{opacity:0} 44%{opacity:1} 52%{opacity:1} 58%{opacity:0} 100%{opacity:0} }
+        @keyframes sgPing  { 0%,40%{opacity:0;transform:scale(0)} 45%{opacity:1;transform:scale(1.12)} 52%{opacity:1;transform:scale(1)} 60%{opacity:0;transform:scale(1)} 100%{opacity:0} }
+        @keyframes sgRing  { 0%,42%{r:6;opacity:0} 44%{opacity:.9} 60%{r:42;opacity:0} 100%{opacity:0} }
+        @media (prefers-reduced-motion: reduce){ .sg-stage *{animation:none !important} }
       `}</style>
-      <svg viewBox="0 0 800 280" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" style={{ display: 'block' }}>
+      <svg viewBox="0 0 600 240" width="100%" height="100%" preserveAspectRatio="xMidYMid slice"
+        xmlns="http://www.w3.org/2000/svg" style={{ display: 'block' }}>
         <defs>
           <linearGradient id="sgWater" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%"  stopColor="#0d1d33"/>
+            <stop offset="0%" stopColor="#0d1d33"/>
             <stop offset="55%" stopColor="#071426"/>
             <stop offset="100%" stopColor="#030914"/>
           </linearGradient>
           <linearGradient id="sgRayG" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#9fd8ff" stopOpacity="0.18"/>
+            <stop offset="0%" stopColor="#9fd8ff" stopOpacity="0.16"/>
             <stop offset="100%" stopColor="#9fd8ff" stopOpacity="0"/>
           </linearGradient>
-          <radialGradient id="sgDetect" cx="50%" cy="50%" r="50%">
+          <radialGradient id="sgDetectG" cx="50%" cy="50%" r="50%">
             <stop offset="0%" stopColor="#B8975A" stopOpacity="0.55"/>
-            <stop offset="60%" stopColor="#B8975A" stopOpacity="0.12"/>
+            <stop offset="65%" stopColor="#B8975A" stopOpacity="0.10"/>
             <stop offset="100%" stopColor="#B8975A" stopOpacity="0"/>
           </radialGradient>
-          <filter id="sgGlow"  x="-60%" y="-60%" width="220%" height="220%">
-            <feGaussianBlur stdDeviation="2.4" result="b"/>
-            <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
-          </filter>
-          <filter id="sgGlowL" x="-80%" y="-80%" width="260%" height="260%">
-            <feGaussianBlur stdDeviation="5" result="b"/>
+          <filter id="sgGlow" x="-60%" y="-60%" width="220%" height="220%">
+            <feGaussianBlur stdDeviation="2.2" result="b"/>
             <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
           </filter>
         </defs>
 
-        {/* ── Ocean ── */}
-        <rect width="800" height="280" fill="url(#sgWater)"/>
+        {/* Ocean */}
+        <rect width="600" height="240" fill="url(#sgWater)"/>
 
-        {/* God rays from the surface */}
-        {[120, 300, 470, 640].map((x, i) => (
-          <polygon key={i} data-anim
-            points={`${x},0 ${x + 60},0 ${x + 18},280 ${x - 30},280`}
+        {/* God rays */}
+        {[90, 250, 410, 540].map((x, i) => (
+          <polygon key={i}
+            points={`${x},0 ${x + 55},0 ${x + 16},240 ${x - 26},240`}
             fill="url(#sgRayG)"
-            style={{ animation: `sgRay ${4 + i}s ease-in-out ${i * 0.6}s infinite` }}/>
+            style={{ animation: `sgRay ${4 + i}s ease-in-out ${i * 0.5}s infinite` }}/>
         ))}
 
-        {/* Faint sonar grid */}
-        {Array.from({ length: 8 }, (_, i) => (
-          <line key={`h${i}`} x1="0" y1={i * 40} x2="800" y2={i * 40} stroke="rgba(184,151,90,0.04)" strokeWidth="1"/>
+        {/* Faint grid */}
+        {Array.from({ length: 7 }, (_, i) => (
+          <line key={i} x1="0" y1={i * 40} x2="600" y2={i * 40} stroke="rgba(184,151,90,0.04)" strokeWidth="1"/>
         ))}
 
-        {/* Drifting plankton / far fish silhouette */}
-        <g data-anim style={{ animation: 'sgFish 22s linear infinite' }} opacity="0.25">
-          <path d="M 840,70 q -10,-7 -20,0 q 10,7 20,0 m 0,0 l 8,-5 l 0,10 z" fill="#6f8aa8"/>
-          <path d="M 700,150 q -8,-5 -16,0 q 8,5 16,0 m 0,0 l 6,-4 l 0,8 z" fill="#6f8aa8"/>
+        {/* Scrolling seabed (two seamless copies) */}
+        <g style={{ animation: 'sgBed 14s linear infinite' }}>
+          {[0, 600].map(off => (
+            <g key={off} transform={`translate(${off},0)`}>
+              <path d="M0,196 Q100,186 200,194 Q320,204 440,190 Q520,182 600,194 L600,240 L0,240 Z"
+                fill="#0a1422" stroke="rgba(184,151,90,0.09)" strokeWidth="1"/>
+              <path d="M90,194 q7,-20 14,0 z" fill="#0e1c2e"/>
+              <path d="M118,196 q5,-26 10,0 q5,-15 9,0 z" fill="#0e1c2e"/>
+              <path d="M430,190 q8,-22 16,0 z" fill="#0e1c2e"/>
+              <circle cx="300" cy="210" r="2" fill="rgba(184,151,90,0.15)"/>
+              <circle cx="520" cy="216" r="1.5" fill="rgba(184,151,90,0.12)"/>
+            </g>
+          ))}
         </g>
 
-        {/* ── Seabed ── */}
-        <path d="M0,232 Q120,218 240,228 Q380,240 520,224 Q660,210 800,226 L800,280 L0,280 Z"
-          fill="#0a1422" stroke="rgba(184,151,90,0.10)" strokeWidth="1"/>
-        {/* coral / rocks */}
-        <path d="M120,228 q8,-22 16,0 z" fill="#0e1c2e"/>
-        <path d="M150,230 q6,-30 12,0 q6,-18 10,0 z" fill="#0e1c2e"/>
-        <path d="M690,224 q9,-26 18,0 z" fill="#0e1c2e"/>
-
-        {/* ── Sonar wavefront: travels sub → watch ── */}
-        <g opacity="0">
-          <animate attributeName="opacity" dur="4.2s" repeatCount="indefinite"
-            keyTimes="0;0.07;0.10;0.40;0.46;1" values="0;0;1;1;0;0"/>
-          {/* concentric leading arcs (open toward travel direction +x) */}
-          <g fill="none" strokeLinecap="round">
-            <path d="M 4,-11 A 13,13 0 0 1 4,11"  stroke="#B8975A" strokeWidth="3"   opacity="0.95"/>
-            <path d="M -2,-17 A 19,19 0 0 1 -2,17" stroke="#B8975A" strokeWidth="2.2" opacity="0.6"/>
-            <path d="M -8,-23 A 25,25 0 0 1 -8,23" stroke="#B8975A" strokeWidth="1.6" opacity="0.32"/>
-            <animateMotion dur="4.2s" repeatCount="indefinite" rotate="auto"
-              calcMode="spline" keyTimes="0;0.07;0.45;1" keyPoints="0;0;1;1"
-              keySplines="0 0 1 1;0.33 0 0.2 1;0 0 1 1" path={FWD}/>
-          </g>
-        </g>
-
-        {/* ── Watch on the seabed (the "catch") ── */}
-        <g transform="translate(566,206)">
-          {/* detection halo — fires when the wave arrives */}
-          <circle cx="0" cy="0" r="0" fill="url(#sgDetect)" opacity="0">
-            <animate attributeName="r" dur="4.2s" repeatCount="indefinite"
-              keyTimes="0;0.43;0.62;1" values="0;0;52;52"/>
-            <animate attributeName="opacity" dur="4.2s" repeatCount="indefinite"
-              keyTimes="0;0.43;0.5;0.62;1" values="0;0;1;0;0"/>
-          </circle>
-          {/* expanding shock ring */}
-          <circle cx="0" cy="0" r="0" fill="none" stroke="#B8975A" strokeWidth="2" opacity="0">
-            <animate attributeName="r" dur="4.2s" repeatCount="indefinite"
-              keyTimes="0;0.44;0.66;1" values="6;6;46;46"/>
-            <animate attributeName="opacity" dur="4.2s" repeatCount="indefinite"
-              keyTimes="0;0.44;0.46;0.66;1" values="0;0;0.9;0;0"/>
-          </circle>
-
-          {/* soft shadow */}
-          <ellipse cx="0" cy="26" rx="26" ry="5" fill="rgba(0,0,0,0.35)"/>
-          {/* strap */}
-          <path d="M -9,-20 L 9,-20 L 7,-30 L -7,-30 Z" fill="#0e1c2e" stroke="#B8975A" strokeWidth="1.4"/>
-          <path d="M -9,20 L 9,20 L 7,30 L -7,30 Z"     fill="#0e1c2e" stroke="#B8975A" strokeWidth="1.4"/>
-          {/* crown */}
-          <rect x="20" y="-3" width="6" height="6" rx="1" fill="#0c1a30" stroke="#B8975A" strokeWidth="1.2"/>
-          {/* case */}
-          <circle cx="0" cy="0" r="21" fill="#0c1a30" stroke="#B8975A" strokeWidth="3"/>
-          <circle cx="0" cy="0" r="15" fill="#081223" stroke="rgba(184,151,90,0.4)" strokeWidth="1"/>
-          {/* hour ticks */}
-          {Array.from({ length: 12 }, (_, i) => {
-            const a = (i * 30) * Math.PI / 180
-            return <line key={i}
-              x1={Math.sin(a) * 13} y1={-Math.cos(a) * 13}
-              x2={Math.sin(a) * 15} y2={-Math.cos(a) * 15}
-              stroke="rgba(184,151,90,0.55)" strokeWidth="1"/>
-          })}
-          {/* hands */}
-          <line x1="0" y1="0" x2="0" y2="-9" stroke="#e8e2d4" strokeWidth="1.6" strokeLinecap="round"/>
-          <line x1="0" y1="0" x2="8" y2="3"  stroke="#B8975A" strokeWidth="1.4" strokeLinecap="round"/>
-          <circle cx="0" cy="0" r="1.6" fill="#B8975A"/>
-
-          {/* reticle corner brackets — blink on detection */}
-          <g stroke="#4EB87A" strokeWidth="2" fill="none" opacity="0">
-            <animate attributeName="opacity" dur="4.2s" repeatCount="indefinite"
-              keyTimes="0;0.45;0.48;0.74;0.8;1" values="0;0;1;1;0;0"/>
-            <path d="M -34,-24 L -34,-32 L -26,-32"/>
-            <path d="M 34,-24 L 34,-32 L 26,-32"/>
-            <path d="M -34,24 L -34,32 L -26,32"/>
-            <path d="M 34,24 L 34,32 L 26,32"/>
-          </g>
-
-          {/* comic "PING!" burst */}
-          <g transform="translate(34,-40)" opacity="0">
-            <animate attributeName="opacity" dur="4.2s" repeatCount="indefinite"
-              keyTimes="0;0.46;0.49;0.66;0.72;1" values="0;0;1;1;0;0"/>
-            <g transform="scale(0)">
-              <animateTransform attributeName="transform" type="scale" dur="4.2s" repeatCount="indefinite"
-                calcMode="spline" keyTimes="0;0.46;0.53;0.66;1" values="0;0;1.1;1;1"
-                keySplines="0 0 1 1;0.2 1.4 0.3 1;0.3 0 0.6 1;0 0 1 1"/>
-              <polygon
-                points="0,-15 4,-5 15,-6 6,1 10,12 0,5 -10,12 -6,1 -15,-6 -4,-5"
+        {/* ── Watch drifting in from the right ── */}
+        <g style={{ animation: 'sgTravel 6.5s linear infinite' }}>
+          <g transform="translate(0,186)">
+            {/* detection halo + shock ring (only flash while crossing the beam) */}
+            <circle cx="0" cy="0" r="40" fill="url(#sgDetectG)"
+              style={{ animation: 'sgDetect 6.5s linear infinite' }}/>
+            <circle cx="0" cy="0" r="6" fill="none" stroke="#B8975A" strokeWidth="2"
+              style={{ animation: 'sgRing 6.5s linear infinite' }}/>
+            {/* shadow */}
+            <ellipse cx="0" cy="24" rx="24" ry="4.5" fill="rgba(0,0,0,0.35)"/>
+            {/* strap */}
+            <path d="M -8,-18 L 8,-18 L 6,-28 L -6,-28 Z" fill="#0e1c2e" stroke="#B8975A" strokeWidth="1.3"/>
+            <path d="M -8,18 L 8,18 L 6,28 L -6,28 Z"     fill="#0e1c2e" stroke="#B8975A" strokeWidth="1.3"/>
+            {/* crown */}
+            <rect x="18" y="-3" width="6" height="6" rx="1" fill="#0c1a30" stroke="#B8975A" strokeWidth="1.1"/>
+            {/* case */}
+            <circle cx="0" cy="0" r="19" fill="#0c1a30" stroke="#B8975A" strokeWidth="2.8"/>
+            <circle cx="0" cy="0" r="13.5" fill="#081223" stroke="rgba(184,151,90,0.4)" strokeWidth="1"/>
+            {/* ticks */}
+            {Array.from({ length: 12 }, (_, i) => {
+              const a = (i * 30) * Math.PI / 180
+              return <line key={i}
+                x1={Math.sin(a) * 11.5} y1={-Math.cos(a) * 11.5}
+                x2={Math.sin(a) * 13.5} y2={-Math.cos(a) * 13.5}
+                stroke="rgba(184,151,90,0.5)" strokeWidth="1"/>
+            })}
+            {/* hands */}
+            <line x1="0" y1="0" x2="0" y2="-8" stroke="#e8e2d4" strokeWidth="1.5" strokeLinecap="round"/>
+            <line x1="0" y1="0" x2="7" y2="3" stroke="#B8975A" strokeWidth="1.3" strokeLinecap="round"/>
+            <circle cx="0" cy="0" r="1.5" fill="#B8975A"/>
+            {/* reticle brackets — flash on detection */}
+            <g stroke="#4EB87A" strokeWidth="2" fill="none" style={{ animation: 'sgDetect 6.5s linear infinite' }}>
+              <path d="M -30,-22 L -30,-30 L -22,-30"/>
+              <path d="M 30,-22 L 30,-30 L 22,-30"/>
+              <path d="M -30,22 L -30,30 L -22,30"/>
+              <path d="M 30,22 L 30,30 L 22,30"/>
+            </g>
+            {/* comic PING */}
+            <g transform="translate(30,-34)" style={{ animation: 'sgPing 6.5s linear infinite', transformOrigin: '30px -34px' }}>
+              <polygon points="0,-14 4,-5 14,-6 6,1 9,11 0,5 -9,11 -6,1 -14,-6 -4,-5"
                 fill="#B8975A" stroke="#e8e2d4" strokeWidth="1"/>
               <text x="0" y="3" textAnchor="middle"
-                fontFamily='"Space Grotesk", system-ui, sans-serif' fontSize="8.5" fontWeight="700"
+                fontFamily='"Space Grotesk", system-ui, sans-serif' fontSize="7.5" fontWeight="700"
                 fill="#081223">PING</text>
             </g>
           </g>
         </g>
 
-        {/* ── Echo returning to the sub ── */}
-        <g opacity="0">
-          <animate attributeName="opacity" dur="4.2s" repeatCount="indefinite"
-            keyTimes="0;0.5;0.53;0.78;0.82;1" values="0;0;0.85;0.85;0;0"/>
-          <g fill="none" strokeLinecap="round">
-            <circle cx="0" cy="0" r="3" fill="#4EB87A" stroke="none" filter="url(#sgGlow)"/>
-            <path d="M 6,-8 A 10,10 0 0 1 6,8" stroke="#4EB87A" strokeWidth="2" opacity="0.7"/>
-            <animateMotion dur="4.2s" repeatCount="indefinite" rotate="auto"
-              calcMode="spline" keyTimes="0;0.5;0.8;1" keyPoints="0;0;1;1"
-              keySplines="0 0 1 1;0.4 0 0.3 1;0 0 1 1" path={REV}/>
+        {/* ── Submarine — fixed on the left, scanning ── */}
+        <g transform="translate(130,118)">
+          {/* sonar pulses radiating to the right toward the beam zone */}
+          <g style={{ transformOrigin: '78px 0px' }}>
+            {[0, 0.6, 1.2].map((d, i) => (
+              <path key={i} d="M 0,-24 A 24,24 0 0 1 0,24" fill="none"
+                stroke="#B8975A" strokeWidth="2.4" strokeLinecap="round"
+                transform="translate(78,0)"
+                style={{ transformOrigin: '78px 0px', animation: `sgSonar 1.8s ease-out ${d}s infinite` }}/>
+            ))}
           </g>
-        </g>
 
-        {/* ── Submarine ── */}
-        <g transform="translate(190,120)">
-          <g data-anim style={{ animation: 'sgBob 3.6s ease-in-out infinite', transformOrigin: '0px 0px' }}>
-            {/* drifting shadow on seabed */}
-            <ellipse cx="-6" cy="104" rx="78" ry="9" fill="rgba(0,0,0,0.28)"/>
-
-            {/* propeller (sensible, steady spin) */}
-            <g style={{ transformOrigin: '-92px 0px' }}>
-              <g data-anim style={{ animation: 'sgProp 0.9s linear infinite', transformOrigin: '-92px 0px' }}>
-                <ellipse cx="-92" cy="-15" rx="4.5" ry="15" fill="#B8975A" opacity="0.75" transform="rotate(-18 -92 0)"/>
-                <ellipse cx="-92" cy="15"  rx="4.5" ry="15" fill="#B8975A" opacity="0.75" transform="rotate(18 -92 0)"/>
+          <g style={{ animation: 'sgBob 3.6s ease-in-out infinite', transformOrigin: '0px 0px' }}>
+            {/* propeller */}
+            <g style={{ transformOrigin: '-78px 0px' }}>
+              <g style={{ animation: 'sgProp 0.9s linear infinite', transformOrigin: '-78px 0px' }}>
+                <ellipse cx="-78" cy="-13" rx="4" ry="13" fill="#B8975A" opacity="0.75" transform="rotate(-18 -78 0)"/>
+                <ellipse cx="-78" cy="13"  rx="4" ry="13" fill="#B8975A" opacity="0.75" transform="rotate(18 -78 0)"/>
               </g>
-              <circle cx="-92" cy="0" r="4" fill="#0d1e35" stroke="#B8975A" strokeWidth="1.5"/>
+              <circle cx="-78" cy="0" r="3.5" fill="#0d1e35" stroke="#B8975A" strokeWidth="1.4"/>
             </g>
-            {/* tail shaft */}
-            <line x1="-92" y1="0" x2="-72" y2="0" stroke="#B8975A" strokeWidth="2"/>
+            <line x1="-78" y1="0" x2="-60" y2="0" stroke="#B8975A" strokeWidth="2"/>
             {/* tail fins */}
-            <polygon points="-72,10 -90,30 -72,2"  fill="#0d1e35" stroke="#B8975A" strokeWidth="1.4"/>
-            <polygon points="-72,-10 -90,-30 -72,-2" fill="#0d1e35" stroke="#B8975A" strokeWidth="1.4"/>
-
-            {/* hull (bold comic outline) */}
-            <path d="M -76,0 Q -76,-30 -48,-30 L 64,-30 Q 96,-30 96,0 Q 96,30 64,30 L -48,30 Q -76,30 -76,0 Z"
-              fill="#0c1a30" stroke="#B8975A" strokeWidth="3"/>
-            {/* top highlight */}
-            <path d="M -46,-25 Q 30,-30 90,-12" fill="none" stroke="rgba(255,255,255,0.12)" strokeWidth="3" strokeLinecap="round"/>
-            {/* belly accent line */}
-            <path d="M -60,18 L 70,18" stroke="rgba(184,151,90,0.25)" strokeWidth="1.5"/>
-
+            <polygon points="-60,9 -76,26 -60,2"  fill="#0d1e35" stroke="#B8975A" strokeWidth="1.3"/>
+            <polygon points="-60,-9 -76,-26 -60,-2" fill="#0d1e35" stroke="#B8975A" strokeWidth="1.3"/>
+            {/* hull */}
+            <path d="M -64,0 Q -64,-26 -40,-26 L 54,-26 Q 80,-26 80,0 Q 80,26 54,26 L -40,26 Q -64,26 -64,0 Z"
+              fill="#0c1a30" stroke="#B8975A" strokeWidth="2.8"/>
+            <path d="M -38,-21 Q 26,-26 76,-10" fill="none" stroke="rgba(255,255,255,0.12)" strokeWidth="2.6" strokeLinecap="round"/>
             {/* conning tower */}
-            <rect x="-18" y="-56" width="38" height="28" rx="8" fill="#0d1e35" stroke="#B8975A" strokeWidth="2.4"/>
-            {/* periscope */}
-            <line x1="4" y1="-56" x2="4" y2="-74" stroke="#B8975A" strokeWidth="2.6"/>
-            <line x1="4" y1="-74" x2="20" y2="-74" stroke="#B8975A" strokeWidth="2.6"/>
-            <circle cx="20" cy="-74" r="3" fill="#4EB87A" filter="url(#sgGlow)"/>
-            {/* tower contact display — blinks when echo returns */}
-            <rect x="-12" y="-50" width="24" height="15" rx="2" fill="#081223" stroke="rgba(184,151,90,0.4)" strokeWidth="1"/>
-            <circle cx="0" cy="-42" r="3" fill="#4EB87A" opacity="0.2">
-              <animate attributeName="opacity" dur="4.2s" repeatCount="indefinite"
-                keyTimes="0;0.78;0.8;0.92;0.95;1" values="0.2;0.2;1;1;0.2;0.2"/>
-              <animate attributeName="r" dur="4.2s" repeatCount="indefinite"
-                keyTimes="0;0.78;0.82;0.92;1" values="2.5;2.5;4;2.5;2.5"/>
-            </circle>
-
+            <rect x="-15" y="-48" width="32" height="24" rx="7" fill="#0d1e35" stroke="#B8975A" strokeWidth="2.2"/>
+            <line x1="3" y1="-48" x2="3" y2="-62" stroke="#B8975A" strokeWidth="2.4"/>
+            <line x1="3" y1="-62" x2="17" y2="-62" stroke="#B8975A" strokeWidth="2.4"/>
+            <circle cx="17" cy="-62" r="3" fill="#4EB87A" filter="url(#sgGlow)"/>
             {/* portholes */}
-            {[-40, -10, 20].map((x, i) => (
+            {[-34, -8, 16].map((x, i) => (
               <g key={i}>
-                <circle cx={x} cy="2" r="9" fill="#081223" stroke="#B8975A" strokeWidth="2"/>
-                <circle cx={x} cy="2" r="5.5" fill="rgba(255,225,150,0.22)"/>
-                <circle cx={x - 2.5} cy={-0.5} r="1.8" fill="rgba(255,255,255,0.18)"/>
+                <circle cx={x} cy="2" r="8" fill="#081223" stroke="#B8975A" strokeWidth="1.8"/>
+                <circle cx={x} cy="2" r="4.8" fill="rgba(255,225,150,0.22)"/>
+                <circle cx={x - 2} cy={-0.4} r="1.6" fill="rgba(255,255,255,0.18)"/>
               </g>
             ))}
-
-            {/* nose sonar emitter */}
-            <ellipse cx="96" cy="0" rx="9" ry="17" fill="#0c1a30" stroke="#B8975A" strokeWidth="2"/>
-            {/* emitter pulse — flashes the instant a wave is fired */}
-            <circle cx="104" cy="0" r="4" fill="#B8975A">
-              <animate attributeName="r" dur="4.2s" repeatCount="indefinite"
-                keyTimes="0;0.07;0.12;0.2;1" values="3;3;6;3;3"/>
-              <animate attributeName="opacity" dur="4.2s" repeatCount="indefinite"
-                keyTimes="0;0.07;0.12;0.3;1" values="0.5;0.5;1;0.5;0.5"/>
+            {/* nose emitter */}
+            <ellipse cx="80" cy="0" rx="8" ry="15" fill="#0c1a30" stroke="#B8975A" strokeWidth="1.8"/>
+            <circle cx="87" cy="0" r="3.5" fill="#B8975A">
+              <animate attributeName="opacity" values="0.5;1;0.5" dur="1.8s" repeatCount="indefinite"/>
             </circle>
-
-            {/* rising bubbles */}
-            {[
-              { x: 6, d: '0s', r: 3.5 }, { x: 12, d: '0.9s', r: 2.5 },
-              { x: 2, d: '1.7s', r: 4 }, { x: 14, d: '2.6s', r: 2 },
-            ].map((b, i) => (
-              <circle key={i} data-anim cx={b.x} cy={-74} r={b.r}
+            {/* bubbles */}
+            {[{ x: 5, d: '0s', r: 3 }, { x: 11, d: '0.9s', r: 2.2 }, { x: 1, d: '1.7s', r: 3.5 }].map((b, i) => (
+              <circle key={i} cx={b.x} cy={-60} r={b.r}
                 fill="none" stroke="rgba(159,216,255,0.5)" strokeWidth="1"
                 style={{ animation: `sgBub 2.6s ease-out ${b.d} infinite` }}/>
             ))}
           </g>
         </g>
 
-        {/* ── HUD labels ── */}
-        <text data-anim x="24" y="24" fontFamily='"IBM Plex Mono", monospace' fontSize="9"
-          fill="#4EB87A" letterSpacing="2" style={{ animation: 'sgLabel 1.8s ease-in-out infinite' }}>
+        {/* HUD */}
+        <text x="18" y="22" fontFamily='"IBM Plex Mono", monospace' fontSize="9"
+          fill="#4EB87A" letterSpacing="1.5" style={{ animation: 'sgLabel 1.8s ease-in-out infinite' }}>
           ● SONAR ATTIVO
         </text>
-        <text x="400" y="270" textAnchor="middle" fontFamily='"IBM Plex Mono", monospace' fontSize="10"
-          fill="#B8975A" letterSpacing="4">
+        <text x="300" y="232" textAnchor="middle" fontFamily='"IBM Plex Mono", monospace' fontSize="9.5"
+          fill="#B8975A" letterSpacing="3">
           {(reference.toUpperCase() || '—')} · {lang === 'it' ? 'SCANDAGLIO IN CORSO' : 'SCANNING THE DEEP'}
-        </text>
-        <text x="776" y="24" textAnchor="end" fontFamily='"IBM Plex Mono", monospace' fontSize="9"
-          fill="#3d3a30" letterSpacing="2">
-          DEPTH 3.847m
         </text>
       </svg>
     </div>
