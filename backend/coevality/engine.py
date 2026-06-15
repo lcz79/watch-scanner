@@ -1,4 +1,6 @@
 """Motore di coevità: stima l'anno dal seriale e filtra i componenti coevi."""
+from urllib.parse import quote_plus
+
 from .data import SERIAL_YEAR, SERIAL_NEVER_USED, REFERENCES, SOURCES
 from .models import (
     Source, ComponentVariant, ComponentResult, SerialEstimate, CoevalityResult,
@@ -48,6 +50,34 @@ def _sources(keys: list[str]) -> list[Source]:
     return [Source(**SOURCES[k]) for k in keys if k in SOURCES]
 
 
+_COMPONENT_EN = {
+    "Quadrante": "dial",
+    "Ghiera (scala tachimetrica)": "bezel",
+    "Bracciale": "bracelet",
+    "Terminali (end links)": "end links",
+    "Materiale luminescente": "lume",
+    "Calibro": "movement caliber",
+    "Fondello (marcatura interna)": "caseback",
+    "Garanzia / Documenti": "guarantee papers",
+    "Scatola e controscatola": "box set",
+}
+
+
+def _mk_variant(v: dict, reference: str, component: str) -> ComponentVariant:
+    """Costruisce la variante e genera il link a esempi reali (Google Immagini).
+    Query in inglese per risultati più rilevanti tra i collezionisti."""
+    label = v["label"].split("—")[-1].strip() if "—" in v["label"] else v["label"]
+    en = _COMPONENT_EN.get(component, "")
+    q = f"Rolex {reference} {label} {en}".replace("(", " ").replace(")", " ")
+    q = " ".join(q.split())
+    image_search = "https://www.google.com/search?tbm=isch&q=" + quote_plus(q)
+    return ComponentVariant(
+        label=v["label"], description=v["description"],
+        year_from=v["year_from"], year_to=v["year_to"], confidence=v["confidence"],
+        image_url=v.get("image_url"), image_search=image_search,
+    )
+
+
 def check_coevality(serial: str, reference: str) -> CoevalityResult | None:
     ref = (reference or "").strip().upper().replace(" ", "")
     data = REFERENCES.get(ref)
@@ -66,8 +96,8 @@ def check_coevality(serial: str, reference: str) -> CoevalityResult | None:
         components.append(ComponentResult(
             component=c["component"],
             icon=c["icon"],
-            coeval=[ComponentVariant(**v) for v in coeval],
-            other_variants=[ComponentVariant(**v) for v in others],
+            coeval=[_mk_variant(v, ref, c["component"]) for v in coeval],
+            other_variants=[_mk_variant(v, ref, c["component"]) for v in others],
             note=c.get("note"),
             sources=_sources(c.get("sources", [])),
         ))

@@ -183,6 +183,7 @@ export const triggerAuctionRefresh = () =>
 // ── Controllo Coevità ───────────────────────────────────────────────────────
 export interface CoevalVariant {
   label: string; description: string; year_from: number; year_to: number; confidence: string
+  image_url: string | null; image_search: string
 }
 export interface CoevalSource { name: string; url: string }
 export interface CoevalComponent {

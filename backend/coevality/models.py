@@ -12,6 +12,8 @@ class ComponentVariant(BaseModel):
     year_from: int
     year_to: int
     confidence: str               # "alta" | "media" | "bassa"
+    image_url: str | None = None  # immagine incorporata (di proprietà), se disponibile
+    image_search: str = ""        # link a esempi reali (Google Immagini), sempre valido
 
 
 class ComponentResult(BaseModel):

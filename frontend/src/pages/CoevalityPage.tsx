@@ -26,6 +26,13 @@ function VariantRow({ v, coeval }: { v: CoevalVariant; coeval: boolean }) {
           {coeval ? 'check_circle' : 'remove'}
         </span>
       </div>
+      {/* miniatura immagine (se di proprietà disponibile) */}
+      {v.image_url && (
+        <a href={v.image_url} target="_blank" rel="noopener noreferrer" className="shrink-0">
+          <img src={v.image_url} alt={v.label}
+            className="w-14 h-14 object-cover rounded border border-zinc-700" loading="lazy" />
+        </a>
+      )}
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2 flex-wrap">
           <span className="font-['Space_Grotesk'] font-semibold text-zinc-100 text-sm">{v.label}</span>
@@ -37,6 +44,13 @@ function VariantRow({ v, coeval }: { v: CoevalVariant; coeval: boolean }) {
           )}
         </div>
         <p className="text-xs text-zinc-400 mt-1 leading-snug">{v.description}</p>
+        {v.image_search && (
+          <a href={v.image_search} target="_blank" rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 mt-1.5 text-[11px] text-yellow-500/80 hover:text-yellow-400 transition-colors">
+            <span className="material-symbols-outlined text-[13px]">image_search</span>
+            Vedi esempi reali
+          </a>
+        )}
       </div>
     </div>
   )
