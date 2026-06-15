@@ -44,6 +44,22 @@ SOURCES = {
         "name": "Wind Vintage — Collector's Guide: GMT-Master 1675",
         "url": "https://www.windvintage.com/blog/collectors-guide-the-rolex-gmt-master-reference-1675-in-steel",
     },
+    "mono_explorer": {
+        "name": "Monochrome — History of the Rolex Explorer",
+        "url": "https://monochrome-watches.com/history-rolex-explorer-from-1953-36mm-1016-14270-114270-214270-124270-in-depth-review/",
+    },
+    "mono_explorer2": {
+        "name": "Monochrome — History of the Rolex Explorer II",
+        "url": "https://monochrome-watches.com/history-rolex-explorer-ii-adventure-watch-gmt-1655-16550-16570-216570-226570-in-depth/",
+    },
+    "mono_dj": {
+        "name": "Monochrome — The History of the Rolex Datejust",
+        "url": "https://monochrome-watches.com/rolex-datejust-complete-history/",
+    },
+    "mono_milgauss": {
+        "name": "Monochrome — The Complete History of the Rolex Milgauss",
+        "url": "https://monochrome-watches.com/history-rolex-milgauss-collection-in-depth-review/",
+    },
 }
 
 # --- Seriale (lettera iniziale) → anno di produzione (range, consenso) --------
@@ -410,6 +426,213 @@ REFERENCES: dict[str, dict] = {
              ]},
             {"component": "Quadrante", "icon": "radio_button_checked", "sources": ["gmt_fratello"], "note": None,
              "variants": [_v("Glossy, indici oro bianco", "Quadrante lucido con indici cerchiati in oro bianco.", 1989, 2007, "alta")]},
+        ],
+    },
+
+    # ===================== EXPLORER I =====================
+    "1016": {
+        "model": "Rolex Explorer ref. 1016", "production_from": 1963, "production_to": 1989,
+        "components": [
+            {"component": "Calibro", "icon": "settings", "sources": ["mono_explorer"], "note": None,
+             "variants": [_v("Cal. 1560 / 1570 (automatico)", "Movimento automatico a 3-6-9.", 1963, 1989, "alta")]},
+            {"component": "Quadrante", "icon": "radio_button_checked", "sources": ["mono_explorer"], "note": "Da gilt a matte attorno al 1966-67.",
+             "variants": [_v("Gilt (dorato)", "Quadrante lucido con scritte dorate.", 1963, 1967, "media"),
+                          _v("Matte", "Quadrante opaco con stampa bianca.", 1967, 1989, "alta")]},
+            {"component": "Cristallo", "icon": "crop_square", "sources": ["mono_explorer"], "note": None,
+             "variants": [_v("Acrilico (plexi)", "Vetro acrilico bombato.", 1963, 1989, "alta")]},
+            {"component": "Materiale luminescente", "icon": "light_mode", "sources": ["mono_explorer"], "note": None,
+             "variants": [_v("Tritio", "Indici e lancette al tritio.", 1963, 1989, "alta")]},
+        ],
+    },
+    "14270": {
+        "model": "Rolex Explorer ref. 14270", "production_from": 1989, "production_to": 2001,
+        "components": [
+            {"component": "Calibro", "icon": "settings", "sources": ["mono_explorer"], "note": None,
+             "variants": [_v("Cal. 3000 (automatico)", "Movimento automatico, 28.800 alt/h.", 1989, 2001, "alta")]},
+            {"component": "Cristallo", "icon": "crop_square", "sources": ["mono_explorer"], "note": None,
+             "variants": [_v("Zaffiro", "Vetro zaffiro, indici applicati con contorni oro bianco.", 1989, 2001, "alta")]},
+            {"component": "Materiale luminescente", "icon": "light_mode", "sources": ["mono_explorer"], "note": "Transizione tritio → Luminova attorno al 1998.",
+             "variants": [_v("Tritio — 'SWISS - T<25'", "Indici al tritio.", 1989, 1998, "alta"),
+                          _v("Luminova — 'SWISS'/'SWISS MADE'", "Passaggio a Luminova/Super-LumiNova.", 1998, 2001, "media")]},
+        ],
+    },
+    "114270": {
+        "model": "Rolex Explorer ref. 114270", "production_from": 2001, "production_to": 2010,
+        "components": [
+            {"component": "Calibro", "icon": "settings", "sources": ["mono_explorer"], "note": None,
+             "variants": [_v("Cal. 3130 (automatico)", "Movimento automatico.", 2001, 2010, "alta")]},
+            {"component": "Materiale luminescente", "icon": "light_mode", "sources": ["mono_explorer"], "note": None,
+             "variants": [_v("Super-LumiNova", "Indici a Super-LumiNova; 'SWISS MADE'.", 2001, 2010, "alta")]},
+        ],
+    },
+
+    # ===================== EXPLORER II =====================
+    "1655": {
+        "model": "Rolex Explorer II ref. 1655 ('Freccione')", "production_from": 1971, "production_to": 1985,
+        "components": [
+            {"component": "Calibro", "icon": "settings", "sources": ["mono_explorer2"], "note": None,
+             "variants": [_v("Cal. 1575 (24h non indipendente)", "Lancetta 24h fissa, non regolabile separatamente.", 1971, 1985, "alta")]},
+            {"component": "Lancetta 24h", "icon": "schedule", "sources": ["mono_explorer2"], "note": "La grande lancetta 24h arancione ('Freccione') è la firma del 1655.",
+             "variants": [_v("Arancione a freccia ('Freccione')", "Lancetta 24h arancione a punta di freccia.", 1971, 1985, "alta")]},
+            {"component": "Materiale luminescente", "icon": "light_mode", "sources": ["mono_explorer2"], "note": None,
+             "variants": [_v("Tritio", "Indici e lancette al tritio.", 1971, 1985, "alta")]},
+        ],
+    },
+    "16570": {
+        "model": "Rolex Explorer II ref. 16570", "production_from": 1989, "production_to": 2010,
+        "components": [
+            {"component": "Calibro", "icon": "settings", "sources": ["mono_explorer2"], "note": "Ultime serie con cal. 3186.",
+             "variants": [_v("Cal. 3185 (GMT indipendente)", "Lancetta 24h regolabile separatamente.", 1989, 2007, "alta"),
+                          _v("Cal. 3186", "Aggiornamento di movimento (ultime serie).", 2007, 2010, "media")]},
+            {"component": "Quadrante", "icon": "radio_button_checked", "sources": ["mono_explorer2"], "note": "Disponibile nero o bianco ('Polar').",
+             "variants": [_v("Nero o Bianco 'Polar'", "Quadrante nero o bianco a indici applicati.", 1989, 2010, "alta")]},
+            {"component": "Materiale luminescente", "icon": "light_mode", "sources": ["mono_explorer2"], "note": "Transizione tritio → Super-LumiNova ~1998-2000.",
+             "variants": [_v("Tritio — 'SWISS - T<25'", "Indici al tritio.", 1989, 1998, "alta"),
+                          _v("Super-LumiNova — 'SWISS MADE'", "Super-LumiNova.", 2000, 2010, "alta")]},
+        ],
+    },
+
+    # ===================== SEA-DWELLER =====================
+    "1665": {
+        "model": "Rolex Sea-Dweller ref. 1665 ('Double Red'/'Great White')", "production_from": 1967, "production_to": 1983,
+        "components": [
+            {"component": "Quadrante", "icon": "radio_button_checked", "sources": ["subref"], "note": "Il 'Double Red Sea-Dweller' (doppia scritta rossa) è coevo alle prime serie.",
+             "variants": [_v("Double Red (DRSD)", "Doppia riga di testo rossa 'Sea-Dweller / Submariner 2000'.", 1967, 1977, "media"),
+                          _v("Great White (scritta bianca)", "Testo tutto bianco (serie successive).", 1977, 1983, "media")]},
+            {"component": "Calibro", "icon": "settings", "sources": ["subref"], "note": None,
+             "variants": [_v("Cal. 1575 (automatico, data)", "Movimento automatico con datario.", 1967, 1983, "alta")]},
+            {"component": "Materiale luminescente", "icon": "light_mode", "sources": ["subref"], "note": None,
+             "variants": [_v("Tritio", "Indici e lancette al tritio.", 1967, 1983, "alta")]},
+        ],
+    },
+    "16600": {
+        "model": "Rolex Sea-Dweller ref. 16600", "production_from": 1988, "production_to": 2008,
+        "components": [
+            {"component": "Calibro", "icon": "settings", "sources": ["subref"], "note": None,
+             "variants": [_v("Cal. 3135 (automatico)", "Movimento automatico con datario.", 1988, 2008, "alta")]},
+            {"component": "Materiale luminescente", "icon": "light_mode", "sources": ["subref"], "note": "Transizione tritio → Super-LumiNova ~1998-2000.",
+             "variants": [_v("Tritio — 'SWISS - T<25'", "Indici al tritio.", 1988, 1998, "alta"),
+                          _v("Super-LumiNova — 'SWISS MADE'", "Super-LumiNova.", 2000, 2008, "alta")]},
+        ],
+    },
+
+    # ===================== DATEJUST =====================
+    "1601": {
+        "model": "Rolex Datejust ref. 1601", "production_from": 1959, "production_to": 1977,
+        "components": [
+            {"component": "Calibro", "icon": "settings", "sources": ["mono_dj"], "note": None,
+             "variants": [_v("Cal. 1565 / 1575 (automatico, data)", "Movimento automatico; il 1575 aggiunge quickset/hacking sulle serie tarde.", 1959, 1977, "alta")]},
+            {"component": "Quadrante", "icon": "radio_button_checked", "sources": ["mono_dj"], "note": "Da gilt a matte attorno al 1966-67.",
+             "variants": [_v("Gilt (dorato)", "Quadrante con scritte dorate (prime serie).", 1959, 1967, "media"),
+                          _v("Matte", "Quadrante opaco (serie successive).", 1967, 1977, "alta")]},
+            {"component": "Cristallo", "icon": "crop_square", "sources": ["mono_dj"], "note": None,
+             "variants": [_v("Acrilico (plexi)", "Vetro acrilico con lente ciclope sulla data.", 1959, 1977, "alta")]},
+        ],
+    },
+    "16234": {
+        "model": "Rolex Datejust ref. 16234", "production_from": 1988, "production_to": 2009,
+        "components": [
+            {"component": "Calibro", "icon": "settings", "sources": ["mono_dj"], "note": None,
+             "variants": [_v("Cal. 3135 (automatico)", "Movimento automatico con datario quickset.", 1988, 2009, "alta")]},
+            {"component": "Cristallo", "icon": "crop_square", "sources": ["mono_dj"], "note": None,
+             "variants": [_v("Zaffiro", "Vetro zaffiro con lente ciclope.", 1988, 2009, "alta")]},
+            {"component": "Materiale luminescente", "icon": "light_mode", "sources": ["mono_dj"], "note": "Transizione tritio → Super-LumiNova ~1998-2000.",
+             "variants": [_v("Tritio — 'SWISS - T<25'", "Indici al tritio.", 1988, 1998, "media"),
+                          _v("Super-LumiNova — 'SWISS MADE'", "Super-LumiNova.", 2000, 2009, "media")]},
+        ],
+    },
+
+    # ===================== DAY-DATE (PRESIDENT) =====================
+    "1803": {
+        "model": "Rolex Day-Date 'President' ref. 1803", "production_from": 1958, "production_to": 1978,
+        "components": [
+            {"component": "Calibro", "icon": "settings", "sources": ["bobs"], "note": None,
+             "variants": [_v("Cal. 1555 / 1556 (automatico)", "Movimento automatico con giorno e data.", 1958, 1978, "alta")]},
+            {"component": "Cristallo", "icon": "crop_square", "sources": ["bobs"], "note": None,
+             "variants": [_v("Acrilico (plexi)", "Vetro acrilico con lente ciclope.", 1958, 1978, "alta")]},
+            {"component": "Materiale luminescente", "icon": "light_mode", "sources": ["bobs"], "note": None,
+             "variants": [_v("Tritio", "Indici al tritio (sulle versioni luminescenti).", 1958, 1978, "media")]},
+        ],
+    },
+    "18038": {
+        "model": "Rolex Day-Date 'President' ref. 18038", "production_from": 1977, "production_to": 1988,
+        "components": [
+            {"component": "Calibro", "icon": "settings", "sources": ["bobs"], "note": None,
+             "variants": [_v("Cal. 3055 (automatico, quickset)", "Datario rapido, 28.800 alt/h.", 1977, 1988, "alta")]},
+            {"component": "Cristallo", "icon": "crop_square", "sources": ["bobs"], "note": None,
+             "variants": [_v("Zaffiro", "Prima serie Day-Date con vetro zaffiro.", 1977, 1988, "alta")]},
+        ],
+    },
+
+    # ===================== AIR-KING =====================
+    "5500": {
+        "model": "Rolex Air-King ref. 5500", "production_from": 1957, "production_to": 1989,
+        "components": [
+            {"component": "Calibro", "icon": "settings", "sources": ["bobs"], "note": "Cal. 1530 sulle prime serie, poi 1520.",
+             "variants": [_v("Cal. 1530 (prime serie)", "Movimento automatico iniziale.", 1957, 1965, "media"),
+                          _v("Cal. 1520", "Movimento automatico successivo.", 1965, 1989, "alta")]},
+            {"component": "Cristallo", "icon": "crop_square", "sources": ["bobs"], "note": None,
+             "variants": [_v("Acrilico (plexi)", "Vetro acrilico bombato.", 1957, 1989, "alta")]},
+        ],
+    },
+    "14000": {
+        "model": "Rolex Air-King ref. 14000", "production_from": 1989, "production_to": 2000,
+        "components": [
+            {"component": "Calibro", "icon": "settings", "sources": ["bobs"], "note": None,
+             "variants": [_v("Cal. 3000 (automatico)", "Movimento automatico, 28.800 alt/h.", 1989, 2000, "alta")]},
+            {"component": "Cristallo", "icon": "crop_square", "sources": ["bobs"], "note": None,
+             "variants": [_v("Zaffiro", "Vetro zaffiro.", 1989, 2000, "alta")]},
+        ],
+    },
+
+    # ===================== MILGAUSS =====================
+    "1019": {
+        "model": "Rolex Milgauss ref. 1019", "production_from": 1963, "production_to": 1988,
+        "components": [
+            {"component": "Calibro", "icon": "settings", "sources": ["mono_milgauss"], "note": None,
+             "variants": [_v("Cal. 1580 (automatico, antimagnetico)", "Movimento schermato contro i campi magnetici.", 1963, 1988, "alta")]},
+            {"component": "Cristallo", "icon": "crop_square", "sources": ["mono_milgauss"], "note": None,
+             "variants": [_v("Acrilico (plexi)", "Vetro acrilico.", 1963, 1988, "alta")]},
+        ],
+    },
+    "116400": {
+        "model": "Rolex Milgauss ref. 116400 / 116400GV", "production_from": 2007, "production_to": 2023,
+        "components": [
+            {"component": "Calibro", "icon": "settings", "sources": ["mono_milgauss"], "note": None,
+             "variants": [_v("Cal. 3131 (automatico, antimagnetico)", "Movimento antimagnetico con lancetta dei secondi a fulmine.", 2007, 2023, "alta")]},
+            {"component": "Cristallo / Quadrante", "icon": "crop_square", "sources": ["mono_milgauss"], "note": "La versione 'GV' ha il vetro zaffiro verde.",
+             "variants": [_v("Zaffiro (GV verde sulla 116400GV)", "Vetro zaffiro; verde sulla variante GV.", 2007, 2023, "alta")]},
+            {"component": "Materiale luminescente", "icon": "light_mode", "sources": ["mono_milgauss"], "note": None,
+             "variants": [_v("Super-LumiNova / Chromalight", "Indici luminescenti moderni.", 2007, 2023, "media")]},
+        ],
+    },
+
+    # ===================== ALTRE FAMIGLIE (flagship) =====================
+    "1002": {
+        "model": "Rolex Oyster Perpetual ref. 1002", "production_from": 1958, "production_to": 1985,
+        "components": [
+            {"component": "Calibro", "icon": "settings", "sources": ["bobs"], "note": None,
+             "variants": [_v("Cal. 1560 / 1570 (automatico)", "Movimento automatico senza datario.", 1958, 1985, "alta")]},
+            {"component": "Cristallo", "icon": "crop_square", "sources": ["bobs"], "note": None,
+             "variants": [_v("Acrilico (plexi)", "Vetro acrilico bombato.", 1958, 1985, "alta")]},
+        ],
+    },
+    "16622": {
+        "model": "Rolex Yacht-Master ref. 16622 (platino/acciaio)", "production_from": 1999, "production_to": 2012,
+        "components": [
+            {"component": "Calibro", "icon": "settings", "sources": ["bobs"], "note": None,
+             "variants": [_v("Cal. 3135 (automatico)", "Movimento automatico con datario.", 1999, 2012, "alta")]},
+            {"component": "Materiale luminescente", "icon": "light_mode", "sources": ["bobs"], "note": None,
+             "variants": [_v("Super-LumiNova", "Indici a Super-LumiNova.", 1999, 2012, "media")]},
+        ],
+    },
+    "326934": {
+        "model": "Rolex Sky-Dweller ref. 326934", "production_from": 2012, "production_to": 2023,
+        "components": [
+            {"component": "Calibro", "icon": "settings", "sources": ["bobs"], "note": "Seriale moderno casuale: la datazione dal numero non è possibile.",
+             "variants": [_v("Cal. 9001 (automatico, annual calendar GMT)", "Calendario annuale 'Saros' e secondo fuso.", 2012, 2023, "alta")]},
+            {"component": "Materiale luminescente", "icon": "light_mode", "sources": ["bobs"], "note": None,
+             "variants": [_v("Chromalight", "Luminescenza Chromalight blu.", 2012, 2023, "media")]},
         ],
     },
 }
