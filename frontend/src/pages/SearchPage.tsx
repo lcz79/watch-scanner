@@ -404,30 +404,39 @@ function ListingCard({ listing, isBest, isBestDeal = false }: {
   )
 }
 
-/* ── Submarine Sonar Hunt — responsive horizontal-scroller loading anim ─────
-   The sub stays fixed on the left, scanning. The luxury watch drifts in from
-   the right along the seabed, crosses the sonar beam (lights up + "PING!"),
-   then exits left. A side-scroller reads well at any width — no squishing on
-   mobile. Driven by CSS keyframes (one shared 6.5s period keeps the watch
-   travel and the detection flash in sync). */
+/* ── Submarine Sonar Hunt — responsive side-scroller (slow narrative) ───────
+   The sub sits fixed on the left, gently bobbing, already scanning the
+   seabed — sonar pings go out and hit nothing. Then the luxury watch drifts
+   in SLOWLY from the right. This time a ping catches it, the echo bounces
+   back to the sub, and the sub goes into red alarm. One shared 13s period
+   keeps watch-travel, detection, echo and alarm in sync. Action lives in the
+   vertical centre band so the watch is never cropped on any screen size. */
 function SubmarineRadar({ reference, lang }: { reference: string; lang: string }) {
   return (
     <div className="sg-stage">
       <style>{`
         .sg-stage{position:relative;width:100%;height:230px;overflow:hidden;background:#060810}
-        @media (max-width:640px){ .sg-stage{height:165px} }
-        @keyframes sgBob   { 0%,100%{transform:translate(0,0) rotate(-1.2deg)} 50%{transform:translate(3px,-6px) rotate(1.2deg)} }
+        @media (max-width:640px){ .sg-stage{height:170px} }
+        @keyframes sgBob   { 0%,100%{transform:translate(0,0) rotate(-0.8deg)} 50%{transform:translate(2px,-4px) rotate(0.8deg)} }
         @keyframes sgProp  { from{transform:rotate(0)} to{transform:rotate(360deg)} }
-        @keyframes sgBub   { 0%{opacity:.6;transform:translate(0,0) scale(1)} 100%{opacity:0;transform:translate(5px,-60px) scale(.3)} }
+        @keyframes sgBub   { 0%{opacity:.55;transform:translate(0,0) scale(1)} 100%{opacity:0;transform:translate(6px,-66px) scale(.3)} }
         @keyframes sgRay   { 0%,100%{opacity:.3} 50%{opacity:.55} }
-        @keyframes sgSonar { 0%{transform:scale(.35);opacity:0} 18%{opacity:.85} 100%{transform:scale(1.7);opacity:0} }
         @keyframes sgBed   { from{transform:translateX(0)} to{transform:translateX(-600px)} }
         @keyframes sgLabel { 0%,100%{opacity:.5} 50%{opacity:1} }
-        /* travel: watch crosses the beam (center) around 46% of the cycle */
-        @keyframes sgTravel{ from{transform:translateX(660px)} to{transform:translateX(-90px)} }
-        @keyframes sgDetect{ 0%,38%{opacity:0} 44%{opacity:1} 52%{opacity:1} 58%{opacity:0} 100%{opacity:0} }
-        @keyframes sgPing  { 0%,40%{opacity:0;transform:scale(0)} 45%{opacity:1;transform:scale(1.12)} 52%{opacity:1;transform:scale(1)} 60%{opacity:0;transform:scale(1)} 100%{opacity:0} }
-        @keyframes sgRing  { 0%,42%{r:6;opacity:0} 44%{opacity:.9} 60%{r:42;opacity:0} 100%{opacity:0} }
+        /* continuous sonar ping leaving the nose toward the seabed */
+        @keyframes sgPing  { 0%{transform:scale(.3);opacity:0} 18%{opacity:.8} 100%{transform:scale(1.7);opacity:0} }
+        @keyframes sgBlip  { 0%,55%{opacity:0} 70%{opacity:.45} 100%{opacity:0} }
+        /* watch drifts in slowly from the right, lingers centre, exits left */
+        @keyframes sgTravel{ 0%,28%{transform:translateX(710px)} 54%{transform:translateX(312px)} 72%{transform:translateX(300px)} 93%,100%{transform:translateX(-150px)} }
+        /* detection visuals ride with the watch, only flash while centred */
+        @keyframes sgDetect{ 0%,55%{opacity:0} 60%{opacity:1} 76%{opacity:1} 82%{opacity:0} 100%{opacity:0} }
+        @keyframes sgPing2 { 0%,56%{opacity:0;transform:scale(0)} 61%{opacity:1;transform:scale(1.12)} 68%{opacity:1;transform:scale(1)} 80%{opacity:0;transform:scale(1)} 100%{opacity:0} }
+        @keyframes sgRing  { 0%,57%{r:6;opacity:0} 59%{opacity:.9} 74%{r:40;opacity:0} 100%{opacity:0} }
+        /* echo bouncing back from the watch to the sub */
+        @keyframes sgEcho  { 0%,58%{opacity:0;transform:translate(46px,12px)} 61%{opacity:1;transform:translate(46px,12px)} 69%{opacity:.9;transform:translate(0,0)} 72%{opacity:0;transform:translate(0,0)} 100%{opacity:0} }
+        /* sub alarm strobe */
+        @keyframes sgAlarm { 0%,60%{opacity:0} 63%,69%,75%,81%{opacity:1} 66%,72%,78%,84%{opacity:.2} 88%,100%{opacity:0} }
+        @keyframes sgAlarmRing { 0%,61%{transform:scale(.3);opacity:0} 65%{opacity:.75} 80%{transform:scale(1.9);opacity:0} 100%{opacity:0} }
         @media (prefers-reduced-motion: reduce){ .sg-stage *{animation:none !important} }
       `}</style>
       <svg viewBox="0 0 600 240" width="100%" height="100%" preserveAspectRatio="xMidYMid slice"
@@ -439,7 +448,7 @@ function SubmarineRadar({ reference, lang }: { reference: string; lang: string }
             <stop offset="100%" stopColor="#030914"/>
           </linearGradient>
           <linearGradient id="sgRayG" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#9fd8ff" stopOpacity="0.16"/>
+            <stop offset="0%" stopColor="#9fd8ff" stopOpacity="0.15"/>
             <stop offset="100%" stopColor="#9fd8ff" stopOpacity="0"/>
           </linearGradient>
           <radialGradient id="sgDetectG" cx="50%" cy="50%" r="50%">
@@ -470,28 +479,32 @@ function SubmarineRadar({ reference, lang }: { reference: string; lang: string }
         ))}
 
         {/* Scrolling seabed (two seamless copies) */}
-        <g style={{ animation: 'sgBed 14s linear infinite' }}>
+        <g style={{ animation: 'sgBed 18s linear infinite' }}>
           {[0, 600].map(off => (
             <g key={off} transform={`translate(${off},0)`}>
-              <path d="M0,196 Q100,186 200,194 Q320,204 440,190 Q520,182 600,194 L600,240 L0,240 Z"
+              <path d="M0,158 Q100,150 200,156 Q320,164 440,152 Q520,146 600,156 L600,240 L0,240 Z"
                 fill="#0a1422" stroke="rgba(184,151,90,0.09)" strokeWidth="1"/>
-              <path d="M90,194 q7,-20 14,0 z" fill="#0e1c2e"/>
-              <path d="M118,196 q5,-26 10,0 q5,-15 9,0 z" fill="#0e1c2e"/>
-              <path d="M430,190 q8,-22 16,0 z" fill="#0e1c2e"/>
-              <circle cx="300" cy="210" r="2" fill="rgba(184,151,90,0.15)"/>
-              <circle cx="520" cy="216" r="1.5" fill="rgba(184,151,90,0.12)"/>
+              <path d="M70,156 q7,-18 14,0 z" fill="#0e1c2e"/>
+              <path d="M96,157 q5,-24 10,0 q5,-14 9,0 z" fill="#0e1c2e"/>
+              <path d="M470,152 q8,-20 16,0 z" fill="#0e1c2e"/>
+              <circle cx="250" cy="180" r="2" fill="rgba(184,151,90,0.15)"/>
+              <circle cx="540" cy="186" r="1.5" fill="rgba(184,151,90,0.12)"/>
             </g>
           ))}
         </g>
 
-        {/* ── Watch drifting in from the right ── */}
-        <g style={{ animation: 'sgTravel 6.5s linear infinite' }}>
-          <g transform="translate(0,186)">
-            {/* detection halo + shock ring (only flash while crossing the beam) */}
-            <circle cx="0" cy="0" r="40" fill="url(#sgDetectG)"
-              style={{ animation: 'sgDetect 6.5s linear infinite' }}/>
+        {/* empty sonar blip on the seabed (a few pings that hit nothing) */}
+        <circle cx="305" cy="150" r="3" fill="none" stroke="rgba(184,151,90,0.5)" strokeWidth="1.5"
+          style={{ animation: 'sgBlip 1.65s ease-out infinite' }}/>
+
+        {/* ── Watch drifting in slowly from the right ── */}
+        <g style={{ animation: 'sgTravel 13s cubic-bezier(0.45,0,0.55,1) infinite' }}>
+          <g transform="translate(0,130)">
+            {/* detection halo + shock ring (flash only while centred) */}
+            <circle cx="0" cy="0" r="38" fill="url(#sgDetectG)"
+              style={{ animation: 'sgDetect 13s linear infinite' }}/>
             <circle cx="0" cy="0" r="6" fill="none" stroke="#B8975A" strokeWidth="2"
-              style={{ animation: 'sgRing 6.5s linear infinite' }}/>
+              style={{ animation: 'sgRing 13s linear infinite' }}/>
             {/* shadow */}
             <ellipse cx="0" cy="24" rx="24" ry="4.5" fill="rgba(0,0,0,0.35)"/>
             {/* strap */}
@@ -514,37 +527,46 @@ function SubmarineRadar({ reference, lang }: { reference: string; lang: string }
             <line x1="0" y1="0" x2="0" y2="-8" stroke="#e8e2d4" strokeWidth="1.5" strokeLinecap="round"/>
             <line x1="0" y1="0" x2="7" y2="3" stroke="#B8975A" strokeWidth="1.3" strokeLinecap="round"/>
             <circle cx="0" cy="0" r="1.5" fill="#B8975A"/>
-            {/* reticle brackets — flash on detection */}
-            <g stroke="#4EB87A" strokeWidth="2" fill="none" style={{ animation: 'sgDetect 6.5s linear infinite' }}>
+            {/* reticle brackets */}
+            <g stroke="#4EB87A" strokeWidth="2" fill="none" style={{ animation: 'sgDetect 13s linear infinite' }}>
               <path d="M -30,-22 L -30,-30 L -22,-30"/>
               <path d="M 30,-22 L 30,-30 L 22,-30"/>
               <path d="M -30,22 L -30,30 L -22,30"/>
               <path d="M 30,22 L 30,30 L 22,30"/>
             </g>
-            {/* comic PING */}
-            <g transform="translate(30,-34)" style={{ animation: 'sgPing 6.5s linear infinite', transformOrigin: '30px -34px' }}>
-              <polygon points="0,-14 4,-5 14,-6 6,1 9,11 0,5 -9,11 -6,1 -14,-6 -4,-5"
+            {/* comic PING (nudged clear of the dial) */}
+            <g transform="translate(38,-42)" style={{ animation: 'sgPing2 13s linear infinite', transformOrigin: '38px -42px' }}>
+              <polygon points="0,-13 4,-4 13,-5 6,1 9,11 0,5 -9,11 -6,1 -13,-5 -4,-4"
                 fill="#B8975A" stroke="#e8e2d4" strokeWidth="1"/>
               <text x="0" y="3" textAnchor="middle"
-                fontFamily='"Space Grotesk", system-ui, sans-serif' fontSize="7.5" fontWeight="700"
+                fontFamily='"Space Grotesk", system-ui, sans-serif' fontSize="7" fontWeight="700"
                 fill="#081223">PING</text>
             </g>
           </g>
         </g>
 
-        {/* ── Submarine — fixed on the left, scanning ── */}
-        <g transform="translate(130,118)">
-          {/* sonar pulses radiating to the right toward the beam zone */}
-          <g style={{ transformOrigin: '78px 0px' }}>
-            {[0, 0.6, 1.2].map((d, i) => (
-              <path key={i} d="M 0,-24 A 24,24 0 0 1 0,24" fill="none"
-                stroke="#B8975A" strokeWidth="2.4" strokeLinecap="round"
-                transform="translate(78,0)"
-                style={{ transformOrigin: '78px 0px', animation: `sgSonar 1.8s ease-out ${d}s infinite` }}/>
+        {/* ── Echo bouncing back from the watch to the sub ── */}
+        <g transform="translate(259,118)" style={{ animation: 'sgEcho 13s linear infinite' }}>
+          <circle cx="0" cy="0" r="3" fill="#4EB87A" filter="url(#sgGlow)"/>
+          <path d="M 6,-8 A 10,10 0 0 1 6,8" fill="none" stroke="#4EB87A" strokeWidth="2" opacity="0.7"/>
+        </g>
+
+        {/* ── Submarine — fixed on the left, scanning the seabed ── */}
+        <g transform="translate(175,118)">
+          {/* continuous sonar pings toward the seabed (down-right) */}
+          <g transform="translate(80,2) rotate(14)">
+            {[0, 0.55, 1.1].map((d, i) => (
+              <path key={i} d="M 0,-22 A 22,22 0 0 1 0,22" fill="none"
+                stroke="#B8975A" strokeWidth="2.2" strokeLinecap="round"
+                style={{ transformOrigin: '0px 0px', animation: `sgPing 1.65s ease-out ${d}s infinite` }}/>
             ))}
           </g>
 
-          <g style={{ animation: 'sgBob 3.6s ease-in-out infinite', transformOrigin: '0px 0px' }}>
+          {/* alarm rings around the sub (fire on contact) */}
+          <circle cx="0" cy="-6" r="40" fill="none" stroke="#E05A5A" strokeWidth="2.5"
+            style={{ transformOrigin: '0px -6px', animation: 'sgAlarmRing 13s ease-out infinite' }}/>
+
+          <g style={{ animation: 'sgBob 4.5s ease-in-out infinite', transformOrigin: '0px 0px' }}>
             {/* propeller */}
             <g style={{ transformOrigin: '-78px 0px' }}>
               <g style={{ animation: 'sgProp 0.9s linear infinite', transformOrigin: '-78px 0px' }}>
@@ -561,30 +583,40 @@ function SubmarineRadar({ reference, lang }: { reference: string; lang: string }
             <path d="M -64,0 Q -64,-26 -40,-26 L 54,-26 Q 80,-26 80,0 Q 80,26 54,26 L -40,26 Q -64,26 -64,0 Z"
               fill="#0c1a30" stroke="#B8975A" strokeWidth="2.8"/>
             <path d="M -38,-21 Q 26,-26 76,-10" fill="none" stroke="rgba(255,255,255,0.12)" strokeWidth="2.6" strokeLinecap="round"/>
-            {/* conning tower */}
-            <rect x="-15" y="-48" width="32" height="24" rx="7" fill="#0d1e35" stroke="#B8975A" strokeWidth="2.2"/>
-            <line x1="3" y1="-48" x2="3" y2="-62" stroke="#B8975A" strokeWidth="2.4"/>
-            <line x1="3" y1="-62" x2="17" y2="-62" stroke="#B8975A" strokeWidth="2.4"/>
-            <circle cx="17" cy="-62" r="3" fill="#4EB87A" filter="url(#sgGlow)"/>
+            {/* conning tower (compact) */}
+            <rect x="-14" y="-44" width="30" height="22" rx="6" fill="#0d1e35" stroke="#B8975A" strokeWidth="2.2"/>
+            <line x1="2" y1="-44" x2="2" y2="-54" stroke="#B8975A" strokeWidth="2.2"/>
+            <line x1="2" y1="-54" x2="14" y2="-54" stroke="#B8975A" strokeWidth="2.2"/>
+            {/* scanning light (green) */}
+            <circle cx="14" cy="-54" r="3" fill="#4EB87A" filter="url(#sgGlow)"/>
+            {/* alarm light (red, strobes on contact) — overlaps the green one */}
+            <circle cx="14" cy="-54" r="3.4" fill="#E05A5A" filter="url(#sgGlow)"
+              style={{ animation: 'sgAlarm 13s linear infinite' }}/>
             {/* portholes */}
             {[-34, -8, 16].map((x, i) => (
               <g key={i}>
                 <circle cx={x} cy="2" r="8" fill="#081223" stroke="#B8975A" strokeWidth="1.8"/>
                 <circle cx={x} cy="2" r="4.8" fill="rgba(255,225,150,0.22)"/>
+                {/* red wash inside portholes during alarm */}
+                <circle cx={x} cy="2" r="4.8" fill="#E05A5A" opacity="0"
+                  style={{ animation: 'sgAlarm 13s linear infinite' }}/>
                 <circle cx={x - 2} cy={-0.4} r="1.6" fill="rgba(255,255,255,0.18)"/>
               </g>
             ))}
             {/* nose emitter */}
-            <ellipse cx="80" cy="0" rx="8" ry="15" fill="#0c1a30" stroke="#B8975A" strokeWidth="1.8"/>
-            <circle cx="87" cy="0" r="3.5" fill="#B8975A">
-              <animate attributeName="opacity" values="0.5;1;0.5" dur="1.8s" repeatCount="indefinite"/>
-            </circle>
+            <ellipse cx="80" cy="2" rx="8" ry="14" fill="#0c1a30" stroke="#B8975A" strokeWidth="1.8"/>
             {/* bubbles */}
             {[{ x: 5, d: '0s', r: 3 }, { x: 11, d: '0.9s', r: 2.2 }, { x: 1, d: '1.7s', r: 3.5 }].map((b, i) => (
-              <circle key={i} cx={b.x} cy={-60} r={b.r}
+              <circle key={i} cx={b.x} cy={-52} r={b.r}
                 fill="none" stroke="rgba(159,216,255,0.5)" strokeWidth="1"
-                style={{ animation: `sgBub 2.6s ease-out ${b.d} infinite` }}/>
+                style={{ animation: `sgBub 3s ease-out ${b.d} infinite` }}/>
             ))}
+          </g>
+
+          {/* alarm badge "⚠ CONTATTO" appears on contact, upper-right of sub */}
+          <g style={{ animation: 'sgAlarm 13s linear infinite' }}>
+            <text x="26" y="-30" fontFamily='"IBM Plex Mono", monospace' fontSize="10" fontWeight="700"
+              fill="#E05A5A" letterSpacing="1.5">⚠ CONTATTO</text>
           </g>
         </g>
 
