@@ -717,7 +717,7 @@ export default function SearchPage() {
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const { mutate, isPending } = useMutation({
-    mutationFn: scanWatch,
+    mutationFn: ({ query, force }: { query: import('../types').WatchQuery; force: boolean }) => scanWatch(query, force),
     onSuccess: (data) => {
       if (scanStepRef.current) clearTimeout(scanStepRef.current)
       if (scanTimerRef.current) { clearInterval(scanTimerRef.current); scanTimerRef.current = null }
@@ -754,7 +754,7 @@ export default function SearchPage() {
     }
   }
 
-  const handleScan = (ref?: string) => {
+  const handleScan = (ref?: string, force = false) => {
     const target = (ref ?? reference).trim()
     if (!target) return
     if (ref) setReference(ref)
@@ -783,7 +783,7 @@ export default function SearchPage() {
       }
     }
     scanStepRef.current = setTimeout(advance, SCAN_DURATIONS[0])
-    mutate({ reference: target.toUpperCase(), max_price: maxPrice ? parseFloat(maxPrice) : undefined })
+    mutate({ query: { reference: target.toUpperCase(), max_price: maxPrice ? parseFloat(maxPrice) : undefined }, force })
   }
 
   useEffect(() => {
@@ -1227,10 +1227,26 @@ export default function SearchPage() {
                   {filteredListings.length} {t.resultsFound}
                 </span>
                 <span className="w-1 h-1 bg-zinc-700 rounded-full" />
-                <span className="text-label-caps font-label-caps text-primary">{t.liveMarketFeed}</span>
+                {result.cached && result.cached_at ? (
+                  <span className="flex items-center gap-1 text-label-caps font-label-caps text-zinc-500">
+                    <span className="material-symbols-outlined text-[13px] leading-none">history</span>
+                    {lang === 'it' ? 'aggiornato' : 'updated'} {formatDistanceToNow(new Date(result.cached_at), { addSuffix: true, locale: itLocale })}
+                  </span>
+                ) : (
+                  <span className="text-label-caps font-label-caps text-primary">{t.liveMarketFeed}</span>
+                )}
               </div>
             </div>
             <div className="flex gap-2">
+              <button
+                onClick={() => handleScan(undefined, true)}
+                disabled={isPending}
+                title={lang === 'it' ? 'Ignora la cache e riscansiona dal vivo' : 'Bypass cache and rescan live'}
+                className="flex items-center gap-2 bg-zinc-900 border border-zinc-800 px-4 py-2 text-xs font-label-caps uppercase text-zinc-400 hover:bg-zinc-800 hover:text-yellow-400 transition-colors disabled:opacity-40"
+              >
+                <span className={clsx('material-symbols-outlined text-sm', isPending && 'animate-spin')}>refresh</span>
+                {lang === 'it' ? 'Aggiorna ora' : 'Refresh now'}
+              </button>
               <button className="flex items-center gap-2 bg-zinc-900 border border-zinc-800 px-4 py-2 text-xs font-label-caps uppercase text-zinc-400 hover:bg-zinc-800 transition-colors">
                 <span className="material-symbols-outlined text-sm">sort</span> {t.sortPrice}
               </button>

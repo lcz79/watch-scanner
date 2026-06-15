@@ -30,6 +30,8 @@ export interface ScanResult {
   scanned_at: string
   agents_used: string[]
   duration_seconds: number
+  cached?: boolean
+  cached_at?: string | null
 }
 
 export interface AgentStatus {

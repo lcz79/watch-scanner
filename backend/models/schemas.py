@@ -34,6 +34,8 @@ class ScanResult(BaseModel):
     scanned_at: datetime
     agents_used: list[str]
     duration_seconds: float
+    cached: bool = False                 # True se servito dalla cache
+    cached_at: datetime | None = None    # quando i dati sono stati raccolti
 
 
 class AgentStatus(BaseModel):

@@ -12,8 +12,8 @@ const api = axios.create({
   timeout: 120000,  // 2 minuti — la scan reale prende 40-60s
 })
 
-export const scanWatch = (query: WatchQuery): Promise<ScanResult> =>
-  api.post('/scan', query).then(r => r.data)
+export const scanWatch = (query: WatchQuery, force = false): Promise<ScanResult> =>
+  api.post('/scan', query, { params: { force } }).then(r => r.data)
 
 export const getAgentsStatus = (): Promise<AgentStatus[]> =>
   api.get('/agents/status').then(r => r.data)

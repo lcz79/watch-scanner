@@ -130,16 +130,36 @@ async def root():
 
 
 @app.post("/scan", response_model=ScanResult)
-async def scan_watch(query: WatchQuery):
+async def scan_watch(query: WatchQuery, force: bool = False):
     """
     Avvia una scansione completa per una referenza.
     Tutti gli agenti girano in parallelo e i risultati vengono aggregati.
+
+    I risultati sono in cache per pochi minuti (deduplica i picchi e contiene
+    il costo della Scraping API). `force=true` ignora la cache e forza il live.
 
     Esempio: POST /scan {"reference": "116610LN"}
     """
     if not query.reference.strip():
         raise HTTPException(status_code=400, detail="Reference non può essere vuota")
+
+    from utils import scan_cache
+    from datetime import datetime as _dt
+
+    # Cache hit: serve i dati recenti senza richiamare gli scraper.
+    if not force:
+        hit = scan_cache.get(query.reference, query.max_price)
+        if hit:
+            ts, cached_result = hit
+            return cached_result.model_copy(update={
+                "cached": True,
+                "cached_at": _dt.fromtimestamp(ts),
+            })
+
     result = await run_scan(query)
+    result.cached = False
+    result.cached_at = _dt.now()
+    scan_cache.put(query.reference, query.max_price, result)
 
     # Auto-save snapshot + seed history if first time
     if result.listings:
