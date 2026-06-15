@@ -15,6 +15,10 @@ from utils.logger import get_logger
 
 _logger = get_logger("agent.marketplace")
 
+# Timeout massimo per singolo scraper: evita che uno lento (es. Chrono24 dietro
+# Cloudflare) blocchi i risultati già pronti degli altri marketplace.
+SCRAPER_TIMEOUT_SECONDS = 22
+
 
 def _apply_watch_filter(listings: list[WatchListing]) -> list[WatchListing]:
     """
@@ -80,11 +84,21 @@ class MarketplaceAgent(BaseAgent):
                 timezone_id="Europe/Rome",
             )
 
+            # Timeout PER SINGOLO scraper: uno scraper lento (es. Chrono24 dietro
+            # Cloudflare) viene annullato da solo senza bloccare i risultati
+            # degli altri, che vengono comunque restituiti.
+            async def _bounded(coro, name: str):
+                try:
+                    return await asyncio.wait_for(coro, timeout=SCRAPER_TIMEOUT_SECONDS)
+                except asyncio.TimeoutError:
+                    self.logger.warning(f"Scraper '{name}' oltre {SCRAPER_TIMEOUT_SECONDS}s — annullato")
+                    return []
+
             results = await asyncio.gather(
-                chrono24.scrape(query.reference, context),
-                ebay.scrape(query.reference, context),
-                subito.scrape(query.reference, context),
-                watchfinder.scrape(query.reference, context),
+                _bounded(chrono24.scrape(query.reference, context), "chrono24"),
+                _bounded(ebay.scrape(query.reference, context), "ebay"),
+                _bounded(subito.scrape(query.reference, context), "subito"),
+                _bounded(watchfinder.scrape(query.reference, context), "watchfinder"),
                 return_exceptions=True,
             )
 
