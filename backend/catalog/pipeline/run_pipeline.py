@@ -73,8 +73,15 @@ def run_scraping(target_brand_slug: str | None, dry_run: bool) -> list[dict]:
             continue
 
         collections = get_collections(brand_slug)
-        brand_entries: list[dict] = []
 
+        # Se 0 collezioni → la pagina brand ha probabilmente restituito 429/403.
+        # Non marchiamo come completato: il prossimo run riproverà.
+        if not collections:
+            log.warning(f"  Nessuna collezione trovata per {brand_name} — skip (verrà riprovato)")
+            time.sleep(DELAY_BETWEEN_BRANDS)
+            continue
+
+        brand_entries: list[dict] = []
         for col in collections:
             refs = get_references(col, brand_name)
             for r in refs:
@@ -86,7 +93,7 @@ def run_scraping(target_brand_slug: str | None, dry_run: bool) -> list[dict]:
         log.info(f"  → {len(brand_entries)} referenze per {brand_name}")
         all_entries.extend(brand_entries)
 
-        # Salva stato intermedio
+        # Salva stato intermedio — marca completato solo se abbiamo dati validi
         if not dry_run:
             FULL_JSON.write_text(json.dumps(all_entries, ensure_ascii=False, indent=2))
             completed = progress.get("completed_brands", [])
