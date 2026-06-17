@@ -1441,6 +1441,411 @@
     "avg_price_eur": 5000
   },
   {
+    "id": "omega-1102-10-00",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "1102.10.00",
+    "canonical_name": "Omega Constellation 1102.10.00",
+    "year_range": "2008–present",
+    "movement": "Omega caliber 1120",
+    "case_size": "35mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/1102-10-00-68.png",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-1102-30-00",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "1102.30.00",
+    "canonical_name": "Omega Constellation 1102.30.00",
+    "year_range": "2008–present",
+    "movement": "Omega caliber 1120",
+    "case_size": "35mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/1102-30-00-f2.jpg",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-111-20-36-20-58-001",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "111.20.36.20.58.001",
+    "canonical_name": "Omega Constellation 111.20.36.20.58.001",
+    "year_range": "2008–present",
+    "movement": "Omega caliber 2500",
+    "case_size": "35mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/111-20-36-20-58-001-57.png",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-111-25-23-60-55-002",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "111.25.23.60.55.002",
+    "canonical_name": "Omega Constellation 111.25.23.60.55.002",
+    "year_range": "2008–present",
+    "movement": "Omega caliber 1456",
+    "case_size": "22mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/111-25-23-60-55-002-c4.jpg",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-111-25-23-60-55-003",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "111.25.23.60.55.003",
+    "canonical_name": "Omega Constellation 111.25.23.60.55.003",
+    "year_range": "2008–present",
+    "movement": "Omega caliber 1456",
+    "case_size": "22mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/111-25-23-60-55-003-b.jpg",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-111-25-36-20-52-001",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "111.25.36.20.52.001",
+    "canonical_name": "Omega Constellation 111.25.36.20.52.001",
+    "year_range": "2008–present",
+    "movement": "Omega caliber 2500",
+    "case_size": "35mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/111-25-36-20-52-001-bf.png",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-111-25-36-20-58-001",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "111.25.36.20.58.001",
+    "canonical_name": "Omega Constellation 111.25.36.20.58.001",
+    "year_range": "2008–present",
+    "movement": "Omega caliber 1120",
+    "case_size": "22mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/111-25-36-20-58-001-7a.jpg",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-1162-10-00",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "1162.10.00",
+    "canonical_name": "Omega Constellation 1162.10.00",
+    "year_range": "",
+    "movement": "Omega caliber 1456",
+    "case_size": "22mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/1162-10-00-e4.jpg",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-1162-30-00",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "1162.30.00",
+    "canonical_name": "Omega Constellation 1162.30.00",
+    "year_range": "",
+    "movement": "Omega caliber 1456",
+    "case_size": "22mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/1162-30-00-15.png",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-1167-75-00",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "1167.75.00",
+    "canonical_name": "Omega Constellation 1167.75.00",
+    "year_range": "",
+    "movement": "Omega caliber 1456",
+    "case_size": "22mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/1167-75-00-fe.png",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-1186-75-00",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "1186.75.00",
+    "canonical_name": "Omega Constellation 1186.75.00",
+    "year_range": "",
+    "movement": "Omega caliber 1376",
+    "case_size": "25mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/1186-75-00-bb.png",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-1203-10-00",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "1203.10.00",
+    "canonical_name": "Omega Constellation 1203.10.00",
+    "year_range": "",
+    "movement": "Omega caliber 2500",
+    "case_size": "38mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/1203-10-00-4a.png",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-1203-15-00",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "1203.15.00",
+    "canonical_name": "Omega Constellation 1203.15.00",
+    "year_range": "1999–present",
+    "movement": "Omega caliber 1120",
+    "case_size": "36mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/1203-15-00-8b.jpg",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-1203-30-00",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "1203.30.00",
+    "canonical_name": "Omega Constellation 1203.30.00",
+    "year_range": "",
+    "movement": "Omega caliber 2500",
+    "case_size": "38mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/1203-30-00-f3.png",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-121-32-44-52-01-001",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "121.32.44.52.01.001",
+    "canonical_name": "Omega Constellation 121.32.44.52.01.001",
+    "year_range": "",
+    "movement": "Omega caliber 3890",
+    "case_size": "44mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/12132445201001-83.jpg",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-121-92-41-50-01-001",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "121.92.41.50.01.001",
+    "canonical_name": "Omega Constellation 121.92.41.50.01.001",
+    "year_range": "",
+    "movement": "Omega caliber 3313",
+    "case_size": "41mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/121-92-41-50-01-001-2a.png",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-1212-10-00",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "1212.10.00",
+    "canonical_name": "Omega Constellation 1212.10.00",
+    "year_range": "",
+    "movement": "Omega caliber 1532",
+    "case_size": "34mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/1212-10-00-db.png",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-123-10-24-60-55-001",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "123.10.24.60.55.001",
+    "canonical_name": "Omega Constellation 123.10.24.60.55.001",
+    "year_range": "",
+    "movement": "Omega caliber 1376",
+    "case_size": "24mm",
+    "image_url": "",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-123-10-35-20-01-001",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "123.10.35.20.01.001",
+    "canonical_name": "Omega Constellation 123.10.35.20.01.001",
+    "year_range": "",
+    "movement": "Omega caliber 2500",
+    "case_size": "35mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/123-10-35-20-01-001-91.png",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-123-10-35-20-01-002",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "123.10.35.20.01.002",
+    "canonical_name": "Omega Constellation 123.10.35.20.01.002",
+    "year_range": "",
+    "movement": "Omega caliber 2500",
+    "case_size": "35mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/123-10-35-20-01-002-9c.png",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-123-10-35-20-02-001",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "123.10.35.20.02.001",
+    "canonical_name": "Omega Constellation 123.10.35.20.02.001",
+    "year_range": "",
+    "movement": "Omega caliber 2500",
+    "case_size": "35mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/123-10-35-20-02-001-71.png",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-123-10-35-20-03-002",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "123.10.35.20.03.002",
+    "canonical_name": "Omega Constellation 123.10.35.20.03.002",
+    "year_range": "",
+    "movement": "Omega caliber 2500",
+    "case_size": "35mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/123-10-35-20-03-002-b1.png",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-123-10-35-20-06-001",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "123.10.35.20.06.001",
+    "canonical_name": "Omega Constellation 123.10.35.20.06.001",
+    "year_range": "",
+    "movement": "Omega caliber 2500",
+    "case_size": "35mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/123-10-35-20-06-001-5c.png",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-123-10-35-20-10-001",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "123.10.35.20.10.001",
+    "canonical_name": "Omega Constellation 123.10.35.20.10.001",
+    "year_range": "",
+    "movement": "Omega caliber 2500",
+    "case_size": "35mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/123-10-35-20-10-001-29.png",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-123-10-35-60-01-001",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "123.10.35.60.01.001",
+    "canonical_name": "Omega Constellation 123.10.35.60.01.001",
+    "year_range": "",
+    "movement": "Omega caliber 1532",
+    "case_size": "35mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/123-10-35-60-01-001-46.png",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-123-10-38-21-01-001",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "123.10.38.21.01.001",
+    "canonical_name": "Omega Constellation 123.10.38.21.01.001",
+    "year_range": "",
+    "movement": "Omega caliber 8500",
+    "case_size": "38mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/123-10-38-21-01-001-76.png",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-123-10-38-21-01-002",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "123.10.38.21.01.002",
+    "canonical_name": "Omega Constellation 123.10.38.21.01.002",
+    "year_range": "",
+    "movement": "Omega caliber 8500",
+    "case_size": "38mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/12310382101002-98.png",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
     "id": "omega-co-2523",
     "brand": "Omega",
     "model": "Constellation",
@@ -1456,6 +1861,441 @@
       "steel"
     ],
     "avg_price_eur": 4500
+  },
+  {
+    "id": "omega-123-10-38-21-02-003",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "123.10.38.21.02.003",
+    "canonical_name": "Omega Constellation 123.10.38.21.02.003",
+    "year_range": "",
+    "movement": "Omega caliber 8500",
+    "case_size": "38mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/123-10-38-21-02-003-b6.png",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-123-10-38-21-06-001",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "123.10.38.21.06.001",
+    "canonical_name": "Omega Constellation 123.10.38.21.06.001",
+    "year_range": "",
+    "movement": "Omega caliber 8500",
+    "case_size": "38mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/123-10-38-21-06-001-e3.png",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-123-10-38-21-06-002",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "123.10.38.21.06.002",
+    "canonical_name": "Omega Constellation 123.10.38.21.06.002",
+    "year_range": "",
+    "movement": "Omega caliber 8500",
+    "case_size": "38mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/123-10-38-21-06-002-4d.png",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-123-10-38-21-51-001",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "123.10.38.21.51.001",
+    "canonical_name": "Omega Constellation 123.10.38.21.51.001",
+    "year_range": "",
+    "movement": "Omega caliber 8500",
+    "case_size": "38mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/123-10-38-21-51-001-6f.png",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-123-10-38-22-01-001",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "123.10.38.22.01.001",
+    "canonical_name": "Omega Constellation 123.10.38.22.01.001",
+    "year_range": "",
+    "movement": "Omega caliber 8602",
+    "case_size": "38mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/123-10-38-22-01-001-1c.png",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-123-15-27-20-01-001",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "123.15.27.20.01.001",
+    "canonical_name": "Omega Constellation 123.15.27.20.01.001",
+    "year_range": "",
+    "movement": "Omega caliber 8520",
+    "case_size": "27mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/12315272001001-e1.png",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-123-20-35-20-06-001",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "123.20.35.20.06.001",
+    "canonical_name": "Omega Constellation 123.20.35.20.06.001",
+    "year_range": "",
+    "movement": "Omega caliber 2500",
+    "case_size": "35mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/123-20-35-20-06-001-c0.png",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-123-20-38-21-02-001",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "123.20.38.21.02.001",
+    "canonical_name": "Omega Constellation 123.20.38.21.02.001",
+    "year_range": "",
+    "movement": "Omega caliber 8500",
+    "case_size": "38mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/123-20-38-21-02-001-82.png",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-123-20-38-21-13-001",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "123.20.38.21.13.001",
+    "canonical_name": "Omega Constellation 123.20.38.21.13.001",
+    "year_range": "",
+    "movement": "Omega caliber 8500",
+    "case_size": "38mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/123-20-38-21-13-001-53.png",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-123-20-38-21-52-001",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "123.20.38.21.52.001",
+    "canonical_name": "Omega Constellation 123.20.38.21.52.001",
+    "year_range": "",
+    "movement": "Omega caliber 8500",
+    "case_size": "38mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/123-20-38-21-52-001-1c.png",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-123-20-38-22-02-001",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "123.20.38.22.02.001",
+    "canonical_name": "Omega Constellation 123.20.38.22.02.001",
+    "year_range": "",
+    "movement": "Omega caliber 8602",
+    "case_size": "38mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/123-20-38-22-02-001-73.png",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-123-25-24-60-55-002",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "123.25.24.60.55.002",
+    "canonical_name": "Omega Constellation 123.25.24.60.55.002",
+    "year_range": "",
+    "movement": "Omega caliber 1376",
+    "case_size": "24mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/12325246055002-c9.jpg",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-123-25-24-60-55-009",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "123.25.24.60.55.009",
+    "canonical_name": "Omega Constellation 123.25.24.60.55.009",
+    "year_range": "",
+    "movement": "Omega caliber 1376",
+    "case_size": "24mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/12325246055009-d9.jpg",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-123-25-27-20-55-005",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "123.25.27.20.55.005",
+    "canonical_name": "Omega Constellation 123.25.27.20.55.005",
+    "year_range": "2015–present",
+    "movement": "Omega caliber 8520",
+    "case_size": "27mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/basel-world-novelties/12325272055005-82.png",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-123-25-27-20-63-001",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "123.25.27.20.63.001",
+    "canonical_name": "Omega Constellation 123.25.27.20.63.001",
+    "year_range": "",
+    "movement": "Omega caliber 8520",
+    "case_size": "27mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/123-25-27-20-63-001-f5.png",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-123-53-38-21-02-001",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "123.53.38.21.02.001",
+    "canonical_name": "Omega Constellation 123.53.38.21.02.001",
+    "year_range": "",
+    "movement": "Omega caliber 8501",
+    "case_size": "38mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/123-53-38-21-02-001-43.png",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-123-55-38-22-02-002",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "123.55.38.22.02.002",
+    "canonical_name": "Omega Constellation 123.55.38.22.02.002",
+    "year_range": "",
+    "movement": "Omega caliber 8612",
+    "case_size": "38mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/123-55-38-22-02-002-c1.png",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-1242-30-00",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "1242.30.00",
+    "canonical_name": "Omega Constellation 1242.30.00",
+    "year_range": "",
+    "movement": "Omega caliber 1270Small",
+    "case_size": "39mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/1242-30-00-50.png",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-1242-50-00",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "1242.50.00",
+    "canonical_name": "Omega Constellation 1242.50.00",
+    "year_range": "",
+    "movement": "Omega caliber 1270Small",
+    "case_size": "39mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/1242-50-00-73.png",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-1267-30-00",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "1267.30.00",
+    "canonical_name": "Omega Constellation 1267.30.00",
+    "year_range": "",
+    "movement": "Omega caliber 1456",
+    "case_size": "22mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/1267-30-00-bd.png",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-127-20-27-20-55-001",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "127.20.27.20.55.001",
+    "canonical_name": "Omega Constellation 127.20.27.20.55.001",
+    "year_range": "",
+    "movement": "Omega caliber 8704",
+    "case_size": "27mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/127-20-27-20-55-001-66.png",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-1272-10-00",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "1272.10.00",
+    "canonical_name": "Omega Constellation 1272.10.00",
+    "year_range": "",
+    "movement": "Omega caliber 1456",
+    "case_size": "26mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/1272-10-00-4c.png",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-1292-10-00",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "1292.10.00",
+    "canonical_name": "Omega Constellation 1292.10.00",
+    "year_range": "2008–present",
+    "movement": "Omega caliber 2520",
+    "case_size": "28mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/1292-10-00-10.png",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-1297-75-00",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "1297.75.00",
+    "canonical_name": "Omega Constellation 1297.75.00",
+    "year_range": "",
+    "movement": "Omega caliber 1424",
+    "case_size": "28mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/1297-75-00-bf.png",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-1302-10-00",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "1302.10.00",
+    "canonical_name": "Omega Constellation 1302.10.00",
+    "year_range": "2008–present",
+    "movement": "Omega caliber 1120",
+    "case_size": "35mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/1302-10-00-c7.png",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-1302-30-00",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "1302.30.00",
+    "canonical_name": "Omega Constellation 1302.30.00",
+    "year_range": "2008–present",
+    "movement": "Omega caliber 1120",
+    "case_size": "35mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/1302-30-00-53.png",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-1304-35-00",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "1304.35.00",
+    "canonical_name": "Omega Constellation 1304.35.00",
+    "year_range": "",
+    "movement": "Omega caliber 1120",
+    "case_size": "35mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/1304-35-00-df.jpg",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-131-10-28-60-01-001",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "131.10.28.60.01.001",
+    "canonical_name": "Omega Constellation 131.10.28.60.01.001",
+    "year_range": "2025–present",
+    "movement": "Omega caliber 4061",
+    "case_size": "28mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/131-10-28-60-01-001-5c.jpg",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-131-10-36-20-01-001",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "131.10.36.20.01.001",
+    "canonical_name": "Omega Constellation 131.10.36.20.01.001",
+    "year_range": "2019–present",
+    "movement": "Omega caliber 8800",
+    "case_size": "36mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/131-10-36-20-01-001-ed.png",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
   },
   {
     "id": "omega-co-131103622055001",
@@ -1475,6 +2315,141 @@
     "avg_price_eur": 4500
   },
   {
+    "id": "omega-131-10-36-60-01-001",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "131.10.36.60.01.001",
+    "canonical_name": "Omega Constellation 131.10.36.60.01.001",
+    "year_range": "2020–present",
+    "movement": "Omega caliber 4564",
+    "case_size": "36mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/131-10-36-60-01-001-bc.jpg",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-131-12-41-21-06-001",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "131.12.41.21.06.001",
+    "canonical_name": "Omega Constellation 131.12.41.21.06.001",
+    "year_range": "2020–present",
+    "movement": "Omega caliber 8900",
+    "case_size": "41mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/131-12-41-21-06-001-24.jpg",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-131-13-34-20-53-001",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "131.13.34.20.53.001",
+    "canonical_name": "Omega Constellation 131.13.34.20.53.001",
+    "year_range": "2021–present",
+    "movement": "Omega caliber 8802",
+    "case_size": "34mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/131-13-34-20-53-001-54.jpg",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-131-15-28-60-99-001",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "131.15.28.60.99.001",
+    "canonical_name": "Omega Constellation 131.15.28.60.99.001",
+    "year_range": "2024–present",
+    "movement": "Omega caliber 4061",
+    "case_size": "28mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/131-15-28-60-99-001-c4.jpg",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-131-20-28-60-05-001",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "131.20.28.60.05.001",
+    "canonical_name": "Omega Constellation 131.20.28.60.05.001",
+    "year_range": "2018–present",
+    "movement": "Omega caliber 4061",
+    "case_size": "28mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/131-20-28-60-05-001-b2.png",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-131-20-36-20-02-002",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "131.20.36.20.02.002",
+    "canonical_name": "Omega Constellation 131.20.36.20.02.002",
+    "year_range": "2019–present",
+    "movement": "Omega caliber 8800",
+    "case_size": "36mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/131-20-36-20-02-002-a6.png",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-131-20-36-20-58-001",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "131.20.36.20.58.001",
+    "canonical_name": "Omega Constellation 131.20.36.20.58.001",
+    "year_range": "2019–present",
+    "movement": "Omega caliber 8800",
+    "case_size": "36mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/131-20-36-20-58-001-b2.png",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-131-20-36-60-02-002",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "131.20.36.60.02.002",
+    "canonical_name": "Omega Constellation 131.20.36.60.02.002",
+    "year_range": "2020–present",
+    "movement": "Omega caliber 4564",
+    "case_size": "36mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/131-20-36-60-02-002-a.jpg",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-131-20-39-20-13-001",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "131.20.39.20.13.001",
+    "canonical_name": "Omega Constellation 131.20.39.20.13.001",
+    "year_range": "2019–present",
+    "movement": "Omega caliber 8800",
+    "case_size": "39mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/131-20-39-20-13-001-9a.png",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
     "id": "omega-co-131232920655001",
     "brand": "Omega",
     "model": "Constellation",
@@ -1490,6 +2465,681 @@
       "master"
     ],
     "avg_price_eur": 4000
+  },
+  {
+    "id": "omega-131-23-39-20-52-001",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "131.23.39.20.52.001",
+    "canonical_name": "Omega Constellation 131.23.39.20.52.001",
+    "year_range": "2019–present",
+    "movement": "Omega caliber 8800",
+    "case_size": "39mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/131-23-39-20-52-001-f3.png",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-131-25-25-60-53-001",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "131.25.25.60.53.001",
+    "canonical_name": "Omega Constellation 131.25.25.60.53.001",
+    "year_range": "2018–present",
+    "movement": "Omega caliber 4061",
+    "case_size": "25mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/131-25-25-60-53-001-ac.png",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-131-25-29-20-53-001",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "131.25.29.20.53.001",
+    "canonical_name": "Omega Constellation 131.25.29.20.53.001",
+    "year_range": "2019–present",
+    "movement": "Omega caliber 8700",
+    "case_size": "29mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/131-25-29-20-53-001-72.png",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-131-25-29-20-99-001",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "131.25.29.20.99.001",
+    "canonical_name": "Omega Constellation 131.25.29.20.99.001",
+    "year_range": "2024–present",
+    "movement": "Omega caliber 8700",
+    "case_size": "29mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/131-25-29-20-99-001-50.jpg",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-131-28-29-20-99-003",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "131.28.29.20.99.003",
+    "canonical_name": "Omega Constellation 131.28.29.20.99.003",
+    "year_range": "2022–present",
+    "movement": "Omega caliber 8700",
+    "case_size": "29mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/131-28-29-20-99-003-fb.jpg",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-131-30-41-21-01-001",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "131.30.41.21.01.001",
+    "canonical_name": "Omega Constellation 131.30.41.21.01.001",
+    "year_range": "2024–present",
+    "movement": "Omega caliber 8900",
+    "case_size": "41mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/131-30-41-21-01-001-6f.jpg",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-131-50-36-20-02-002",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "131.50.36.20.02.002",
+    "canonical_name": "Omega Constellation 131.50.36.20.02.002",
+    "year_range": "2019–present",
+    "movement": "Omega caliber 8800",
+    "case_size": "36mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/131-50-36-20-02-002-38.png",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-131-50-39-20-02-001",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "131.50.39.20.02.001",
+    "canonical_name": "Omega Constellation 131.50.39.20.02.001",
+    "year_range": "2019–present",
+    "movement": "Omega caliber 8801",
+    "case_size": "39mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/131-50-39-20-02-001-74.png",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-131-53-39-20-02-002",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "131.53.39.20.02.002",
+    "canonical_name": "Omega Constellation 131.53.39.20.02.002",
+    "year_range": "2019–present",
+    "movement": "Omega caliber 8801",
+    "case_size": "39mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/131-53-39-20-02-002-b.png",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-131-55-39-20-52-001",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "131.55.39.20.52.001",
+    "canonical_name": "Omega Constellation 131.55.39.20.52.001",
+    "year_range": "2019–present",
+    "movement": "Omega caliber 8801",
+    "case_size": "39mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/131-55-39-20-52-001-e.jpg",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-1312-10-00",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "1312.10.00",
+    "canonical_name": "Omega Constellation 1312.10.00",
+    "year_range": "",
+    "movement": "Omega caliber 1532",
+    "case_size": "34mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/1312-10-00-d3.png",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-1312-30-00",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "1312.30.00",
+    "canonical_name": "Omega Constellation 1312.30.00",
+    "year_range": "",
+    "movement": "Omega caliber 1532",
+    "case_size": "34mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/1312-30-00-fb.png",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-1362-30-00",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "1362.30.00",
+    "canonical_name": "Omega Constellation 1362.30.00",
+    "year_range": "",
+    "movement": "Omega caliber 1456",
+    "case_size": "22mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/1362-30-00-dc.png",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-1365-71-00",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "1365.71.00",
+    "canonical_name": "Omega Constellation 1365.71.00",
+    "year_range": "",
+    "movement": "Omega caliber 1456",
+    "case_size": "22mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/1365-71-00-95.png",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-1382-30-00",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "1382.30.00",
+    "canonical_name": "Omega Constellation 1382.30.00",
+    "year_range": "",
+    "movement": "Omega caliber 1424",
+    "case_size": "28mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/1382-30-00-4f.png",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-1391-71-00",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "1391.71.00",
+    "canonical_name": "Omega Constellation 1391.71.00",
+    "year_range": "",
+    "movement": "Omega caliber 2520",
+    "case_size": "28mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/1391-71-00-eb.png",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-1392-30-00",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "1392.30.00",
+    "canonical_name": "Omega Constellation 1392.30.00",
+    "year_range": "",
+    "movement": "Omega caliber 2520",
+    "case_size": "28mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/1392-30-00-f1.png",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-1395-79-00",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "1395.79.00",
+    "canonical_name": "Omega Constellation 1395.79.00",
+    "year_range": "",
+    "movement": "Omega caliber 2520",
+    "case_size": "28mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/1395-79-00-c7.jpg",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-1475-79-00",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "1475.79.00",
+    "canonical_name": "Omega Constellation 1475.79.00",
+    "year_range": "",
+    "movement": "Omega caliber 1456",
+    "case_size": "26mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/1475-79-00-dd.png",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-1476-71-00",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "1476.71.00",
+    "canonical_name": "Omega Constellation 1476.71.00",
+    "year_range": "",
+    "movement": "Omega caliber 1456",
+    "case_size": "26mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/1476-71-00-74.png",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-1501-30-00",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "1501.30.00",
+    "canonical_name": "Omega Constellation 1501.30.00",
+    "year_range": "",
+    "movement": "Omega caliber 2500",
+    "case_size": "35mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/1501-30-00-7a.png",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-1501-51-00",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "1501.51.00",
+    "canonical_name": "Omega Constellation 1501.51.00",
+    "year_range": "",
+    "movement": "Omega caliber 2500",
+    "case_size": "35mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/1501-51-00-ff.png",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-1503-51-00",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "1503.51.00",
+    "canonical_name": "Omega Constellation 1503.51.00",
+    "year_range": "",
+    "movement": "Omega caliber 2500",
+    "case_size": "35mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/1503-51-00-6f.jpg",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-1504-35-00",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "1504.35.00",
+    "canonical_name": "Omega Constellation 1504.35.00",
+    "year_range": "",
+    "movement": "Omega caliber 1120",
+    "case_size": "35mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/1504-35-00-dd.jpg",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-1511-51-00",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "1511.51.00",
+    "canonical_name": "Omega Constellation 1511.51.00",
+    "year_range": "",
+    "movement": "Omega caliber 1680",
+    "case_size": "35mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/1511-51-00-a4.png",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-1512-30-00",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "1512.30.00",
+    "canonical_name": "Omega Constellation 1512.30.00",
+    "year_range": "",
+    "movement": "Omega caliber 1532",
+    "case_size": "34mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/1512-30-00-e7.jpg",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-1514-20-00",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "1514.20.00",
+    "canonical_name": "Omega Constellation 1514.20.00",
+    "year_range": "",
+    "movement": "Omega caliber 3313",
+    "case_size": "41mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/1514-20-00-d6.png",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-1514-51-00",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "1514.51.00",
+    "canonical_name": "Omega Constellation 1514.51.00",
+    "year_range": "",
+    "movement": "Omega caliber 3313",
+    "case_size": "41mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/1514-51-00-31.png",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-1516-76-00",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "1516.76.00",
+    "canonical_name": "Omega Constellation 1516.76.00",
+    "year_range": "",
+    "movement": "Omega caliber 1120",
+    "case_size": "35mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/1516-76-00-ee.jpg",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-1519-51-00",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "1519.51.00",
+    "canonical_name": "Omega Constellation 1519.51.00",
+    "year_range": "",
+    "movement": "Omega caliber 3313",
+    "case_size": "41mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/1519-51-00-87.png",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-1528-46-00",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "1528.46.00",
+    "canonical_name": "Omega Constellation 1528.46.00",
+    "year_range": "2003–present",
+    "movement": "Omega caliber 1376",
+    "case_size": "19mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/1528-46-00-3b.png",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-1528-76-00",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "1528.76.00",
+    "canonical_name": "Omega Constellation 1528.76.00",
+    "year_range": "2003–present",
+    "movement": "Omega caliber 1376",
+    "case_size": "19mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/1528-76-00-f0.jpg",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-1542-30-00",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "1542.30.00",
+    "canonical_name": "Omega Constellation 1542.30.00",
+    "year_range": "",
+    "movement": "Omega caliber 1270Small",
+    "case_size": "39mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/1542-30-00-e2.png",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-1542-40-00",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "1542.40.00",
+    "canonical_name": "Omega Constellation 1542.40.00",
+    "year_range": "",
+    "movement": "Omega caliber 1270Small",
+    "case_size": "39mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/1542-40-00-a5.png",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-1566-56-00",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "1566.56.00",
+    "canonical_name": "Omega Constellation 1566.56.00",
+    "year_range": "",
+    "movement": "Omega caliber 1456",
+    "case_size": "22mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/1566-56-00-c7.png",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-1566-66-00",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "1566.66.00",
+    "canonical_name": "Omega Constellation 1566.66.00",
+    "year_range": "",
+    "movement": "Omega caliber 1456",
+    "case_size": "22mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/1566-66-00-93.png",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-1585-79-00",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "1585.79.00",
+    "canonical_name": "Omega Constellation 1585.79.00",
+    "year_range": "",
+    "movement": "Omega caliber 1376",
+    "case_size": "25mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/1585-79-00-d0.png",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-1586-70-00",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "1586.70.00",
+    "canonical_name": "Omega Constellation 1586.70.00",
+    "year_range": "",
+    "movement": "Omega caliber 1376",
+    "case_size": "25mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/1586-70-00-19.jpg",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-1619-51-91",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "1619.51.91",
+    "canonical_name": "Omega Constellation 1619.51.91",
+    "year_range": "",
+    "movement": "Omega caliber 3313",
+    "case_size": "41mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/1619-51-91-6b.png",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-1635-73-63",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "1635.73.63",
+    "canonical_name": "Omega Constellation 1635.73.63",
+    "year_range": "2003–present",
+    "movement": "Omega caliber 1376",
+    "case_size": "19mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/1635-73-63-e8.jpg",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-1819-51-91",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "1819.51.91",
+    "canonical_name": "Omega Constellation 1819.51.91",
+    "year_range": "",
+    "movement": "Omega caliber 3313",
+    "case_size": "41mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/18195191-67.jpg",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-1847-70-34",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "1847.70.34",
+    "canonical_name": "Omega Constellation 1847.70.34",
+    "year_range": "2003–present",
+    "movement": "Omega caliber 5200Small",
+    "case_size": "28mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/1847-70-34-ff.png",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-1900-11-51",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "1900.11.51",
+    "canonical_name": "Omega Constellation 1900.11.51",
+    "year_range": "2001–present",
+    "movement": "Omega caliber 1120",
+    "case_size": "35mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/1900-11-51-5c.jpg",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-1920-18-00",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "1920.18.00",
+    "canonical_name": "Omega Constellation 1920.18.00",
+    "year_range": "1995–1996",
+    "movement": "Omega caliber 1120",
+    "case_size": "35mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/1920-18-00-43.jpg",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "omega-st-168-0018",
+    "brand": "Omega",
+    "model": "Constellation",
+    "reference": "ST 168.0018",
+    "canonical_name": "Omega Constellation ST 168.0018",
+    "year_range": "1967–1971",
+    "movement": "Omega caliber 564",
+    "case_size": "35mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/omega/constellation/st-168-0018-36.jpg",
+    "tags": [
+      "omega"
+    ],
+    "avg_price_eur": 0
   },
   {
     "id": "omega-co-131104122065001",
@@ -2506,6 +4156,1716 @@
       "white-gold"
     ],
     "avg_price_eur": 120000
+  },
+  {
+    "id": "patek-philippe-1518a",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "1518A",
+    "canonical_name": "Patek Philippe Grand Complications 1518A",
+    "year_range": "1941–1954",
+    "movement": "Patek Philippe caliber 13'''130 Q",
+    "case_size": "35mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/1518a-e1.jpg",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-2499j-series-2",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "2499J SERIES 2",
+    "canonical_name": "Patek Philippe Grand Complications 2499J SERIES 2",
+    "year_range": "1955–1960",
+    "movement": "Patek Philippe caliber 13'''130 Q",
+    "case_size": "38mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/2499-series-2-3a.jpg",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-2499j-series-3",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "2499J SERIES 3",
+    "canonical_name": "Patek Philippe Grand Complications 2499J SERIES 3",
+    "year_range": "1960–1978",
+    "movement": "Patek Philippe caliber 13'''130 Q",
+    "case_size": "38mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/2499-iii-c1.jpg",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-2499j-series-4",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "2499J SERIES 4",
+    "canonical_name": "Patek Philippe Grand Complications 2499J SERIES 4",
+    "year_range": "1978–1985",
+    "movement": "Patek Philippe caliber 13''' CCR",
+    "case_size": "38mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/2499j-series-4-e5.jpg",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-3939-mop",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "3939 MOP",
+    "canonical_name": "Patek Philippe Grand Complications 3939 MOP",
+    "year_range": "2010–present",
+    "movement": "Patek Philippe caliber R TO 27 PS",
+    "case_size": "33mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/3939-mop-13.jpg",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-3940j-025",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "3940J-025",
+    "canonical_name": "Patek Philippe Grand Complications 3940J-025",
+    "year_range": "",
+    "movement": "Patek Philippe caliber 240 QDay / Night Indication",
+    "case_size": "36mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/3940j-025-1d.jpg",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-3970p-2",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "3970P/2",
+    "canonical_name": "Patek Philippe Grand Complications 3970P/2",
+    "year_range": "1989–1989",
+    "movement": "Patek Philippe caliber CH 27-70 Q",
+    "case_size": "36mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/3970p-2-1b.jpg",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-3974j-001",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "3974J-001",
+    "canonical_name": "Patek Philippe Grand Complications 3974J-001",
+    "year_range": "1989–2000",
+    "movement": "Patek Philippe caliber R 27 Q",
+    "case_size": "41mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/3974j-001-6d.jpg",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-5002j-001",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "5002J-001",
+    "canonical_name": "Patek Philippe Grand Complications 5002J-001",
+    "year_range": "2000–2014",
+    "movement": "Patek Philippe caliber R TO 27 QR SID LU CL",
+    "case_size": "43mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/5002j-001-3b.jpg",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-5002p-001",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "5002P-001",
+    "canonical_name": "Patek Philippe Grand Complications 5002P-001",
+    "year_range": "2000–2014",
+    "movement": "Patek Philippe caliber R TO 27 QR SID LU CL",
+    "case_size": "43mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/5002p-001-aa.jpg",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-5004g-001",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "5004G-001",
+    "canonical_name": "Patek Philippe Grand Complications 5004G-001",
+    "year_range": "1996–2011",
+    "movement": "Patek Philippe caliber CHR 27-70 Q",
+    "case_size": "37mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/5004g-001-3b.jpg",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-5004p-021",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "5004P-021",
+    "canonical_name": "Patek Philippe Grand Complications 5004P-021",
+    "year_range": "1996–2011",
+    "movement": "Patek Philippe caliber CHR 27-70 Q",
+    "case_size": "37mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/5004p-021-f4.jpg",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-5004p-033",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "5004P-033",
+    "canonical_name": "Patek Philippe Grand Complications 5004P-033",
+    "year_range": "1996–2011",
+    "movement": "Patek Philippe caliber CHR 27-70 Q",
+    "case_size": "37mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/5004p-59.jpg",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-5004p-064",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "5004P-064",
+    "canonical_name": "Patek Philippe Grand Complications 5004P-064",
+    "year_range": "2009–2009",
+    "movement": "Patek Philippe caliber CHR 27-70 Q",
+    "case_size": "37mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/5004p-064-42.jpg",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-5004t-001",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "5004T-001",
+    "canonical_name": "Patek Philippe Grand Complications 5004T-001",
+    "year_range": "2013–2013",
+    "movement": "Patek Philippe caliber CHR 27-70 Q",
+    "case_size": "37mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/5004t-001-23.jpg",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-5013j-001",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "5013J-001",
+    "canonical_name": "Patek Philippe Grand Complications 5013J-001",
+    "year_range": "1992–present",
+    "movement": "Patek Philippe caliber R 27 PS QR",
+    "case_size": "36mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/5013j-d3.jpg",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-5016j-001",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "5016J-001",
+    "canonical_name": "Patek Philippe Grand Complications 5016J-001",
+    "year_range": "1993–2010",
+    "movement": "Patek Philippe caliber R TO 27 PS QR",
+    "case_size": "40mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/5016j-001-1c.jpg",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-5016p-001",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "5016P-001",
+    "canonical_name": "Patek Philippe Grand Complications 5016P-001",
+    "year_range": "1999–2010",
+    "movement": "Patek Philippe caliber R TO 27 PS QR",
+    "case_size": "40mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/5016p-001-b6.jpg",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-5039j-001",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "5039J-001",
+    "canonical_name": "Patek Philippe Grand Complications 5039J-001",
+    "year_range": "",
+    "movement": "Patek Philippe caliber 240 QDay / Night Indication",
+    "case_size": "36mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/5039j-001-3a.jpg",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-5073p-001",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "5073P-001",
+    "canonical_name": "Patek Philippe Grand Complications 5073P-001",
+    "year_range": "2013–present",
+    "movement": "Patek Philippe caliber R 27 Q",
+    "case_size": "42mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/5073p-001-39.png",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-5073p-010",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "5073P-010",
+    "canonical_name": "Patek Philippe Grand Complications 5073P-010",
+    "year_range": "2015–present",
+    "movement": "Patek Philippe caliber R 27 Q",
+    "case_size": "42mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/5073p-010-78.png",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-5074p-001",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "5074P-001",
+    "canonical_name": "Patek Philippe Grand Complications 5074P-001",
+    "year_range": "2009–2016",
+    "movement": "Patek Philippe caliber R 27 Q",
+    "case_size": "42mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/5074p-001-9b.png",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-5074r-001",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "5074R-001",
+    "canonical_name": "Patek Philippe Grand Complications 5074R-001",
+    "year_range": "2016–present",
+    "movement": "Patek Philippe caliber R 27 Q",
+    "case_size": "42mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/5074r-001-93.png",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-5078g-010",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "5078G-010",
+    "canonical_name": "Patek Philippe Grand Complications 5078G-010",
+    "year_range": "2019–2023",
+    "movement": "Patek Philippe caliber R 27 PS",
+    "case_size": "38mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/5078g-010-b.jpg",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-5078p-001",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "5078P-001",
+    "canonical_name": "Patek Philippe Grand Complications 5078P-001",
+    "year_range": "2008–present",
+    "movement": "Patek Philippe caliber R 27 PS",
+    "case_size": "38mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/5078p-001-5a.png",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-5078r-001",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "5078R-001",
+    "canonical_name": "Patek Philippe Grand Complications 5078R-001",
+    "year_range": "2014–present",
+    "movement": "Patek Philippe caliber R 27 PS",
+    "case_size": "38mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/5078r-001-52.png",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-5101-100r-001",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "5101/100R-001",
+    "canonical_name": "Patek Philippe Grand Complications 5101/100R-001",
+    "year_range": "2012–present",
+    "movement": "Patek Philippe caliber TO 28-20 REC 10J PS IRM",
+    "case_size": "30mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/5101-100r-001-42.jpg",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-5101p-001",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "5101P-001",
+    "canonical_name": "Patek Philippe Grand Complications 5101P-001",
+    "year_range": "2021–present",
+    "movement": "Patek Philippe caliber TO 28-20 REC 10J PS IRM",
+    "case_size": "30mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/5101p-001-30.jpg",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-5104p-001",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "5104P-001",
+    "canonical_name": "Patek Philippe Grand Complications 5104P-001",
+    "year_range": "2006–2014",
+    "movement": "Patek Philippe caliber R 27 PS QR LU",
+    "case_size": "43mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/5104p-001-e6.jpg",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-5139g-010",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "5139G-010",
+    "canonical_name": "Patek Philippe Grand Complications 5139G-010",
+    "year_range": "2011–2018",
+    "movement": "Patek Philippe caliber 240 QDay / Night Indication",
+    "case_size": "38mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/5139g-010-6f.png",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-5140g-001",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "5140G-001",
+    "canonical_name": "Patek Philippe Grand Complications 5140G-001",
+    "year_range": "2006–2016",
+    "movement": "Patek Philippe caliber 240 QDay / Night Indication",
+    "case_size": "37mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/5140g-001-2b.png",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-5140j-001",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "5140J-001",
+    "canonical_name": "Patek Philippe Grand Complications 5140J-001",
+    "year_range": "2006–2016",
+    "movement": "Patek Philippe caliber 240 QDay / Night Indication",
+    "case_size": "37mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/5140j-001-fd.png",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-5140p-001",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "5140P-001",
+    "canonical_name": "Patek Philippe Grand Complications 5140P-001",
+    "year_range": "2006–2015",
+    "movement": "Patek Philippe caliber 240 QDay / Night Indication",
+    "case_size": "37mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/5140p-001-a5.png",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-5140p-013",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "5140P-013",
+    "canonical_name": "Patek Philippe Grand Complications 5140P-013",
+    "year_range": "2014–2016",
+    "movement": "Patek Philippe caliber 240 QDay / Night Indication",
+    "case_size": "37mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/5140p-013-44.png",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-5140p-017",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "5140P-017",
+    "canonical_name": "Patek Philippe Grand Complications 5140P-017",
+    "year_range": "2016–2018",
+    "movement": "Patek Philippe caliber 240 QDay / Night Indication",
+    "case_size": "37mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/5140p-017-d1.png",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-5140r-001",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "5140R-001",
+    "canonical_name": "Patek Philippe Grand Complications 5140R-001",
+    "year_range": "2006–2015",
+    "movement": "Patek Philippe caliber 240 QDay / Night Indication",
+    "case_size": "37mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/5140r-001-ba.png",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-5140r-011",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "5140R-011",
+    "canonical_name": "Patek Philippe Grand Complications 5140R-011",
+    "year_range": "2014–2016",
+    "movement": "Patek Philippe caliber 240 QDay / Night Indication",
+    "case_size": "37mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/5140r-011-1e.png",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-5159g-001",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "5159G-001",
+    "canonical_name": "Patek Philippe Grand Complications 5159G-001",
+    "year_range": "2007–2020",
+    "movement": "Patek Philippe caliber 324 S QR",
+    "case_size": "38mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/5159g-001-8f.png",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-5159r-001",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "5159R-001",
+    "canonical_name": "Patek Philippe Grand Complications 5159R-001",
+    "year_range": "2007–2020",
+    "movement": "Patek Philippe caliber 324 S QR",
+    "case_size": "38mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/5159r-001-7d.png",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-5160-500g-001",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "5160/500G-001",
+    "canonical_name": "Patek Philippe Grand Complications 5160/500G-001",
+    "year_range": "2016–present",
+    "movement": "Patek Philippe caliber 324 S QR",
+    "case_size": "38mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/5160-500g-001-ff.png",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-5175r-001",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "5175R-001",
+    "canonical_name": "Patek Philippe Grand Complications 5175R-001",
+    "year_range": "2014–2015",
+    "movement": "Patek Philippe caliber 300 GS AL 36-750 QIS FUS IRMAdditional 24 Hour Hand (adjustable)",
+    "case_size": "47mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/175th-commemorative-watches/5175r-001-bc.png",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-5204-1r-001",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "5204/1R-001",
+    "canonical_name": "Patek Philippe Grand Complications 5204/1R-001",
+    "year_range": "2016–present",
+    "movement": "Patek Philippe caliber CHR 29-535 PS Q",
+    "case_size": "40mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/5204-1r-001-70.png",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-5204g-001",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "5204G-001",
+    "canonical_name": "Patek Philippe Grand Complications 5204G-001",
+    "year_range": "2021–present",
+    "movement": "Patek Philippe caliber CHR 29-535 PS Q",
+    "case_size": "40mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/5204g-001-2e.jpg",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-5204g-010",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "5204G-010",
+    "canonical_name": "Patek Philippe Grand Complications 5204G-010",
+    "year_range": "2026–present",
+    "movement": "Patek Philippe caliber CHR 29-535 PS Q",
+    "case_size": "40mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/5204g-010-13.jpg",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-5204p-001",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "5204P-001",
+    "canonical_name": "Patek Philippe Grand Complications 5204P-001",
+    "year_range": "2012–2013",
+    "movement": "Patek Philippe caliber CHR 29-535 PS Q",
+    "case_size": "40mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/5204p-001-67.png",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-5204p-010",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "5204P-010",
+    "canonical_name": "Patek Philippe Grand Complications 5204P-010",
+    "year_range": "2013–2015",
+    "movement": "Patek Philippe caliber CHR 29-535 PS Q",
+    "case_size": "40mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/5204p-010-93.png",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-5204p-011",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "5204P-011",
+    "canonical_name": "Patek Philippe Grand Complications 5204P-011",
+    "year_range": "2014–2019",
+    "movement": "Patek Philippe caliber CHR 29-535 PS Q",
+    "case_size": "40mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/5204p-011-b3.png",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-5207p-001",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "5207P-001",
+    "canonical_name": "Patek Philippe Grand Complications 5207P-001",
+    "year_range": "2008–2016",
+    "movement": "Patek Philippe caliber R TO 27 PS QIDay / Night Indication",
+    "case_size": "41mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/5207p-001-82.png",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-5207r-001",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "5207R-001",
+    "canonical_name": "Patek Philippe Grand Complications 5207R-001",
+    "year_range": "2012–2016",
+    "movement": "Patek Philippe caliber R TO 27 PS QIDay / Night Indication",
+    "case_size": "41mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/5207r-001-1a.png",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-5208p-001",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "5208P-001",
+    "canonical_name": "Patek Philippe Grand Complications 5208P-001",
+    "year_range": "2010–2018",
+    "movement": "Patek Philippe caliber R CH 27 PS QI",
+    "case_size": "42mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/5208p-001-ed.png",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-5208r-001",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "5208R-001",
+    "canonical_name": "Patek Philippe Grand Complications 5208R-001",
+    "year_range": "2018–2025",
+    "movement": "Patek Philippe caliber R CH 27 PS QI",
+    "case_size": "42mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/5208r-001-ec.jpg",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-5213g-010",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "5213G-010",
+    "canonical_name": "Patek Philippe Grand Complications 5213G-010",
+    "year_range": "2012–present",
+    "movement": "Patek Philippe caliber R 27 PS QR",
+    "case_size": "41mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/5213g-010-b7.png",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-5216p-001",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "5216P-001",
+    "canonical_name": "Patek Philippe Grand Complications 5216P-001",
+    "year_range": "2013–present",
+    "movement": "Patek Philippe caliber R TO 27 PS QR",
+    "case_size": "40mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/5216p-001-ed.png",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-5236p-001",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "5236P-001",
+    "canonical_name": "Patek Philippe Grand Complications 5236P-001",
+    "year_range": "2021–present",
+    "movement": "Patek Philippe caliber 31-260 PS QL",
+    "case_size": "41mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/5236p-001-63.jpg",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-5236p-011",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "5236P-011",
+    "canonical_name": "Patek Philippe Grand Complications 5236P-011",
+    "year_range": "2026–present",
+    "movement": "Patek Philippe caliber 31-260 PS QL",
+    "case_size": "41mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/5236p-011-d9.jpg",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-5270-1r-001",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "5270/1R-001",
+    "canonical_name": "Patek Philippe Grand Complications 5270/1R-001",
+    "year_range": "2015–2018",
+    "movement": "Patek Philippe caliber CH 29-535 PS Q",
+    "case_size": "41mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/5270-1r-001-14.jpg",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-5270g-001",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "5270G-001",
+    "canonical_name": "Patek Philippe Grand Complications 5270G-001",
+    "year_range": "2011–2013",
+    "movement": "Patek Philippe caliber CH 29-535 PS Q",
+    "case_size": "41mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/5270g-001-53.png",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-5270g-014",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "5270G-014",
+    "canonical_name": "Patek Philippe Grand Complications 5270G-014",
+    "year_range": "2013–2015",
+    "movement": "Patek Philippe caliber CH 29-535 PS Q",
+    "case_size": "41mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/5270g-014-cc.png",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-5270g-018",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "5270G-018",
+    "canonical_name": "Patek Philippe Grand Complications 5270G-018",
+    "year_range": "2015–present",
+    "movement": "Patek Philippe caliber CH 29-535 PS Q",
+    "case_size": "41mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/5270g-018-c7.png",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-5270g-019",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "5270G-019",
+    "canonical_name": "Patek Philippe Grand Complications 5270G-019",
+    "year_range": "2015–present",
+    "movement": "Patek Philippe caliber CH 29-535 PS Q",
+    "case_size": "41mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/5270g-019-c.png",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-5270j-001",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "5270J-001",
+    "canonical_name": "Patek Philippe Grand Complications 5270J-001",
+    "year_range": "2020–present",
+    "movement": "Patek Philippe caliber CH 29-535 PS Q",
+    "case_size": "41mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/5270j-001-aa.jpg",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-5270p-015",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "5270P-015",
+    "canonical_name": "Patek Philippe Grand Complications 5270P-015",
+    "year_range": "2022–present",
+    "movement": "Patek Philippe caliber CH 29-535 PS Q",
+    "case_size": "41mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/5270p-015-bd.jpg",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-5270p-016",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "5270P-016",
+    "canonical_name": "Patek Philippe Grand Complications 5270P-016",
+    "year_range": "2022–present",
+    "movement": "Patek Philippe caliber CH 29-535 PS Q",
+    "case_size": "41mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/5270p-016-76.jpg",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-5270p-017",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "5270P-017",
+    "canonical_name": "Patek Philippe Grand Complications 5270P-017",
+    "year_range": "2022–present",
+    "movement": "Patek Philippe caliber CH 29-535 PS Q",
+    "case_size": "41mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/5270p-017-80.jpg",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-5270r-001",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "5270R-001",
+    "canonical_name": "Patek Philippe Grand Complications 5270R-001",
+    "year_range": "2015–2018",
+    "movement": "Patek Philippe caliber CH 29-535 PS Q",
+    "case_size": "41mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/5270r-001-31.png",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-5271-11p-001",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "5271/11P-001",
+    "canonical_name": "Patek Philippe Grand Complications 5271/11P-001",
+    "year_range": "2017–present",
+    "movement": "Patek Philippe caliber CH 29-535 PS Q",
+    "case_size": "41mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/5271-11p-001-51.png",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-5271-11p-010",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "5271/11P-010",
+    "canonical_name": "Patek Philippe Grand Complications 5271/11P-010",
+    "year_range": "2022–present",
+    "movement": "Patek Philippe caliber CH 29-535 PS Q",
+    "case_size": "41mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/5271-11p-010-7d.jpg",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-5271-12p-001",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "5271/12P-001",
+    "canonical_name": "Patek Philippe Grand Complications 5271/12P-001",
+    "year_range": "2017–present",
+    "movement": "Patek Philippe caliber CH 29-535 PS Q",
+    "case_size": "41mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/5271-12p-001-9d.png",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-5271p-001",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "5271P-001",
+    "canonical_name": "Patek Philippe Grand Complications 5271P-001",
+    "year_range": "2014–2023",
+    "movement": "Patek Philippe caliber CH 29-535 PS Q",
+    "case_size": "41mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/5271p-001-73.png",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-5278-500g-001",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "5278/500G-001",
+    "canonical_name": "Patek Philippe Grand Complications 5278/500G-001",
+    "year_range": "2025–present",
+    "movement": "Patek Philippe caliber R 27",
+    "case_size": "40mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/5278-500g-001-c8.jpg",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-5278-50r-010",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "5278/50R-010",
+    "canonical_name": "Patek Philippe Grand Complications 5278/50R-010",
+    "year_range": "2026–present",
+    "movement": "Patek Philippe caliber R 27",
+    "case_size": "40mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/5278-50r-010-4f.jpg",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-5278-50r-011",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "5278/50R-011",
+    "canonical_name": "Patek Philippe Grand Complications 5278/50R-011",
+    "year_range": "2026–present",
+    "movement": "Patek Philippe caliber R 27",
+    "case_size": "40mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/5278-50r-011-aa.jpg",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-5308g-001",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "5308G-001",
+    "canonical_name": "Patek Philippe Grand Complications 5308G-001",
+    "year_range": "2025–present",
+    "movement": "Patek Philippe caliber R CHR 27 PS QI",
+    "case_size": "42mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/5308g-001-8.jpg",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-5320g-001",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "5320G-001",
+    "canonical_name": "Patek Philippe Grand Complications 5320G-001",
+    "year_range": "2017–present",
+    "movement": "Patek Philippe caliber 324 S Q",
+    "case_size": "40mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/5320g-001-7d.png",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-5322g-001",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "5322G-001",
+    "canonical_name": "Patek Philippe Grand Complications 5322G-001",
+    "year_range": "2026–present",
+    "movement": "Patek Philippe caliber AL 30-660 S CDay / Night Indication",
+    "case_size": "41mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/5322g-001-8a.jpg",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-5322g-010",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "5322G-010",
+    "canonical_name": "Patek Philippe Grand Complications 5322G-010",
+    "year_range": "2026–present",
+    "movement": "Patek Philippe caliber AL 30-660 S CDay / Night Indication",
+    "case_size": "41mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/5322g-010-1b.jpg",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-5327g-001",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "5327G-001",
+    "canonical_name": "Patek Philippe Grand Complications 5327G-001",
+    "year_range": "2016–present",
+    "movement": "Patek Philippe caliber 240 QDay / Night Indication",
+    "case_size": "39mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/5327g-001-82.png",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-5327j-001",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "5327J-001",
+    "canonical_name": "Patek Philippe Grand Complications 5327J-001",
+    "year_range": "2016–2020",
+    "movement": "Patek Philippe caliber 240 QDay / Night Indication",
+    "case_size": "39mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/5327j-001-cf.png",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-5327r-001",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "5327R-001",
+    "canonical_name": "Patek Philippe Grand Complications 5327R-001",
+    "year_range": "2016–present",
+    "movement": "Patek Philippe caliber 240 QDay / Night Indication",
+    "case_size": "39mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/5327r-001-88.png",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-5370p-001",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "5370P-001",
+    "canonical_name": "Patek Philippe Grand Complications 5370P-001",
+    "year_range": "2015–2020",
+    "movement": "Patek Philippe caliber CHR 29-535 PS",
+    "case_size": "41mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/5370p-001-63.png",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-5370p-011",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "5370P-011",
+    "canonical_name": "Patek Philippe Grand Complications 5370P-011",
+    "year_range": "2020–2025",
+    "movement": "Patek Philippe caliber CHR 29-535 PS",
+    "case_size": "41mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/5370p-011-89.jpg",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-5374-300p-001",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "5374/300P-001",
+    "canonical_name": "Patek Philippe Grand Complications 5374/300P-001",
+    "year_range": "2022–present",
+    "movement": "Patek Philippe caliber R 27 Q",
+    "case_size": "42mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/5374-300p-001-cb.jpg",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-5374-400p-001",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "5374/400P-001",
+    "canonical_name": "Patek Philippe Grand Complications 5374/400P-001",
+    "year_range": "2026–present",
+    "movement": "Patek Philippe caliber R 27 Q",
+    "case_size": "42mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/5374-400p-001-7.jpg",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-5470p-001",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "5470P-001",
+    "canonical_name": "Patek Philippe Grand Complications 5470P-001",
+    "year_range": "2022–present",
+    "movement": "Patek Philippe caliber CH 29‑535 PS 1/10",
+    "case_size": "41mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/5470p-001-a4.jpg",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-5531g-010",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "5531G-010",
+    "canonical_name": "Patek Philippe Grand Complications 5531G-010",
+    "year_range": "2026–present",
+    "movement": "Patek Philippe caliber R 27 HU",
+    "case_size": "40mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/5531g-010-1.jpg",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-5539g-010",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "5539G-010",
+    "canonical_name": "Patek Philippe Grand Complications 5539G-010",
+    "year_range": "2016–2019",
+    "movement": "Patek Philippe caliber R TO 27 PS",
+    "case_size": "37mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/539g-010-9c.png",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-5750p-001",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "5750P-001",
+    "canonical_name": "Patek Philippe Grand Complications 5750P-001",
+    "year_range": "2021–present",
+    "movement": "Patek Philippe caliber R 27 PS",
+    "case_size": "40mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/5750p-001-2f.jpg",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-5940j-001",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "5940J-001",
+    "canonical_name": "Patek Philippe Grand Complications 5940J-001",
+    "year_range": "2012–2016",
+    "movement": "Patek Philippe caliber 240 QDay / Night Indication",
+    "case_size": "37mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/5940j-001-41.png",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-5940r-001",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "5940R-001",
+    "canonical_name": "Patek Philippe Grand Complications 5940R-001",
+    "year_range": "2017–2019",
+    "movement": "Patek Philippe caliber 240 QDay / Night Indication",
+    "case_size": "37mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/5940r-001-e7.png",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-5950a-001",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "5950A-001",
+    "canonical_name": "Patek Philippe Grand Complications 5950A-001",
+    "year_range": "2010–2015",
+    "movement": "Patek Philippe caliber CHR 27-525 PS",
+    "case_size": "37mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/5950a-001v-20.png",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-5951-500p-001",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "5951/500P-001",
+    "canonical_name": "Patek Philippe Grand Complications 5951/500P-001",
+    "year_range": "2014–2016",
+    "movement": "Patek Philippe caliber CHR 27-525 PS Q",
+    "case_size": "37mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/5951-500p-001-72.png",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-5959p-011",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "5959P-011",
+    "canonical_name": "Patek Philippe Grand Complications 5959P-011",
+    "year_range": "2008–2016",
+    "movement": "Patek Philippe caliber CHR 27-525 PS",
+    "case_size": "33mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/5959p-011-c8.png",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-5970j-roman",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "5970J-ROMAN",
+    "canonical_name": "Patek Philippe Grand Complications 5970J-ROMAN",
+    "year_range": "2011–2011",
+    "movement": "Patek Philippe caliber CH 27-70 Q",
+    "case_size": "40mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/5970j-roman-ef.jpg",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-5970p-001",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "5970P-001",
+    "canonical_name": "Patek Philippe Grand Complications 5970P-001",
+    "year_range": "2009–2012",
+    "movement": "Patek Philippe caliber CH 27-70 Q",
+    "case_size": "40mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/5970p-001-73.jpg",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-5970r-001",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "5970R-001",
+    "canonical_name": "Patek Philippe Grand Complications 5970R-001",
+    "year_range": "2004–2009",
+    "movement": "Patek Philippe caliber CH 27-70 Q",
+    "case_size": "40mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/5970r-001-f0.jpg",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-6002g-001",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "6002G-001",
+    "canonical_name": "Patek Philippe Grand Complications 6002G-001",
+    "year_range": "2014–2016",
+    "movement": "Patek Philippe caliber R TO 27 QR SID LU CL",
+    "case_size": "43mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/6002g-001-64.png",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-6002g-010",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "6002G-010",
+    "canonical_name": "Patek Philippe Grand Complications 6002G-010",
+    "year_range": "2016–present",
+    "movement": "Patek Philippe caliber R TO 27 QR SID LU CL",
+    "case_size": "44mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/6002g-010-fe.png",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-6002r-001",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "6002R-001",
+    "canonical_name": "Patek Philippe Grand Complications 6002R-001",
+    "year_range": "2021–present",
+    "movement": "Patek Philippe caliber R TO 27 QR SID LU CL",
+    "case_size": "44mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/6002r-001-27.jpg",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-6102p-001",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "6102P-001",
+    "canonical_name": "Patek Philippe Grand Complications 6102P-001",
+    "year_range": "2012–present",
+    "movement": "Patek Philippe caliber 240 LU CL C",
+    "case_size": "44mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/6102p-001-51.jpg",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-6102r-001",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "6102R-001",
+    "canonical_name": "Patek Philippe Grand Complications 6102R-001",
+    "year_range": "2015–present",
+    "movement": "Patek Philippe caliber 240 LU CL C",
+    "case_size": "44mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/6102r-001-d8.png",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-6104g-001",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "6104G-001",
+    "canonical_name": "Patek Philippe Grand Complications 6104G-001",
+    "year_range": "2012–2016",
+    "movement": "Patek Philippe caliber 240 LU CL C",
+    "case_size": "44mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/6104g-001-76.png",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-6104p-010",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "6104P-010",
+    "canonical_name": "Patek Philippe Grand Complications 6104P-010",
+    "year_range": "2023–present",
+    "movement": "Patek Philippe caliber 240 LU CL C",
+    "case_size": "44mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/6104p-010-2a.jpg",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-6105g-001",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "6105G-001",
+    "canonical_name": "Patek Philippe Grand Complications 6105G-001",
+    "year_range": "2026–present",
+    "movement": "Patek Philippe caliber 240 C LU CL LCSO",
+    "case_size": "47mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/6105g-001-8d.jpg",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-6300-401g-001",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "6300/401G-001",
+    "canonical_name": "Patek Philippe Grand Complications 6300/401G-001",
+    "year_range": "2022–present",
+    "movement": "Patek Philippe caliber 300 GS AL 36-750 QIS FUS IRMAdditional 24 Hour Hand (adjustable)",
+    "case_size": "49mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/6300-401g-001-45.jpg",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-6300-403g-001",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "6300/403G-001",
+    "canonical_name": "Patek Philippe Grand Complications 6300/403G-001",
+    "year_range": "2023–present",
+    "movement": "Patek Philippe caliber 300 GS AL 36-750 QIS FUS IRMAdditional 24 Hour Hand (adjustable)",
+    "case_size": "47mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/6300-403g-001-4.jpg",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-6300a-010",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "6300A-010",
+    "canonical_name": "Patek Philippe Grand Complications 6300A-010",
+    "year_range": "2019–present",
+    "movement": "Patek Philippe caliber 300 GS AL 36-750 QIS FUS IRMAdditional 24 Hour Hand (adjustable)",
+    "case_size": "47mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/6300a-010-bf.jpg",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-6300g-001",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "6300G-001",
+    "canonical_name": "Patek Philippe Grand Complications 6300G-001",
+    "year_range": "2016–2019",
+    "movement": "Patek Philippe caliber 300 GS AL 36-750 QIS FUS IRMAdditional 24 Hour Hand (adjustable)",
+    "case_size": "47mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/6300g-001-cd.png",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-6300g-010",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "6300G-010",
+    "canonical_name": "Patek Philippe Grand Complications 6300G-010",
+    "year_range": "2019–2023",
+    "movement": "Patek Philippe caliber 300 GS AL 36-750 QIS FUS IRMAdditional 24 Hour Hand (adjustable)",
+    "case_size": "47mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/6300g-010-61.jpg",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-6300gr-001",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "6300GR-001",
+    "canonical_name": "Patek Philippe Grand Complications 6300GR-001",
+    "year_range": "2023–present",
+    "movement": "Patek Philippe caliber 300 GS AL 36-750 QIS FUS IRMAdditional 24 Hour Hand (adjustable)",
+    "case_size": "47mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/6300gr-001-e0.jpg",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-6301p-001",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "6301P-001",
+    "canonical_name": "Patek Philippe Grand Complications 6301P-001",
+    "year_range": "2020–present",
+    "movement": "Patek Philippe caliber GS 36-750 PS IRM",
+    "case_size": "45mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/6301p-001-bd.jpg",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-7000-50g-011",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "7000/50G-011",
+    "canonical_name": "Patek Philippe Grand Complications 7000/50G-011",
+    "year_range": "2023–present",
+    "movement": "Patek Philippe caliber R 27",
+    "case_size": "34mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/7000-50g-011-82.jpg",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-7047g-001",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "7047G-001",
+    "canonical_name": "Patek Philippe Grand Complications 7047G-001",
+    "year_range": "2026–present",
+    "movement": "Patek Philippe caliber R 27 PS",
+    "case_size": "36mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/7047g-001-a2.jpg",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-7129j-001",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "7129J-001",
+    "canonical_name": "Patek Philippe Grand Complications 7129J-001",
+    "year_range": "2026–present",
+    "movement": "Patek Philippe caliber 240 HU",
+    "case_size": "36mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/7129j-001-f9.jpg",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
+  },
+  {
+    "id": "patek-philippe-7140r-001",
+    "brand": "Patek Philippe",
+    "model": "Grand Complications",
+    "reference": "7140R-001",
+    "canonical_name": "Patek Philippe Grand Complications 7140R-001",
+    "year_range": "2012–present",
+    "movement": "Patek Philippe caliber 240 QDay / Night Indication",
+    "case_size": "35mm",
+    "image_url": "https://cdn.watchbase.com/watch/lg/patek-philippe/grand-complications/7140r-001-25.png",
+    "tags": [
+      "patek-philippe"
+    ],
+    "avg_price_eur": 0
   },
   {
     "id": "pp-naut-3700",

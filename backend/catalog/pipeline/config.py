@@ -36,8 +36,8 @@ BRANDS = [
 BASE_URL = "https://watchbase.com"
 
 # Rate limit tra richieste (secondi)
-DELAY_BETWEEN_REQUESTS = 1.5
-DELAY_BETWEEN_BRANDS   = 3.0
+DELAY_BETWEEN_REQUESTS = 2.0
+DELAY_BETWEEN_BRANDS   = 45.0
 
 # File di output
 OUTPUT_JSON = "../watches_full.json"   # relativo a pipeline/
