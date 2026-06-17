@@ -584,6 +584,33 @@ async def watch_db_stats():
     return get_stats()
 
 
+@app.get("/references/suggest")
+async def suggest_references(q: str = ""):
+    """Autocomplete referenze: restituisce max 10 orologi che matchano la query."""
+    import json
+    if not q or len(q.strip()) < 2:
+        return []
+    catalog_path = _Path(__file__).parent / "catalog" / "watches.json"
+    watches = json.loads(catalog_path.read_text())
+    q_up = q.strip().upper().replace(" ", "")
+    scored = []
+    for w in watches:
+        ref = w["reference"].upper().replace(" ", "").replace("/", "").replace("-", "")
+        ref_orig = w["reference"].upper()
+        model = w["model"].upper()
+        brand = w["brand"].upper()
+        if ref.startswith(q_up) or ref_orig.startswith(q.strip().upper()):
+            scored.append((3, w))
+        elif q_up in ref or q.strip().upper() in ref_orig:
+            scored.append((2, w))
+        elif q_up in model.replace(" ", "") or q.strip().upper() in model:
+            scored.append((1, w))
+        elif q.strip().upper() in brand:
+            scored.append((0, w))
+    scored.sort(key=lambda x: (-x[0], x[1]["reference"]))
+    return [x[1] for x in scored[:10]]
+
+
 @app.get("/catalog")
 async def get_catalog(brand: str | None = None, search: str | None = None):
     """Catalogo orologi con immagini per ricerca visuale."""

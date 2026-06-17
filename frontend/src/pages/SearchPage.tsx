@@ -1,7 +1,8 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useMutation, useQuery } from '@tanstack/react-query'
-import { scanWatch, getPriceHistory, identifyWatchFromImage, getAuctionResults } from '../lib/api'
+import { scanWatch, getPriceHistory, identifyWatchFromImage, getAuctionResults, suggestReferences } from '../lib/api'
+import type { WatchSuggestion } from '../lib/api'
 import type { WatchListing, ScanResult, MarketStats, InvestmentScore, AuctionResult } from '../types'
 import MarketCard from '../components/MarketCard'
 import PriceEvolutionChart from '../components/PriceEvolutionChart'
@@ -715,6 +716,31 @@ export default function SearchPage() {
   const [identifying, setIdentifying] = useState(false)
   const [identifyResult, setIdentifyResult] = useState<{brand:string|null;model:string|null;reference:string|null;confidence:number;notes:string|null}|null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const [suggestions, setSuggestions] = useState<WatchSuggestion[]>([])
+  const [suggestIdx, setSuggestIdx] = useState(-1)
+  const [showSuggestions, setShowSuggestions] = useState(false)
+  const suggestTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const suggestBoxRef = useRef<HTMLDivElement>(null)
+
+  const fetchSuggestions = useCallback((q: string) => {
+    if (suggestTimerRef.current) clearTimeout(suggestTimerRef.current)
+    if (q.length < 2) { setSuggestions([]); setShowSuggestions(false); return }
+    suggestTimerRef.current = setTimeout(async () => {
+      try {
+        const res = await suggestReferences(q)
+        setSuggestions(res)
+        setSuggestIdx(-1)
+        setShowSuggestions(res.length > 0)
+      } catch { setSuggestions([]) }
+    }, 200)
+  }, [])
+
+  const pickSuggestion = (s: WatchSuggestion) => {
+    setReference(s.reference)
+    setSuggestions([])
+    setShowSuggestions(false)
+    setSuggestIdx(-1)
+  }
 
   const { mutate, isPending } = useMutation({
     mutationFn: ({ query, force }: { query: import('../types').WatchQuery; force: boolean }) => scanWatch(query, force),
@@ -875,13 +901,49 @@ export default function SearchPage() {
         </div>
         <input type="file" ref={fileInputRef} accept="image/*" onChange={handleImageUpload} className="hidden" />
 
-        <input
-          value={reference}
-          onChange={e => setReference(e.target.value)}
-          onKeyDown={e => e.key === 'Enter' && handleScan()}
-          placeholder={t.referencePlaceholder}
-          className="w-full bg-zinc-800 border border-zinc-700 rounded px-4 py-3 text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-yellow-400 transition-colors text-base mb-4"
-        />
+        {/* Reference input with autocomplete */}
+        <div className="relative mb-4">
+          <input
+            value={reference}
+            onChange={e => { setReference(e.target.value); fetchSuggestions(e.target.value) }}
+            onKeyDown={e => {
+              if (!showSuggestions) { if (e.key === 'Enter') handleScan(); return }
+              if (e.key === 'ArrowDown') { e.preventDefault(); setSuggestIdx(i => Math.min(i + 1, suggestions.length - 1)) }
+              else if (e.key === 'ArrowUp') { e.preventDefault(); setSuggestIdx(i => Math.max(i - 1, -1)) }
+              else if (e.key === 'Enter') { e.preventDefault(); if (suggestIdx >= 0) pickSuggestion(suggestions[suggestIdx]); else { setShowSuggestions(false); handleScan() } }
+              else if (e.key === 'Escape') { setShowSuggestions(false); setSuggestIdx(-1) }
+            }}
+            onFocus={() => { if (suggestions.length > 0) setShowSuggestions(true) }}
+            onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
+            placeholder={t.referencePlaceholder}
+            className="w-full bg-zinc-800 border border-zinc-700 rounded px-4 py-3 text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-yellow-400 transition-colors text-base"
+            autoComplete="off"
+          />
+          {showSuggestions && suggestions.length > 0 && (
+            <div ref={suggestBoxRef} className="absolute z-50 left-0 right-0 top-full mt-1 bg-zinc-900 border border-zinc-700 rounded shadow-xl overflow-hidden">
+              {suggestions.map((s, i) => (
+                <button
+                  key={s.id}
+                  type="button"
+                  onMouseDown={() => pickSuggestion(s)}
+                  className={clsx(
+                    'w-full flex items-center gap-3 px-4 py-2.5 text-left transition-colors',
+                    i === suggestIdx ? 'bg-yellow-400/10 text-yellow-300' : 'hover:bg-zinc-800 text-zinc-200'
+                  )}
+                >
+                  {s.image_url && (
+                    <img src={s.image_url} alt="" className="w-8 h-8 object-cover rounded shrink-0 opacity-80" />
+                  )}
+                  <div className="min-w-0">
+                    <span className="font-mono font-bold text-sm text-yellow-400">{s.reference}</span>
+                    <span className="text-zinc-400 text-sm ml-2">{s.brand} {s.model}</span>
+                    {s.year_range && <span className="text-zinc-600 text-xs ml-2">{s.year_range}</span>}
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
 
         {identifyResult && (
           <div className={clsx(

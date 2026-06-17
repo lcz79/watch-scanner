@@ -207,6 +207,14 @@ export interface CoevalityRef {
   reference: string; model: string; production_from: number; production_to: number
 }
 
+export interface WatchSuggestion {
+  id: string; reference: string; brand: string; model: string
+  canonical_name: string; year_range: string; avg_price_eur: number; image_url: string
+}
+
+export const suggestReferences = (q: string): Promise<WatchSuggestion[]> =>
+  api.get('/references/suggest', { params: { q } }).then(r => r.data)
+
 export const checkCoevality = (serial: string, reference = '16520') =>
   api.get<CoevalityResult>('/coevality/check', { params: { serial, reference } }).then(r => r.data)
 
