@@ -43,6 +43,23 @@ async def lifespan(app: FastAPI):
     wdb_stats = get_stats()
     logger.info(f"Master Watch DB: {wdb_stats['references']} referenze | {wdb_stats['aliases']} alias | {wdb_stats['brands']} brand")
 
+    # Importa catalog/watches.json nell'encyclopedia DB (se vuoto o incompleto)
+    try:
+        from encyclopedia.database import count_watches as _enc_count
+        import json as _json
+        _catalog_path = _Path(__file__).parent / "catalog" / "watches.json"
+        _catalog_count = len(_json.loads(_catalog_path.read_text())) if _catalog_path.exists() else 0
+        _enc_db_count = _enc_count()
+        if _catalog_count > 0 and _enc_db_count < _catalog_count:
+            logger.info(f"Encyclopedia DB: {_enc_db_count} / {_catalog_count} — avvio import...")
+            from catalog.import_to_encyclopedia import run as _import_enc
+            stats = _import_enc(dry=False)
+            logger.info(f"Encyclopedia import: {stats.get('inserted',0)} inseriti, {stats.get('updated',0)} aggiornati → totale {stats.get('total',0)}")
+        else:
+            logger.info(f"Encyclopedia DB: {_enc_db_count} referenze (aggiornato)")
+    except Exception as _e:
+        logger.warning(f"Encyclopedia import warning: {_e}")
+
     # Avvia scheduler notturno discovery + job stories ogni 6h
     tasks = []
     if settings.instagram_username and settings.instagram_password:
