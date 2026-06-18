@@ -205,17 +205,6 @@ export default function CoevalityPage() {
                     {c.other_variants.map((v, j) => <VariantRow key={`ot-${j}`} v={v} coeval={false} />)}
                   </div>
                   {c.note && <p className="text-[11px] text-zinc-500 mt-3 italic">{c.note}</p>}
-                  {c.sources.length > 0 && (
-                    <div className="mt-3 flex flex-wrap gap-2">
-                      {c.sources.map((s, k) => (
-                        <a key={k} href={s.url} target="_blank" rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 text-[10px] text-zinc-500 hover:text-yellow-400 transition-colors">
-                          <span className="material-symbols-outlined text-[11px]">open_in_new</span>
-                          {s.name}
-                        </a>
-                      ))}
-                    </div>
-                  )}
                 </div>
               ))}
             </div>

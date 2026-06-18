@@ -10,8 +10,6 @@ export default function Sidebar() {
     { to: '/auctions', icon: 'gavel',                 label: t.auctionsNav },
     { to: '/coevality', icon: 'fact_check',           label: 'Coevità' },
     { to: '/alerts',   icon: 'notifications',         label: t.priceAlerts },
-    { to: '/agents',   icon: 'auto_graph',            label: t.analytics },
-    { to: '/catalog',  icon: 'menu_book',             label: t.portfolio },
   ]
 
   return (

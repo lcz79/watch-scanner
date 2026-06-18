@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useMutation, useQuery } from '@tanstack/react-query'
-import { scanWatch, getPriceHistory, identifyWatchFromImage, getAuctionResults, suggestReferences } from '../lib/api'
+import { scanWatch, getPriceHistory, getAuctionResults, suggestReferences } from '../lib/api'
 import type { WatchSuggestion } from '../lib/api'
 import type { WatchListing, ScanResult, MarketStats, InvestmentScore, AuctionResult } from '../types'
 import MarketCard from '../components/MarketCard'
@@ -337,28 +337,12 @@ function AuctionValuesPanel({
 // ---------------------------------------------------------------------------
 
 // Foto di fallback reali (Unsplash) — una card non mostra MAI l'icona vuota.
-const GENERIC_WATCH_PHOTO = 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&q=80&fit=crop'
-const BRAND_WATCH_PHOTOS: Record<string, string> = {
-  rolex:    'https://images.unsplash.com/photo-1587836374828-4dbafa94cf0e?w=600&q=80&fit=crop',
-  omega:    'https://images.unsplash.com/photo-1548171915-e79a380a2a4b?w=600&q=80&fit=crop',
-  patek:    'https://images.unsplash.com/photo-1523170335258-f5ed11844a49?w=600&q=80&fit=crop',
-  audemars: 'https://images.unsplash.com/photo-1542496658-e33a6d0d50f6?w=600&q=80&fit=crop',
-  tudor:    'https://images.unsplash.com/photo-1495856458515-0637185db551?w=600&q=80&fit=crop',
-}
-
-function fallbackWatchPhoto(listing: WatchListing): string {
-  const hay = ((listing.seller || '') + ' ' + (listing.description || '') + ' ' + (listing.reference || '')).toLowerCase()
-  for (const [brand, url] of Object.entries(BRAND_WATCH_PHOTOS)) {
-    if (hay.includes(brand)) return url
-  }
-  return GENERIC_WATCH_PHOTO
-}
 
 function ListingCard({ listing, isBest, isBestDeal = false }: {
   listing: WatchListing; isBest: boolean; isBestDeal?: boolean
 }) {
   const { t, lang } = useLang()
-  const [imgSrc, setImgSrc] = useState(listing.image_url || fallbackWatchPhoto(listing))
+  const [imgSrc, setImgSrc] = useState(listing.image_url || '')
   const sourceColor = SOURCE_COLORS[listing.source] || 'text-zinc-400 bg-zinc-400/10 border-zinc-400/20'
   const isSocial = ['instagram', 'vision_ai', 'tiktok', 'instagram_story'].includes(listing.source)
   const conditionLabels = lang === 'it'
@@ -390,20 +374,19 @@ function ListingCard({ listing, isBest, isBestDeal = false }: {
         </div>
       )}
 
-      {/* Image — sempre una foto reale (mai icona vuota) */}
+      {/* Image — foto annuncio */}
       <div className="w-48 h-48 bg-zinc-950 border border-zinc-800 overflow-hidden flex-shrink-0 flex items-center justify-center grayscale group-hover:grayscale-0 transition-all relative">
-        <img
-          src={imgSrc}
-          alt={listing.seller}
-          className="w-full h-full object-cover"
-          loading="lazy"
-          onError={() => {
-            const brandFallback = fallbackWatchPhoto(listing)
-            // Se l'immagine sorgente fallisce, passa al fallback di brand;
-            // se anche quello fallisce, al fallback generico.
-            setImgSrc(prev => prev !== brandFallback ? brandFallback : GENERIC_WATCH_PHOTO)
-          }}
-        />
+        {imgSrc ? (
+          <img
+            src={imgSrc}
+            alt={listing.seller}
+            className="w-full h-full object-cover"
+            loading="lazy"
+            onError={() => setImgSrc('')}
+          />
+        ) : (
+          <span className="material-symbols-outlined text-5xl text-zinc-700">watch</span>
+        )}
       </div>
 
       {/* Content */}
@@ -713,9 +696,6 @@ export default function SearchPage() {
   const [filterSources, setFilterSources] = useState<Set<string>>(new Set())
   const scanStepRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [showRelated, setShowRelated] = useState(false)
-  const [identifying, setIdentifying] = useState(false)
-  const [identifyResult, setIdentifyResult] = useState<{brand:string|null;model:string|null;reference:string|null;confidence:number;notes:string|null}|null>(null)
-  const fileInputRef = useRef<HTMLInputElement>(null)
   const [suggestions, setSuggestions] = useState<WatchSuggestion[]>([])
   const [suggestIdx, setSuggestIdx] = useState(-1)
   const [showSuggestions, setShowSuggestions] = useState(false)
@@ -758,27 +738,6 @@ export default function SearchPage() {
       setError(err?.response?.data?.detail || err?.message || 'Errore durante la scansione')
     },
   })
-
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-    setIdentifying(true)
-    setIdentifyResult(null)
-    try {
-      const r = await identifyWatchFromImage(file)
-      if (r.identified) {
-        setIdentifyResult(r)
-        if (r.reference) setReference(r.reference)
-      } else {
-        setIdentifyResult({ brand:null, model:null, reference:null, confidence:0, notes:'Orologio non riconosciuto' })
-      }
-    } catch {
-      setIdentifyResult({ brand:null, model:null, reference:null, confidence:0, notes:'Errore durante il riconoscimento' })
-    } finally {
-      setIdentifying(false)
-      if (fileInputRef.current) fileInputRef.current.value = ''
-    }
-  }
 
   const handleScan = (ref?: string, force = false) => {
     const target = (ref ?? reference).trim()
@@ -882,24 +841,12 @@ export default function SearchPage() {
       {/* ── Search form ── */}
       <div className="bg-zinc-900 border border-zinc-800 p-[24px] mb-8">
 
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center mb-4">
           <label className="font-label-caps text-label-caps text-zinc-400 uppercase flex items-center gap-1.5">
             <span className="material-symbols-outlined text-sm leading-none text-yellow-400">watch</span>
             {t.referenceLabel}
           </label>
-          <button
-            type="button"
-            onClick={() => fileInputRef.current?.click()}
-            disabled={identifying || isPending}
-            className="flex items-center gap-1.5 text-xs text-zinc-400 hover:text-yellow-400 transition-colors disabled:opacity-40"
-          >
-            {identifying
-              ? <span className="material-symbols-outlined text-sm leading-none animate-spin">autorenew</span>
-              : <span className="material-symbols-outlined text-sm leading-none">photo_camera</span>}
-            {identifying ? t.identifying : t.scanFromPhoto}
-          </button>
         </div>
-        <input type="file" ref={fileInputRef} accept="image/*" onChange={handleImageUpload} className="hidden" />
 
         {/* Reference input with autocomplete */}
         <div className="relative mb-4">
@@ -944,32 +891,6 @@ export default function SearchPage() {
             </div>
           )}
         </div>
-
-        {identifyResult && (
-          <div className={clsx(
-            'flex items-start justify-between gap-3 p-3 mb-4 text-xs border rounded',
-            identifyResult.confidence > 0.3
-              ? 'bg-green-900/20 border-green-700/40 text-green-300'
-              : 'bg-zinc-800 border-zinc-700 text-zinc-400'
-          )}>
-            <div>
-              {identifyResult.confidence > 0.3 ? (
-                <>
-                  <p className="font-semibold mb-0.5">
-                    {[identifyResult.brand, identifyResult.model].filter(Boolean).join(' ')}
-                    {identifyResult.reference && <span className="ml-1 text-yellow-400">· {identifyResult.reference}</span>}
-                  </p>
-                  {identifyResult.notes && <p className="text-zinc-500">{identifyResult.notes}</p>}
-                </>
-              ) : (
-                <p>{identifyResult.notes}</p>
-              )}
-            </div>
-            <button onClick={() => setIdentifyResult(null)} className="shrink-0 text-zinc-600 hover:text-zinc-300">
-              <span className="material-symbols-outlined text-sm leading-none">close</span>
-            </button>
-          </div>
-        )}
 
         <div className="flex gap-3 items-end mb-4">
           <div className="w-44">

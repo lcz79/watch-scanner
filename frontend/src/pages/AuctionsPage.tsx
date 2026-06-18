@@ -465,8 +465,11 @@ export default function AuctionsPage() {
           {/* Recent lots */}
           {recentData && recentData.results.length > 0 && (
             <section className="bg-zinc-900 border border-zinc-800">
-              <div className="px-5 py-3 border-b border-zinc-800">
+              <div className="px-5 py-3 border-b border-zinc-800 flex items-center justify-between">
                 <h3 className="font-h2 text-xs uppercase tracking-tight">Ultimi Risultati in DB</h3>
+                <span className="font-mono-data text-[9px] text-zinc-500">
+                  {new Date().toLocaleDateString(lang === 'it' ? 'it-IT' : 'en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase()} · {new Date().toLocaleTimeString(lang === 'it' ? 'it-IT' : 'en-GB', { hour: '2-digit', minute: '2-digit' })}
+                </span>
               </div>
               <div className="divide-y divide-zinc-800">
                 {recentData.results.slice(0, 5).map((lot, i) => {

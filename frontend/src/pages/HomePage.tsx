@@ -38,11 +38,11 @@ const AUCTION_CALENDAR = [
   { house: 'Phillips',    event: { en: 'Hong Kong Watch Auction: XXII', it: 'Hong Kong Watch Auction: XXII' },                        date: '1 giu 2026',  location: 'Hong Kong', lots: 0, flag: '🇭🇰' },
 ]
 const AUCTION_RESULTS = [
-  { watch: 'Rolex "Paul Newman" Daytona 6241',         house: "Christie's Geneva", date: 'May 2026', hammer: '€ 1.240.000', over: true  },
-  { watch: 'Patek Philippe 5711/1A Nautilus (Final Series)', house: "Sotheby's NY",    date: 'Apr 2026', hammer: '€ 340.000',   over: true  },
-  { watch: 'AP Royal Oak "Jumbo" 5402ST (1972)',        house: 'Phillips Geneva',   date: 'Apr 2026', hammer: '€ 285.000',   over: false },
-  { watch: 'Rolex Submariner 6538 "James Bond"',        house: "Christie's",        date: 'Mar 2026', hammer: '€ 195.000',   over: false },
-  { watch: 'Omega Speedmaster CK2998 Pre-Professional', house: 'Antiquorum',        date: 'Mar 2026', hammer: '€ 62.000',    over: false },
+  { watch: 'Rolex "Paul Newman" Daytona 6241',         house: "Christie's Geneva", date: 'May 2026', hammer: '€ 1.240.000', over: true,  url: 'https://www.christies.com/en/departments/watches-52-1.aspx' },
+  { watch: 'Patek Philippe 5711/1A Nautilus (Final Series)', house: "Sotheby's NY",    date: 'Apr 2026', hammer: '€ 340.000',   over: true,  url: 'https://www.sothebys.com/en/departments/watches' },
+  { watch: 'AP Royal Oak "Jumbo" 5402ST (1972)',        house: 'Phillips Geneva',   date: 'Apr 2026', hammer: '€ 285.000',   over: false, url: 'https://www.phillipswatches.com' },
+  { watch: 'Rolex Submariner 6538 "James Bond"',        house: "Christie's",        date: 'Mar 2026', hammer: '€ 195.000',   over: false, url: 'https://www.christies.com/en/departments/watches-52-1.aspx' },
+  { watch: 'Omega Speedmaster CK2998 Pre-Professional', house: 'Antiquorum',        date: 'Mar 2026', hammer: '€ 62.000',    over: false, url: 'https://www.antiquorum.swiss' },
 ]
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -336,7 +336,114 @@ export default function HomePage() {
   return (
     <div style={{ padding: '20px 24px', maxWidth: 1600, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 24 }}>
 
-      {/* ── 1. MARKET INTELLIGENCE ─────────────────────────────────────── */}
+      {/* ── 1. MARKET NEWS ─────────────────────────────────────────────── */}
+      {newsData !== undefined && (
+        <motion.section initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
+          <SectionHeader title={lang === 'it' ? 'Notizie & Novità' : 'News & Updates'} />
+          {newsItems.length === 0 ? (
+            <div style={{ background: C.navy2, border: `1px dashed ${C.border}`, padding: 40, textAlign: 'center' }}>
+              <span className="material-symbols-outlined" style={{ fontSize: 28, color: C.t3, display: 'block', marginBottom: 8 }}>newspaper</span>
+              <p style={{ fontFamily: F.mono, fontSize: 10, color: C.t2 }}>{lang === 'it' ? 'Feed RSS in aggiornamento ogni 12h' : 'RSS feed updates every 12h'}</p>
+            </div>
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 12 }}>
+              {newsItems.map((item, i) => {
+                const pub = item.published_at ? new Date(item.published_at).toLocaleDateString(lang === 'it' ? 'it-IT' : 'en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : null
+                return (
+                  <a key={i} href={item.url} target="_blank" rel="noopener noreferrer"
+                    style={{ background: C.navy2, border: `1px solid ${C.border}`, display: 'flex', flexDirection: 'column', textDecoration: 'none', transition: 'border-color 0.15s' }}
+                    onMouseEnter={e => (e.currentTarget.style.borderColor = C.gold + '44')}
+                    onMouseLeave={e => (e.currentTarget.style.borderColor = C.border)}
+                  >
+                    <div style={{ height: 140, background: C.navy3, overflow: 'hidden', flexShrink: 0 }}>
+                      {item.image_url ? (
+                        <img src={item.image_url} alt={item.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                          onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none' }} />
+                      ) : (
+                        <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <span className="material-symbols-outlined" style={{ fontSize: 40, color: C.t3 }}>newspaper</span>
+                        </div>
+                      )}
+                    </div>
+                    <div style={{ padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 8, flex: 1 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                        {item.source && <span style={{ fontFamily: F.mono, fontSize: 8, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', background: C.goldDim, color: C.gold, padding: '2px 8px' }}>{item.source}</span>}
+                        {pub && <span style={{ fontFamily: F.mono, fontSize: 9, color: C.t3, marginLeft: 'auto' }}>{pub}</span>}
+                      </div>
+                      <h3 style={{ fontFamily: F.sans, fontSize: 12, fontWeight: 600, color: C.t1, lineHeight: 1.4, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                        {item.title}
+                      </h3>
+                      {item.summary && (
+                        <p style={{ fontFamily: F.sans, fontSize: 11, color: C.t2, lineHeight: 1.5, display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden', flex: 1 }}>
+                          {item.summary}
+                        </p>
+                      )}
+                      <div style={{ fontFamily: F.mono, fontSize: 8, color: C.t3, letterSpacing: '0.12em', textTransform: 'uppercase', marginTop: 'auto', paddingTop: 8 }}>
+                        {lang === 'it' ? 'Leggi' : 'Read'} →
+                      </div>
+                    </div>
+                  </a>
+                )
+              })}
+            </div>
+          )}
+        </motion.section>
+      )}
+
+      {/* ── 2. AUCTION RESULTS ─────────────────────────────────────────── */}
+      <motion.section initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45, delay: 0.08 }}>
+        <SectionHeader
+          title={t.auctionResultsTitle}
+          meta={`${lang === 'it' ? 'ULT. AGG.' : 'UPDATED'} ${new Date().toLocaleDateString(lang === 'it' ? 'it-IT' : 'en-GB', { day: '2-digit', month: 'short' })} ${new Date().toLocaleTimeString(lang === 'it' ? 'it-IT' : 'en-GB', { hour: '2-digit', minute: '2-digit' })}`}
+        />
+        <div style={{ background: C.navy2, border: `1px solid ${C.border}` }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead>
+              <tr style={{ borderBottom: `1px solid ${C.border}` }}>
+                {['Watch', t.auction_house, t.auction_date, t.auction_hammer, t.auction_result].map((h, i) => (
+                  <th key={i} style={{ padding: '8px 16px', textAlign: i >= 3 ? 'right' : 'left', fontFamily: F.mono, fontSize: 8, color: C.t3, letterSpacing: '0.16em', textTransform: 'uppercase', fontWeight: 400 }}>
+                    {h}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {AUCTION_RESULTS.map((r, i) => (
+                <tr
+                  key={i}
+                  onClick={() => window.open(r.url, '_blank', 'noopener,noreferrer')}
+                  style={{ borderBottom: i < AUCTION_RESULTS.length - 1 ? `1px solid ${C.border2}` : 'none', transition: 'background 0.12s', cursor: 'pointer' }}
+                  onMouseEnter={e => (e.currentTarget.style.background = C.goldDim)}
+                  onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                >
+                  <td style={{ padding: '11px 16px', fontFamily: F.sans, fontSize: 12, fontWeight: 500, color: C.t1 }}>
+                    {i === 0 && <span className="material-symbols-outlined" style={{ fontSize: 12, color: C.gold, marginRight: 6, verticalAlign: 'middle', fontVariationSettings: "'FILL' 1" }}>star</span>}
+                    {r.watch}
+                  </td>
+                  <td style={{ padding: '11px 16px', fontFamily: F.mono, fontSize: 10, color: C.t2 }}>{r.house}</td>
+                  <td style={{ padding: '11px 16px', fontFamily: F.mono, fontSize: 10, color: C.t3 }}>{r.date}</td>
+                  <td style={{ padding: '11px 16px', textAlign: 'right', fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: C.gold }}>{r.hammer}</td>
+                  <td style={{ padding: '11px 16px', textAlign: 'right' }}>
+                    {r.over ? (
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontFamily: F.mono, fontSize: 9, fontWeight: 700, color: C.green, letterSpacing: '0.1em' }}>
+                        <span className="material-symbols-outlined" style={{ fontSize: 11 }}>arrow_upward</span>
+                        {lang === 'it' ? 'SUPERATO' : 'ABOVE EST.'}
+                      </span>
+                    ) : (
+                      <span style={{ fontFamily: F.mono, fontSize: 9, color: C.t3, display: 'flex', alignItems: 'center', gap: 3, justifyContent: 'flex-end' }}>
+                        <span className="material-symbols-outlined" style={{ fontSize: 11 }}>open_in_new</span>
+                        {lang === 'it' ? 'VAI AL SITO' : 'VIEW'}
+                      </span>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </motion.section>
+
+      {/* ── 3. MARKET INTELLIGENCE ─────────────────────────────────────── */}
       <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
         <SectionHeader
           title={lang === 'it' ? 'Segnali di Mercato' : 'Market Signals'}
@@ -456,182 +563,6 @@ export default function HomePage() {
         )}
       </motion.section>
 
-      {/* ── 2. AUCTION CALENDAR ────────────────────────────────────────── */}
-      <motion.section initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45, delay: 0.15 }}>
-        <SectionHeader
-          title={t.auctionCalendarTitle}
-          cta={lang === 'it' ? 'Tutte le aste' : 'All auctions'}
-          onCta={() => navigate('/auctions')}
-        />
-        <div style={{ background: C.navy2, border: `1px solid ${C.border}` }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead>
-              <tr style={{ borderBottom: `1px solid ${C.border}` }}>
-                {[t.auction_house, 'Event', t.auction_date, t.auction_location, t.auction_lots].map((h, i) => (
-                  <th key={i} style={{ padding: '8px 16px', textAlign: i === 4 ? 'right' : 'left', fontFamily: F.mono, fontSize: 8, color: C.t3, letterSpacing: '0.16em', textTransform: 'uppercase', fontWeight: 400 }}>
-                    {h}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {auctionCalendar.map((a, i) => (
-                <tr
-                  key={i}
-                  style={{ borderBottom: i < auctionCalendar.length - 1 ? `1px solid ${C.border2}` : 'none', cursor: 'pointer', transition: 'background 0.12s' }}
-                  onMouseEnter={e => (e.currentTarget.style.background = C.goldDim)}
-                  onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
-                >
-                  <td style={{ padding: '12px 16px', fontFamily: F.serif, fontSize: 13, fontWeight: 700, color: '#fff' }}>{a.house}</td>
-                  <td style={{ padding: '12px 16px', fontFamily: F.sans, fontSize: 11, color: C.t2 }}>{a.event[lang]}</td>
-                  <td style={{ padding: '12px 16px', fontFamily: F.mono, fontSize: 10, color: C.gold }}>{a.date}</td>
-                  <td style={{ padding: '12px 16px', fontFamily: F.mono, fontSize: 10, color: C.t2 }}>{a.flag} {a.location}</td>
-                  <td style={{ padding: '12px 16px', textAlign: 'right', fontFamily: F.mono, fontSize: 10, color: C.t3 }}>{a.lots > 0 ? `${a.lots} lots` : '—'}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </motion.section>
-
-      {/* ── 3. AUCTION RESULTS ─────────────────────────────────────────── */}
-      <motion.section initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45, delay: 0.2 }}>
-        <SectionHeader title={t.auctionResultsTitle} meta={lang === 'it' ? 'RISULTATI RECENTI' : 'RECENT RESULTS'} />
-        <div style={{ background: C.navy2, border: `1px solid ${C.border}` }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead>
-              <tr style={{ borderBottom: `1px solid ${C.border}` }}>
-                {['Watch', t.auction_house, t.auction_date, t.auction_hammer, t.auction_result].map((h, i) => (
-                  <th key={i} style={{ padding: '8px 16px', textAlign: i >= 3 ? 'right' : 'left', fontFamily: F.mono, fontSize: 8, color: C.t3, letterSpacing: '0.16em', textTransform: 'uppercase', fontWeight: 400 }}>
-                    {h}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {AUCTION_RESULTS.map((r, i) => (
-                <tr
-                  key={i}
-                  style={{ borderBottom: i < AUCTION_RESULTS.length - 1 ? `1px solid ${C.border2}` : 'none', transition: 'background 0.12s', cursor: 'default' }}
-                  onMouseEnter={e => (e.currentTarget.style.background = C.goldDim)}
-                  onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
-                >
-                  <td style={{ padding: '11px 16px', fontFamily: F.sans, fontSize: 12, fontWeight: 500, color: C.t1 }}>
-                    {i === 0 && <span className="material-symbols-outlined" style={{ fontSize: 12, color: C.gold, marginRight: 6, verticalAlign: 'middle', fontVariationSettings: "'FILL' 1" }}>star</span>}
-                    {r.watch}
-                  </td>
-                  <td style={{ padding: '11px 16px', fontFamily: F.mono, fontSize: 10, color: C.t2 }}>{r.house}</td>
-                  <td style={{ padding: '11px 16px', fontFamily: F.mono, fontSize: 10, color: C.t3 }}>{r.date}</td>
-                  <td style={{ padding: '11px 16px', textAlign: 'right', fontFamily: F.mono, fontSize: 12, fontWeight: 600, color: C.gold }}>{r.hammer}</td>
-                  <td style={{ padding: '11px 16px', textAlign: 'right' }}>
-                    {r.over ? (
-                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontFamily: F.mono, fontSize: 9, fontWeight: 700, color: C.green, letterSpacing: '0.1em' }}>
-                        <span className="material-symbols-outlined" style={{ fontSize: 11 }}>arrow_upward</span>
-                        {lang === 'it' ? 'SUPERATO' : 'ABOVE EST.'}
-                      </span>
-                    ) : (
-                      <span style={{ fontFamily: F.mono, fontSize: 9, color: C.t3 }}>—</span>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </motion.section>
-
-      {/* ── 4. RECENT SEARCHES ─────────────────────────────────────────── */}
-      <motion.section initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45, delay: 0.25 }}>
-        <SectionHeader
-          title={t.recentSearchesTitle}
-          cta={lang === 'it' ? 'Cerca' : 'Search'}
-          onCta={() => navigate('/search')}
-        />
-        {recentSearches.length === 0 ? (
-          <div style={{ background: C.navy2, border: `1px dashed ${C.border}`, padding: 40, textAlign: 'center' }}>
-            <span className="material-symbols-outlined" style={{ fontSize: 32, color: C.t3, display: 'block', marginBottom: 8 }}>manage_search</span>
-            <p style={{ fontFamily: F.sans, fontSize: 13, color: C.t2, marginBottom: 4 }}>{t.noRecentSearches}</p>
-            <p style={{ fontFamily: F.mono, fontSize: 10, color: C.t3 }}>{t.noRecentSub}</p>
-            <button
-              onClick={() => navigate('/search')}
-              style={{ marginTop: 16, background: C.gold, color: '#000', fontFamily: F.mono, fontSize: 9, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', padding: '8px 20px', border: 'none', cursor: 'pointer' }}
-            >
-              {t.searchNow}
-            </button>
-          </div>
-        ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 10 }}>
-            {recentSearches.slice(0, 8).map(s => (
-              <div
-                key={s.ref}
-                onClick={() => navigate(`/search?ref=${encodeURIComponent(s.ref)}`)}
-                style={{ background: C.navy2, border: `1px solid ${C.border}`, padding: '14px 16px', cursor: 'pointer', transition: 'all 0.12s' }}
-                onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.background = C.goldDim; (e.currentTarget as HTMLDivElement).style.borderColor = C.gold + '44' }}
-                onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.background = C.navy2; (e.currentTarget as HTMLDivElement).style.borderColor = C.border }}
-              >
-                <div style={{ fontFamily: F.serif, fontSize: 15, fontWeight: 700, color: '#fff', marginBottom: 6 }}>{s.ref}</div>
-                <div style={{ fontFamily: F.mono, fontSize: 8, color: C.t3, letterSpacing: '0.08em' }}>
-                  {new Date(s.ts).toLocaleDateString(lang === 'it' ? 'it-IT' : 'en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </motion.section>
-
-      {/* ── 5. MARKET NEWS ─────────────────────────────────────────────── */}
-      {newsData !== undefined && (
-        <motion.section initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45, delay: 0.3 }}>
-          <SectionHeader title={lang === 'it' ? 'Notizie dal Mercato' : 'Market News'} />
-          {newsItems.length === 0 ? (
-            <div style={{ background: C.navy2, border: `1px dashed ${C.border}`, padding: 40, textAlign: 'center' }}>
-              <span className="material-symbols-outlined" style={{ fontSize: 28, color: C.t3, display: 'block', marginBottom: 8 }}>newspaper</span>
-              <p style={{ fontFamily: F.mono, fontSize: 10, color: C.t2 }}>{lang === 'it' ? 'Feed RSS in aggiornamento ogni 12h' : 'RSS feed updates every 12h'}</p>
-            </div>
-          ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 12 }}>
-              {newsItems.map((item, i) => {
-                const pub = item.published_at ? new Date(item.published_at).toLocaleDateString(lang === 'it' ? 'it-IT' : 'en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : null
-                return (
-                  <a key={i} href={item.url} target="_blank" rel="noopener noreferrer"
-                    style={{ background: C.navy2, border: `1px solid ${C.border}`, display: 'flex', flexDirection: 'column', textDecoration: 'none', transition: 'border-color 0.15s' }}
-                    onMouseEnter={e => (e.currentTarget.style.borderColor = C.gold + '44')}
-                    onMouseLeave={e => (e.currentTarget.style.borderColor = C.border)}
-                  >
-                    <div style={{ height: 140, background: C.navy3, overflow: 'hidden', flexShrink: 0 }}>
-                      {item.image_url ? (
-                        <img src={item.image_url} alt={item.title} style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.3s' }}
-                          onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none' }} />
-                      ) : (
-                        <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                          <span className="material-symbols-outlined" style={{ fontSize: 40, color: C.t3 }}>newspaper</span>
-                        </div>
-                      )}
-                    </div>
-                    <div style={{ padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 8, flex: 1 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-                        {item.source && <span style={{ fontFamily: F.mono, fontSize: 8, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', background: C.goldDim, color: C.gold, padding: '2px 8px' }}>{item.source}</span>}
-                        {pub && <span style={{ fontFamily: F.mono, fontSize: 9, color: C.t3, marginLeft: 'auto' }}>{pub}</span>}
-                      </div>
-                      <h3 style={{ fontFamily: F.sans, fontSize: 12, fontWeight: 600, color: C.t1, lineHeight: 1.4, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                        {item.title}
-                      </h3>
-                      {item.summary && (
-                        <p style={{ fontFamily: F.sans, fontSize: 11, color: C.t2, lineHeight: 1.5, display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden', flex: 1 }}>
-                          {item.summary}
-                        </p>
-                      )}
-                      <div style={{ fontFamily: F.mono, fontSize: 8, color: C.t3, letterSpacing: '0.12em', textTransform: 'uppercase', marginTop: 'auto', paddingTop: 8 }}>
-                        {lang === 'it' ? 'Leggi' : 'Read'} →
-                      </div>
-                    </div>
-                  </a>
-                )
-              })}
-            </div>
-          )}
-        </motion.section>
-      )}
 
     </div>
   )

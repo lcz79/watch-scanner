@@ -603,27 +603,41 @@ async def watch_db_stats():
 
 @app.get("/references/suggest")
 async def suggest_references(q: str = ""):
-    """Autocomplete referenze: restituisce max 10 orologi che matchano la query."""
-    import json
+    """Autocomplete referenze: restituisce max 10 orologi che matchano esattamente la query.
+
+    La ricerca è SOLO per prefisso sulla referenza: digitare "166520" mostra solo referenze
+    che iniziano con "166520", mai "16520" o altre referenze che la contengono.
+    Se la query ha meno di 4 caratteri numerici, cerca anche per brand/model per allow
+    ricerche tipo "rol" → Rolex.
+    """
+    import json, re as _re
     if not q or len(q.strip()) < 2:
         return []
     catalog_path = _Path(__file__).parent / "catalog" / "watches.json"
     watches = json.loads(catalog_path.read_text())
-    q_up = q.strip().upper().replace(" ", "")
+    q_clean = q.strip().upper()
+    q_norm  = q_clean.replace(" ", "").replace("/", "").replace("-", "")
+
+    # Determina se la query sembra una referenza (contiene cifre)
+    looks_like_ref = bool(_re.search(r'\d', q_clean))
+
     scored = []
     for w in watches:
-        ref = w["reference"].upper().replace(" ", "").replace("/", "").replace("-", "")
+        ref_norm = w["reference"].upper().replace(" ", "").replace("/", "").replace("-", "")
         ref_orig = w["reference"].upper()
-        model = w["model"].upper()
-        brand = w["brand"].upper()
-        if ref.startswith(q_up) or ref_orig.startswith(q.strip().upper()):
+
+        # Match principale: la referenza INIZIA con la query (prefix match)
+        if ref_norm.startswith(q_norm) or ref_orig.startswith(q_clean):
             scored.append((3, w))
-        elif q_up in ref or q.strip().upper() in ref_orig:
-            scored.append((2, w))
-        elif q_up in model.replace(" ", "") or q.strip().upper() in model:
-            scored.append((1, w))
-        elif q.strip().upper() in brand:
-            scored.append((0, w))
+        elif not looks_like_ref:
+            # Solo per query testuali (brand/model), non per query numeriche
+            model = w["model"].upper()
+            brand = w["brand"].upper()
+            if q_clean in model:
+                scored.append((1, w))
+            elif q_clean in brand:
+                scored.append((0, w))
+
     scored.sort(key=lambda x: (-x[0], x[1]["reference"]))
     return [x[1] for x in scored[:10]]
 

@@ -4,11 +4,8 @@ import { AnimatePresence, motion } from 'framer-motion'
 import Sidebar from './components/Sidebar'
 import HomePage from './pages/HomePage'
 import SearchPage from './pages/SearchPage'
-import AgentsPage from './pages/AgentsPage'
 import AlertsPage from './pages/AlertsPage'
 import AuctionsPage from './pages/AuctionsPage'
-import CatalogPage from './pages/CatalogPage'
-import EncyclopediaDetailPage from './pages/EncyclopediaDetailPage'
 import VerificationPage from './pages/VerificationPage'
 import CoevalityPage from './pages/CoevalityPage'
 import OptOutPage from './pages/OptOutPage'
@@ -150,16 +147,7 @@ function LiveClock() {
 }
 
 function TopBar() {
-  const navigate = useNavigate()
-  const [query, setQuery] = useState('')
   const { lang, setLang } = useLang()
-
-  const handleSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && query.trim()) {
-      navigate(`/search?ref=${encodeURIComponent(query.trim())}`)
-      setQuery('')
-    }
-  }
 
   return (
     <header
@@ -169,28 +157,12 @@ function TopBar() {
         borderBottom: '1px solid rgba(184,151,90,0.12)',
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: '0 0 0 16px',
+        justifyContent: 'flex-end',
+        padding: '0',
         flexShrink: 0,
         zIndex: 40,
       }}
     >
-      {/* Search */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#111425', border: '1px solid rgba(184,151,90,0.12)', padding: '0 14px', height: 30 }}>
-        <span className="material-symbols-outlined" style={{ fontSize: 14, color: '#3d3a30' }}>search</span>
-        <input
-          value={query}
-          onChange={e => setQuery(e.target.value)}
-          onKeyDown={handleSearch}
-          placeholder="Cerca referenza, marca..."
-          style={{
-            background: 'none', border: 'none', outline: 'none',
-            fontFamily: '"IBM Plex Mono", monospace', fontSize: 11,
-            color: '#e8e2d4', width: 220,
-          }}
-        />
-      </div>
-
       {/* Right side */}
       <div style={{ display: 'flex', alignItems: 'center', height: '100%' }}>
         <LiveClock />
@@ -270,11 +242,8 @@ function AnimatedRoutes() {
         <Routes location={location}>
           <Route path="/"         element={<HomePage />} />
           <Route path="/search"   element={<SearchPage />} />
-          <Route path="/agents"   element={<AgentsPage />} />
           <Route path="/alerts"   element={<AlertsPage />} />
           <Route path="/auctions" element={<AuctionsPage />} />
-          <Route path="/catalog"  element={<CatalogPage />} />
-          <Route path="/encyclopedia/:reference" element={<EncyclopediaDetailPage />} />
           <Route path="/verify"   element={<VerificationPage />} />
           <Route path="/coevality" element={<CoevalityPage />} />
           <Route path="/opt-out"  element={<OptOutPage />} />
