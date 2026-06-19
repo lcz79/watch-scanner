@@ -79,6 +79,33 @@ def _parse_html_listings(html: str, reference: str) -> list[WatchListing]:
     return listings
 
 
+async def _scrape_via_httpx(reference: str) -> list[WatchListing]:
+    """
+    Via primaria: httpx diretto. eBay non usa Cloudflare Bot Management aggressivo
+    come Chrono24 — una semplice richiesta HTTP con UA realistico funziona.
+    """
+    import httpx
+    url = f"https://www.ebay.it/sch/31387/i.html?_nkw={reference}&_sop=15&_ipg=60&LH_BIN=1"
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+        "Accept-Language": "it-IT,it;q=0.9,en;q=0.8",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Referer": "https://www.google.it/",
+    }
+    try:
+        async with httpx.AsyncClient(timeout=20, follow_redirects=True, headers=headers) as client:
+            r = await client.get(url)
+            if r.status_code != 200 or len(r.text) < 10000:
+                logger.warning(f"eBay httpx: status={r.status_code}")
+                return []
+            listings = _parse_html_listings(r.text, reference)
+            logger.info(f"eBay (httpx): {len(listings)} listing per {reference}")
+            return listings
+    except Exception as e:
+        logger.warning(f"eBay httpx error: {e}")
+        return []
+
+
 async def _scrape_via_api(reference: str) -> list[WatchListing]:
     url = f"https://www.ebay.it/sch/31387/i.html?_nkw={reference}&_sop=15&_ipg=60&LH_BIN=1"
     html = await asyncio.to_thread(scraping_api.fetch_rendered_html, url)
@@ -90,12 +117,17 @@ async def _scrape_via_api(reference: str) -> list[WatchListing]:
 
 
 async def scrape(reference: str, context: BrowserContext) -> list[WatchListing]:
-    # Scraping API se configurata (stesso blocco datacenter di Chrono24).
+    # 1. httpx diretto — eBay non blocca gli IP datacenter come Chrono24
+    listings = await _scrape_via_httpx(reference)
+    if listings:
+        return listings
+
+    # 2. Scraping API se configurata
     if scraping_api.is_enabled():
         try:
-            api_listings = await _scrape_via_api(reference)
-            if api_listings:
-                return api_listings
+            listings = await _scrape_via_api(reference)
+            if listings:
+                return listings
             logger.warning("eBay: Scraping API 0 risultati — fallback a Playwright diretto")
         except Exception as e:
             logger.error(f"eBay Scraping API error: {e}")

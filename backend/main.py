@@ -522,14 +522,72 @@ async def setup_stories_auth(username: str, password: str):
     raise HTTPException(status_code=400, detail="Login fallito — controlla credenziali o risolvi challenge")
 
 
+@app.post("/stories/import-cookies")
+async def import_stories_cookies(request: Request):
+    """
+    Importa i cookie Instagram esportati da Chrome (estensione Cookie-Editor o DevTools).
+    Accetta un JSON array di cookie nel formato standard Chrome/Playwright.
+    Esempio uso: esporta i cookie di instagram.com con Cookie-Editor → copia → POST qui.
+    """
+    import json as _json
+    from scrapers.stories.capture import AUTH_STATE_FILE
+    try:
+        body = await request.json()
+        # Supporta sia array diretto che oggetto {cookies: [...]}
+        if isinstance(body, list):
+            raw_cookies = body
+        elif isinstance(body, dict) and "cookies" in body:
+            raw_cookies = body["cookies"]
+        else:
+            raise HTTPException(400, "Formato non valido: invia un array di cookie o {cookies: [...]}")
+
+        # Normalizza in formato Playwright storage_state
+        pw_cookies = []
+        for c in raw_cookies:
+            if not c.get("name") or not c.get("value"):
+                continue
+            domain = c.get("domain", ".instagram.com")
+            if not domain.startswith("."):
+                domain = "." + domain
+            pw_cookies.append({
+                "name": c["name"],
+                "value": c["value"],
+                "domain": domain,
+                "path": c.get("path", "/"),
+                "expires": float(c.get("expirationDate") or c.get("expires") or -1),
+                "httpOnly": bool(c.get("httpOnly", False)),
+                "secure": bool(c.get("secure", True)),
+                "sameSite": c.get("sameSite", "Lax"),
+            })
+
+        ig_cookies = [c for c in pw_cookies if "instagram" in c["domain"]]
+        has_session = any(c["name"] == "sessionid" for c in ig_cookies)
+        if not has_session:
+            raise HTTPException(400, "sessionid non trovato — esporta i cookie da instagram.com")
+
+        state = {"cookies": ig_cookies, "origins": [{"origin": "https://www.instagram.com", "localStorage": []}]}
+        AUTH_STATE_FILE.parent.mkdir(parents=True, exist_ok=True)
+        AUTH_STATE_FILE.write_text(_json.dumps(state))
+        logger.info(f"Instagram cookie importati: {len(ig_cookies)} cookie, sessionid OK")
+        return {"status": "ok", "cookies_imported": len(ig_cookies), "sessionid": "present"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(500, f"Errore importazione cookie: {e}")
+
+
 @app.get("/stories/status")
 async def stories_status():
     """Stato del sistema stories."""
-    from scrapers.stories.capture import has_valid_auth, AUTH_STATE_FILE, SCREENSHOTS_DIR
+    from scrapers.stories.capture import has_valid_auth, AUTH_STATE_FILE, SCREENSHOTS_DIR, check_session_health
     from scrapers.stories.storage import get_recent_stories
     recent = get_recent_stories(hours=48)
+    health = check_session_health()
     return {
         "auth_ready": has_valid_auth(),
+        "session_valid": health.get("valid", False),
+        "session_expires_at": health.get("expires_at"),
+        "session_days_left": health.get("days_left"),
         "auth_file": str(AUTH_STATE_FILE),
         "recent_listings_48h": len(recent),
         "screenshots_dir": str(SCREENSHOTS_DIR),

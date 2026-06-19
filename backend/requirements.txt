@@ -20,5 +20,8 @@ pytesseract>=0.3.10
 # HTML parsing (bs4 lxml backend)
 lxml>=5.0.0
 
+# Chrome TLS fingerprint impersonation — bypassa Cloudflare senza proxy
+curl-cffi>=0.7.0
+
 # RSS feed (news agent)
 feedparser>=6.0.10
